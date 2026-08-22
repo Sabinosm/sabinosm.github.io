@@ -244,7 +244,7 @@
           <div class="field-row">
             <div class="field-group">
               <label class="field-label" for="pf-crm">Número do CRM</label>
-              <input class="field-input" type="text" id="pf-crm" inputmode="numeric">
+              <input class="field-input" type="text" id="pf-crm">
               <p class="field-error" id="pf-crm-error"></p>
             </div>
             <div class="field-group field-group--sm">
@@ -264,7 +264,7 @@
           <div class="field-row">
             <div class="field-group">
               <label class="field-label" for="pf-coren">Número do COREN</label>
-              <input class="field-input" type="text" id="pf-coren" inputmode="numeric">
+              <input class="field-input" type="text" id="pf-coren">
               <p class="field-error" id="pf-coren-error"></p>
             </div>
             <div class="field-group field-group--sm">
@@ -283,8 +283,11 @@
       </div>
 
       <div class="prof-modal-footer">
-        <button type="button" class="btn-ghost" id="prof-modal-cancel">Cancelar</button>
-        <button type="submit" class="btn-primary" id="prof-modal-save">Enviar convite</button>
+        <button type="button" class="btn-danger" id="prof-modal-toggle-status" hidden></button>
+        <div class="prof-modal-footer-right">
+          <button type="button" class="btn-ghost" id="prof-modal-cancel">Cancelar</button>
+          <button type="submit" class="btn-primary" id="prof-modal-save">Enviar convite</button>
+        </div>
       </div>
     </form>
 

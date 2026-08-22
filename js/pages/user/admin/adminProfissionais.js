@@ -1,54 +1,61 @@
 // ============================================
 // B-íon — Profissionais
 // Busca, filtros, paginação (10 por página) e modal de
-// cadastro/edição de profissional.
+// cadastro/edição/ativação de profissional, integrado com a API.
 //
 // As regras de validação (CPF, telefone, login, UF, etc.) vivem em
-// adminProfissionaisValidações.js, espelhando CadastroUsuarioSchema
-// e validador.py do backend -- mantidas ali para não duplicar/
-// divergir dentro deste arquivo, que só orquestra a tela.
+// adminProfissionaisValidações.js.
+// As chamadas HTTP vivem em adminProfissionaisApi.js.
+// Este arquivo só orquestra a tela.
 //
-// TODO: os dados abaixo são mock. Trocar carregarProfissionais()
-// por um fetch real assim que o endpoint existir (algo como
-// GET /api/instituicao/profissionais?pagina=&busca=&...).
-// Os filtros de fato (especialidade, status etc.) ainda não foram
-// definidos -- o painel já existe na UI, só falta plugar os campos
-// certos quando isso for decidido.
+// Modelo de dados que a API devolve (Usuario.to_dict()):
+//   { uuid, nome_completo, email, telefone, user_login, tipo_usuario,
+//     status: "ativo" | "inativo", ultimo_acesso, id_empresa }
+// Campos sensíveis (cpf, atributos_profissionais/CRM-COREN) só vêm em
+// incluir_sensiveis=True -- ou seja, na listagem geral eles NÃO vêm.
+// Por isso, ao abrir o modal de edição, buscamos o detalhe via
+// buscarProfissional(uuid) antes de preencher os placeholders, para
+// ter CPF e CRM/COREN atualizados (a listagem sozinha não tem esses
+// dados).
 //
 // Modo edição: os campos começam VAZIOS, mostrando o valor atual
-// como placeholder (não como value). Só o que for efetivamente
-// digitado entra no payload de update -- campo em branco = "não
-// mexe nisso". Modo cadastro: os campos obrigatórios do schema
-// completo precisam ser preenchidos (ver validarFormularioProfissional).
+// como placeholder. Só o que for efetivamente digitado entra no
+// payload de PUT -- update parcial, igual ao schema do backend.
+// Modo cadastro: todos os campos obrigatórios do schema completo
+// precisam ser preenchidos (ver validarFormularioProfissional).
 //
 // Cadastro de profissional NÃO tem campo de senha: o acesso é feito
-// por login com Conta Google usando o e-mail cadastrado aqui, e é o
-// próprio profissional que passa por esse fluxo depois. Por isso o
-// e-mail é pedido duas vezes (confirmação) -- é o admin quem responde
-// por um e-mail incorreto, já que o convite de acesso vai para ele.
+// por login com Conta Google usando o e-mail cadastrado aqui. Por
+// isso o e-mail é pedido duas vezes (confirmação) -- é o admin quem
+// responde por um e-mail incorreto, já que o convite de acesso vai
+// para ele.
 // ============================================
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../shared/feedback.js";
 import { validarFormularioProfissional } from "./adminProfissionaisValidacoes.js";
+import {
+  ApiError,
+  listarProfissionais,
+  buscarProfissional,
+  criarProfissional,
+  atualizarProfissional,
+  ativarProfissional,
+  desativarProfissional,
+} from "./adminProfissionaisApi.js";
 
 const POR_PAGINA = 10;
 
-// ----- Mock temporário -----
-const PROFISSIONAIS_MOCK = [
-  { id: 1, nome: 'Dra. Renata Carvalho Mendes', cpf: '12345678900', email: 'renata.mendes@bion.com', user_login: 'renata.mendes', telefone: '11988881234', tipo_usuario: 'medico', numero_crm: '123456', uf_crm: 'SP', rqe: '', especialidade: 'Clínica Geral', status: 'ativo' },
-  { id: 2, nome: 'Dr. Marcos Antônio Ferreira', cpf: '98765432100', email: 'marcos.ferreira@bion.com', user_login: 'marcos.ferreira', telefone: '11977775678', tipo_usuario: 'medico', numero_crm: '98765', uf_crm: 'SP', rqe: '', especialidade: 'Pediatria', status: 'ativo' },
-  { id: 3, nome: 'Dra. Camila Rocha Santos', cpf: '', email: 'camila.rocha@bion.com', user_login: '', telefone: '', tipo_usuario: '', numero_crm: '', uf_crm: '', rqe: '', especialidade: '', status: 'pendente', convite_em: '18/08/2026' },
-];
-
+let profissionaisCache = [];  // última listagem carregada da API
 let paginaAtual = 1;
 let termoBusca = '';
-let profissionalEditando = null; // objeto completo, ou null se for cadastro novo
+let profissionalEditando = null; // objeto (do detalhe) sendo editado, ou null se for cadastro novo
+let salvando = false; // trava contra duplo-clique / duplo submit
 
 document.addEventListener('DOMContentLoaded', () => {
   configurarBusca();
   configurarFiltros();
   configurarModalProfissional();
-  renderizarLista();
+  carregarERenderizar();
 });
 
 // ============================================
@@ -91,19 +98,33 @@ function configurarFiltros() {
 }
 
 // ============================================
-// Dados (mock por enquanto)
+// Dados — carregamento via API
 // ============================================
-function carregarProfissionais() {
-  // TODO: substituir por fetch('/api/instituicao/profissionais?...')
-  return PROFISSIONAIS_MOCK;
+async function carregarERenderizar() {
+  const container = document.getElementById('lista-profissionais');
+  if (container) {
+    container.innerHTML = '<p class="empty-state-text" style="padding: 24px 0;">Carregando profissionais…</p>';
+  }
+
+  try {
+    const resposta = await listarProfissionais();
+    profissionaisCache = resposta.data || [];
+  } catch (erro) {
+    profissionaisCache = [];
+    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível carregar os profissionais.';
+    exibirMensagemNaLista(mensagem);
+    return;
+  }
+
+  renderizarLista();
 }
 
 function filtrarProfissionais(lista) {
   if (!termoBusca) return lista;
   return lista.filter(p =>
-    p.nome.toLowerCase().includes(termoBusca) ||
-    (p.numero_crm ?? '').toLowerCase().includes(termoBusca) ||
-    (p.especialidade ?? '').toLowerCase().includes(termoBusca)
+    (p.nome_completo ?? '').toLowerCase().includes(termoBusca) ||
+    (p.email ?? '').toLowerCase().includes(termoBusca) ||
+    (p.user_login ?? '').toLowerCase().includes(termoBusca)
   );
 }
 
@@ -114,7 +135,7 @@ function renderizarLista() {
   const container = document.getElementById('lista-profissionais');
   if (!container) return;
 
-  const todos = filtrarProfissionais(carregarProfissionais());
+  const todos = filtrarProfissionais(profissionaisCache);
   const totalPaginas = Math.max(1, Math.ceil(todos.length / POR_PAGINA));
   paginaAtual = Math.min(paginaAtual, totalPaginas);
 
@@ -130,6 +151,23 @@ function renderizarLista() {
   }
 
   renderizarPaginacao(todos.length, totalPaginas);
+}
+
+function exibirMensagemNaLista(texto) {
+  const container = document.getElementById('lista-profissionais');
+  if (!container) return;
+  container.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'empty-state';
+  div.innerHTML = `
+    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
+      <path d="M12 8v5M12 16h.01" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p class="empty-state-title">Não foi possível carregar</p>
+    <p class="empty-state-text">${texto}</p>
+  `;
+  container.appendChild(div);
 }
 
 function criarEstadoVazio() {
@@ -155,43 +193,33 @@ function criarCardProfissional(p) {
     status.className = 'consult-status status--em-atendimento';
     status.innerHTML = `<span class="status-dot"></span> Ativo`;
   } else {
-    status.className = 'consult-status status--aguardando-medico';
+    status.className = 'consult-status status--inativo';
     status.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
-        <path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M8 8l8 8M16 8l-8 8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      Convite pendente`;
+      Inativo`;
   }
 
   const main = document.createElement('div');
   main.className = 'consult-main';
   const nome = document.createElement('h3');
   nome.className = 'consult-patient';
-  nome.textContent = p.nome;
+  nome.textContent = p.nome_completo;
   const meta = document.createElement('p');
   meta.className = 'consult-meta';
-  meta.textContent = p.status === 'ativo'
-    ? `CRM ${p.numero_crm ?? ''}${p.uf_crm ? '-' + p.uf_crm : ''} · ${p.especialidade || '—'}`
-    : `Convite enviado em ${p.convite_em}`;
+  const tipoLabel = p.tipo_usuario === 'medico' ? 'Médico' : p.tipo_usuario === 'enfermeiro' ? 'Enfermeiro' : (p.tipo_usuario || '—');
+  meta.textContent = `${tipoLabel} · ${p.email}`;
   main.append(nome, meta);
 
   const btn = document.createElement('button');
   btn.className = 'btn-ghost';
-  btn.textContent = p.status === 'ativo' ? 'Gerenciar' : 'Reenviar convite';
-  if (p.status === 'ativo') {
-    btn.addEventListener('click', () => abrirModalProfissional(p));
-  } else {
-    btn.addEventListener('click', () => reenviarConvite(p));
-  }
+  btn.textContent = 'Gerenciar';
+  btn.addEventListener('click', () => abrirModalProfissional(p));
 
   card.append(status, main, btn);
   return card;
-}
-
-function reenviarConvite(p) {
-  // TODO: chamar endpoint de reenvio de convite
-  console.log('Reenviar convite para', p.id);
 }
 
 // ============================================
@@ -257,7 +285,7 @@ function irParaPagina(n) {
 }
 
 // ============================================
-// Modal de Cadastrar / Editar profissional
+// Modal de Cadastrar / Editar / Ativar-Desativar profissional
 // ============================================
 
 function configurarModalProfissional() {
@@ -265,6 +293,7 @@ function configurarModalProfissional() {
   const btnNovo = document.getElementById('btn-convidar-profissional');
   const btnFechar = document.getElementById('prof-modal-close');
   const btnCancelar = document.getElementById('prof-modal-cancel');
+  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
   const form = document.getElementById('form-profissional');
   const selectTipo = document.getElementById('pf-tipo');
 
@@ -273,6 +302,7 @@ function configurarModalProfissional() {
   btnNovo?.addEventListener('click', () => abrirModalProfissional(null));
   btnFechar?.addEventListener('click', fecharModalProfissional);
   btnCancelar?.addEventListener('click', fecharModalProfissional);
+  btnToggleStatus?.addEventListener('click', alternarStatusProfissional);
 
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) fecharModalProfissional();
@@ -307,52 +337,107 @@ function atualizarBlocoPorTipo(tipo) {
   blocoEnfermeiro.hidden = tipo !== 'enfermeiro';
 }
 
-function abrirModalProfissional(profissional) {
+/**
+ * Abre o modal. `profissionalResumo` é o objeto vindo da listagem
+ * (sem cpf/CRM/COREN). Se for edição, buscamos o detalhe completo
+ * na API antes de preencher os campos.
+ */
+async function abrirModalProfissional(profissionalResumo) {
   const overlay = document.getElementById('prof-modal-overlay');
+  const editando = profissionalResumo !== null;
+
+  overlay.classList.add('settings-overlay--visible');
+  document.body.classList.add('no-scroll');
+
+  prepararModalCarregando(editando);
+
+  if (!editando) {
+    profissionalEditando = null;
+    preencherModal(null);
+    return;
+  }
+
+  try {
+    const resposta = await buscarProfissional(profissionalResumo.uuid);
+    profissionalEditando = resposta.data;
+  } catch (erro) {
+    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível carregar os dados do profissional.';
+    exibirMensagem(mensagem, 'erro');
+    // Sem o detalhe (cpf/CRM/COREN) não dá pra editar com segurança;
+    // ainda assim deixamos o modal aberto com o resumo que já tínhamos,
+    // caso o admin só queira ativar/desativar.
+    profissionalEditando = profissionalResumo;
+  }
+
+  preencherModal(profissionalEditando);
+}
+
+function prepararModalCarregando(editando) {
   const titulo = document.getElementById('prof-modal-title');
   const btnSalvar = document.getElementById('prof-modal-save');
-  const editHint = document.getElementById('prof-modal-edit-hint');
   const form = document.getElementById('form-profissional');
-
-  profissionalEditando = profissional;
-  const editando = profissional !== null;
 
   form.reset();
   limparTodosOsErros();
   limparFeedback();
 
   if (titulo) titulo.textContent = editando ? 'Editar profissional' : 'Convidar profissional';
-  if (btnSalvar) btnSalvar.textContent = editando ? 'Salvar alterações' : 'Enviar convite';
+  if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = editando ? 'Carregando…' : 'Enviar convite'; }
+
+  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
+  if (btnToggleStatus) btnToggleStatus.hidden = true;
+}
+
+function preencherModal(profissional) {
+  const titulo = document.getElementById('prof-modal-title');
+  const btnSalvar = document.getElementById('prof-modal-save');
+  const editHint = document.getElementById('prof-modal-edit-hint');
+  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
+  const editando = profissional !== null;
+
+  if (titulo) titulo.textContent = editando ? 'Editar profissional' : 'Convidar profissional';
+  if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = editando ? 'Salvar alterações' : 'Enviar convite'; }
   if (editHint) editHint.hidden = !editando;
 
   // Em edição: campo vazio, valor atual vira placeholder (dica visual).
   // Em cadastro: campo realmente vazio, sem dado antigo pra mostrar.
-  definirCampoComPlaceholder('pf-nome', editando ? profissional.nome : '');
+  definirCampoComPlaceholder('pf-nome', editando ? profissional.nome_completo : '');
   definirCampoComPlaceholder('pf-cpf', editando ? formatarCpfExibicao(profissional.cpf) : '', '000.000.000-00');
   definirCampoComPlaceholder('pf-login', editando ? profissional.user_login : '');
   definirCampoComPlaceholder('pf-telefone', editando ? formatarTelefoneExibicao(profissional.telefone) : '', '(11) 91234-5678');
 
-  // E-mail nunca herda placeholder do valor antigo: pedir confirmação
-  // com o valor "escondido" via placeholder tiraria o sentido da
-  // dupla digitação (o admin só reveria o e-mail atual, sem precisar
-  // redigitar, o que é justamente o que queremos evitar aqui).
+  // E-mail nunca herda placeholder do valor antigo -- a dupla
+  // digitação de confirmação perderia o sentido se o admin só
+  // revisse o e-mail atual sem precisar redigitar.
   definirCampoComPlaceholder('pf-email', '');
   definirCampoComPlaceholder('pf-email-confirma', '');
 
+  const atributos = profissional?.atributos_profissionais || {};
   const selectTipo = document.getElementById('pf-tipo');
   selectTipo.value = editando ? (profissional.tipo_usuario || '') : '';
   atualizarBlocoPorTipo(selectTipo.value);
 
-  definirCampoComPlaceholder('pf-crm', editando ? profissional.numero_crm : '');
-  definirCampoComPlaceholder('pf-uf-crm', editando ? profissional.uf_crm : '');
-  definirCampoComPlaceholder('pf-rqe', editando ? profissional.rqe : '');
-  definirCampoComPlaceholder('pf-coren', editando ? profissional.numero_coren : '');
-  definirCampoComPlaceholder('pf-uf-coren', editando ? profissional.uf_coren : '');
-  definirCampoComPlaceholder('pf-especialidade', editando ? profissional.especialidade : '');
+  definirCampoComPlaceholder('pf-crm', editando ? atributos['numero-crm'] : '');
+  definirCampoComPlaceholder('pf-uf-crm', editando ? atributos['uf-crm'] : '');
+  definirCampoComPlaceholder('pf-rqe', editando ? atributos['rqe'] : '');
+  definirCampoComPlaceholder('pf-coren', editando ? atributos['numero-coren'] : '');
+  definirCampoComPlaceholder('pf-uf-coren', editando ? atributos['uf-coren'] : '');
+  definirCampoComPlaceholder('pf-especialidade', editando ? atributos['especialidade'] : '');
 
-  overlay.classList.add('settings-overlay--visible');
-  document.body.classList.add('no-scroll');
-  document.getElementById('pf-nome')?.focus();
+  // Ativar/Desativar -- só existe em edição, no canto oposto ao Salvar
+  if (btnToggleStatus) {
+    if (editando) {
+      const estaAtivo = profissional.status === 'ativo';
+      btnToggleStatus.hidden = false;
+      btnToggleStatus.textContent = estaAtivo ? 'Desativar profissional' : 'Ativar profissional';
+      btnToggleStatus.classList.toggle('btn-danger--ativar', !estaAtivo);
+      btnToggleStatus.dataset.acao = estaAtivo ? 'desativar' : 'ativar';
+    } else {
+      btnToggleStatus.hidden = true;
+    }
+  }
+
+  if (editando) document.getElementById('pf-nome')?.focus();
 }
 
 function definirCampoComPlaceholder(id, valorAtual, placeholderFixo) {
@@ -428,10 +513,21 @@ function limparFeedback() {
 }
 
 // ============================================
-// Ler campos do form e salvar
+// Ler campos do form
 // ============================================
 function lerCamposFormulario() {
-  const valor = (id) => document.getElementById(id).value;
+  const valor = (id) => {
+    const el = document.getElementById(id);
+    if (!el) {
+      // Se isto disparar, o HTML carregado no navegador não tem esse
+      // campo -- geralmente sinal de que adminProfissionais.html está
+      // desatualizado/cacheado em relação a este JS. Conferir se o
+      // arquivo servido é o mesmo que define <input id="${id}">.
+      console.error(`lerCamposFormulario: campo #${id} não encontrado no DOM.`);
+      return '';
+    }
+    return el.value;
+  };
   return {
     nome: valor('pf-nome').trim(),
     cpf: valor('pf-cpf').trim(),
@@ -449,7 +545,12 @@ function lerCamposFormulario() {
   };
 }
 
-function salvarProfissional() {
+// ============================================
+// Salvar (criar ou atualizar) via API
+// ============================================
+async function salvarProfissional() {
+  if (salvando) return;
+
   const editando = profissionalEditando !== null;
   const campos = lerCamposFormulario();
   const { payload, erros } = validarFormularioProfissional(campos, editando);
@@ -465,23 +566,73 @@ function salvarProfissional() {
     return;
   }
 
-  if (editando) payload.id = profissionalEditando.id;
+  const btnSalvar = document.getElementById('prof-modal-save');
+  salvando = true;
+  if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando…'; }
 
-  // TODO: chamar API
-  // - !editando -> POST /api/instituicao/profissionais (convite, schema
-  //   completo de CadastroUsuarioSchema -- sem 'senha', que não se aplica
-  //   a médico/enfermeiro)
-  // - editando  -> PUT /api/instituicao/profissionais/:id (update parcial,
-  //   só os campos preenchidos vão no payload -- já é o que fizemos acima)
-  console.log('Payload profissional:', payload);
+  try {
+    if (editando) {
+      await atualizarProfissional(profissionalEditando.uuid, payload);
+    } else {
+      await criarProfissional(payload);
+    }
 
-  exibirMensagem(
-    editando ? 'Profissional atualizado com sucesso!' : 'Convite enviado com sucesso!',
-    'sucesso'
-  );
+    exibirMensagem(
+      editando ? 'Profissional atualizado com sucesso!' : 'Convite enviado com sucesso!',
+      'sucesso'
+    );
 
-  setTimeout(() => {
-    fecharModalProfissional();
-    renderizarLista();
-  }, 900);
+    await carregarERenderizar();
+    setTimeout(fecharModalProfissional, 900);
+  } catch (erro) {
+    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível salvar. Tente novamente.';
+    exibirMensagem(mensagem, 'erro');
+  } finally {
+    salvando = false;
+    if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = editando ? 'Salvar alterações' : 'Enviar convite'; }
+  }
+}
+
+// ============================================
+// Ativar / Desativar via API
+// ============================================
+async function alternarStatusProfissional() {
+  if (salvando || !profissionalEditando) return;
+
+  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
+  const acao = btnToggleStatus?.dataset.acao; // 'ativar' | 'desativar'
+  if (!acao) return;
+
+  salvando = true;
+  const textoOriginal = btnToggleStatus.textContent;
+  btnToggleStatus.disabled = true;
+  btnToggleStatus.textContent = acao === 'ativar' ? 'Ativando…' : 'Desativando…';
+
+  try {
+    const resposta = acao === 'ativar'
+      ? await ativarProfissional(profissionalEditando.uuid)
+      : await desativarProfissional(profissionalEditando.uuid);
+
+    profissionalEditando = { ...profissionalEditando, ...resposta.data };
+
+    exibirMensagem(
+      acao === 'ativar' ? 'Profissional ativado com sucesso!' : 'Profissional desativado com sucesso!',
+      'sucesso'
+    );
+
+    // Atualiza o botão para refletir o novo estado, sem fechar o modal
+    const estaAtivo = profissionalEditando.status === 'ativo';
+    btnToggleStatus.textContent = estaAtivo ? 'Desativar profissional' : 'Ativar profissional';
+    btnToggleStatus.classList.toggle('btn-danger--ativar', !estaAtivo);
+    btnToggleStatus.dataset.acao = estaAtivo ? 'desativar' : 'ativar';
+
+    await carregarERenderizar();
+  } catch (erro) {
+    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível alterar o status. Tente novamente.';
+    exibirMensagem(mensagem, 'erro');
+    btnToggleStatus.textContent = textoOriginal;
+  } finally {
+    salvando = false;
+    btnToggleStatus.disabled = false;
+  }
 }

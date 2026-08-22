@@ -22,6 +22,13 @@
   }
 }
 
+/* ===== Status (herda .consult-status/.status-dot de adminHomePage.css;
+   adiciona a variante "inativo" usada só nesta tela) ===== */
+.status--inativo {
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+}
+
 /* ===== Barra de busca + filtros ===== */
 .toolbar {
   display: flex;
@@ -287,11 +294,43 @@
 
 .prof-modal-footer {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
   padding: 16px 28px;
   border-top: 1px solid var(--border);
   background: var(--bg-elevated);
+}
+
+.prof-modal-footer-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger, #e0625b);
+  border: 1px solid var(--danger, #e0625b);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-danger:hover {
+  background: var(--danger, #e0625b);
+  color: var(--palette-white-strong);
+}
+
+.btn-danger--ativar {
+  color: var(--status-fg);
+  border-color: var(--status-fg);
+}
+.btn-danger--ativar:hover {
+  background: var(--status-fg);
+  color: var(--palette-white-strong);
 }
 
 .field-row {
