@@ -3,7 +3,7 @@
 // Camada de acesso à API de usuários/profissionais.
 // Espelha as rotas do blueprint Flask.
 //
-//   GET    /                          -> listar()
+//   GET    /?pagina=&status=&especialidade=  -> listar({ pagina, status, especialidade })
 //   POST   /                          -> criar(dados)
 //   PUT    /<uuid>                    -> atualizar(uuid, dados)
 //   POST   /<uuid>/ativar             -> ativar(uuid)
@@ -29,7 +29,7 @@
 // então aqui só concatenamos o restante do caminho (/usuarios...),
 // sem repetir /v1/api de novo.
 
-import { URL_BASE_API } from "../../../config.js";
+import { URL_BASE_API } from "../../../../config.js";
 
 const BASE_URL = `${URL_BASE_API}/usuarios`;
 
@@ -75,9 +75,29 @@ export class ApiError extends Error {
   }
 }
 
-/** GET / — lista os usuários/profissionais da empresa da sessão atual. */
-export function listarProfissionais() {
-  return requisitar('/', { method: 'GET' });
+/**
+ * GET / — lista os usuários/profissionais da empresa da sessão atual.
+ *
+ * @param {object} [opcoes]
+ * @param {number} [opcoes.pagina=0]        — número da página (0, 1, 2...).
+ *   O backend multiplica por 8 internamente para calcular o offset
+ *   real (pagina=1 -> pula os 8 primeiros); o front NÃO faz essa
+ *   conta, só manda o número da página.
+ * @param {string} [opcoes.status]          — 'pendente' | 'ativo' | 'desativado'
+ *   Nota: 'desativado' é o nome aceito pelo PARÂMETRO de filtro nesta
+ *   rota; o valor que de fato vem no campo `status` de cada usuário
+ *   no corpo da resposta continua sendo 'inativo' (Usuario.to_dict()
+ *   não mudou). Ou seja: filtra com status=desativado, mas cada item
+ *   devolvido tem status: "inativo".
+ * @param {string} [opcoes.especialidade]
+ */
+export function listarProfissionais({ pagina = 0, status, especialidade } = {}) {
+  const params = new URLSearchParams();
+  params.set('pagina', String(pagina));
+  if (status) params.set('status', status);
+  if (especialidade) params.set('especialidade', especialidade);
+
+  return requisitar(`/?${params.toString()}`, { method: 'GET' });
 }
 
 /** GET /<uuid> — detalhe de um usuário específico. */

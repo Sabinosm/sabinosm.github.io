@@ -1,22 +1,20 @@
-// ============================================
-// B-íon — Profissionais
-// Busca, filtros, paginação (10 por página) e modal de
-// cadastro/edição/ativação de profissional, integrado com a API.
+// adminProfissionaisModal.js
+//
+// Modal de cadastro/edição/ativação de profissional. A lista (em
+// adminProfissionaisLista.js) chama abrirModalProfissional (exportada
+// daqui) ao clicar num card ou no botão "Convidar profissional"; este
+// arquivo chama de volta recarregarLista (importada de lá) depois de
+// salvar, criar ou ativar/desativar, para a lista refletir a mudança.
 //
 // As regras de validação (CPF, telefone, login, UF, etc.) vivem em
-// adminProfissionaisValidações.js.
+// adminProfissionaisValidacoes.js.
 // As chamadas HTTP vivem em adminProfissionaisApi.js.
-// Este arquivo só orquestra a tela.
 //
-// Modelo de dados que a API devolve (Usuario.to_dict()):
-//   { uuid, nome_completo, email, telefone, user_login, tipo_usuario,
-//     status: "ativo" | "inativo", ultimo_acesso, id_empresa }
-// Campos sensíveis (cpf, atributos_profissionais/CRM-COREN) só vêm em
-// incluir_sensiveis=True -- ou seja, na listagem geral eles NÃO vêm.
+// Campos sensíveis (cpf, atributos_profissionais/CRM-COREN) só vêm da
+// API em incluir_sensiveis=True -- ou seja, não vêm na listagem geral.
 // Por isso, ao abrir o modal de edição, buscamos o detalhe via
 // buscarProfissional(uuid) antes de preencher os placeholders, para
-// ter CPF e CRM/COREN atualizados (a listagem sozinha não tem esses
-// dados).
+// ter CPF e CRM/COREN atualizados.
 //
 // Modo edição: os campos começam VAZIOS, mostrando o valor atual
 // como placeholder. Só o que for efetivamente digitado entra no
@@ -31,258 +29,24 @@
 // para ele.
 // ============================================
 
-import { exibirMensagem } from "../../../shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import { validarFormularioProfissional } from "./adminProfissionaisValidacoes.js";
 import {
   ApiError,
-  listarProfissionais,
   buscarProfissional,
   criarProfissional,
   atualizarProfissional,
   ativarProfissional,
   desativarProfissional,
 } from "./adminProfissionaisApi.js";
+import { recarregarLista } from "./adminProfissionaisLista.js";
 
-const POR_PAGINA = 10;
-
-let profissionaisCache = [];  // última listagem carregada da API
-let paginaAtual = 1;
-let termoBusca = '';
 let profissionalEditando = null; // objeto (do detalhe) sendo editado, ou null se for cadastro novo
 let salvando = false; // trava contra duplo-clique / duplo submit
 
 document.addEventListener('DOMContentLoaded', () => {
-  configurarBusca();
-  configurarFiltros();
   configurarModalProfissional();
-  carregarERenderizar();
 });
-
-// ============================================
-// Busca
-// ============================================
-function configurarBusca() {
-  const input = document.getElementById('busca-profissional');
-  if (!input) return;
-
-  input.addEventListener('input', () => {
-    termoBusca = input.value.trim().toLowerCase();
-    paginaAtual = 1;
-    renderizarLista();
-  });
-}
-
-// ============================================
-// Filtros (painel expansível)
-// ============================================
-function configurarFiltros() {
-  const btn = document.getElementById('btn-toggle-filtros');
-  const painel = document.getElementById('filter-panel');
-  if (!btn || !painel) return;
-
-  btn.addEventListener('click', () => {
-    const abrir = !painel.classList.contains('filter-panel--visible');
-    painel.classList.toggle('filter-panel--visible', abrir);
-    btn.classList.toggle('btn-filter--active', abrir);
-  });
-
-  const btnLimpar = document.getElementById('btn-limpar-filtros');
-  if (btnLimpar) {
-    btnLimpar.addEventListener('click', () => {
-      painel.querySelectorAll('select').forEach(s => { s.selectedIndex = 0; });
-      // TODO: resetar campos de filtro reais quando definidos
-      paginaAtual = 1;
-      renderizarLista();
-    });
-  }
-}
-
-// ============================================
-// Dados — carregamento via API
-// ============================================
-async function carregarERenderizar() {
-  const container = document.getElementById('lista-profissionais');
-  if (container) {
-    container.innerHTML = '<p class="empty-state-text" style="padding: 24px 0;">Carregando profissionais…</p>';
-  }
-
-  try {
-    const resposta = await listarProfissionais();
-    profissionaisCache = resposta.data || [];
-  } catch (erro) {
-    profissionaisCache = [];
-    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível carregar os profissionais.';
-    exibirMensagemNaLista(mensagem);
-    return;
-  }
-
-  renderizarLista();
-}
-
-function filtrarProfissionais(lista) {
-  if (!termoBusca) return lista;
-  return lista.filter(p =>
-    (p.nome_completo ?? '').toLowerCase().includes(termoBusca) ||
-    (p.email ?? '').toLowerCase().includes(termoBusca) ||
-    (p.user_login ?? '').toLowerCase().includes(termoBusca)
-  );
-}
-
-// ============================================
-// Renderização da lista + paginação
-// ============================================
-function renderizarLista() {
-  const container = document.getElementById('lista-profissionais');
-  if (!container) return;
-
-  const todos = filtrarProfissionais(profissionaisCache);
-  const totalPaginas = Math.max(1, Math.ceil(todos.length / POR_PAGINA));
-  paginaAtual = Math.min(paginaAtual, totalPaginas);
-
-  const inicio = (paginaAtual - 1) * POR_PAGINA;
-  const pagina = todos.slice(inicio, inicio + POR_PAGINA);
-
-  container.innerHTML = '';
-
-  if (pagina.length === 0) {
-    container.appendChild(criarEstadoVazio());
-  } else {
-    pagina.forEach(p => container.appendChild(criarCardProfissional(p)));
-  }
-
-  renderizarPaginacao(todos.length, totalPaginas);
-}
-
-function exibirMensagemNaLista(texto) {
-  const container = document.getElementById('lista-profissionais');
-  if (!container) return;
-  container.innerHTML = '';
-  const div = document.createElement('div');
-  div.className = 'empty-state';
-  div.innerHTML = `
-    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
-      <path d="M12 8v5M12 16h.01" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    <p class="empty-state-title">Não foi possível carregar</p>
-    <p class="empty-state-text">${texto}</p>
-  `;
-  container.appendChild(div);
-}
-
-function criarEstadoVazio() {
-  const div = document.createElement('div');
-  div.className = 'empty-state';
-  div.innerHTML = `
-    <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
-      <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
-    </svg>
-    <p class="empty-state-title">Nenhum profissional encontrado</p>
-    <p class="empty-state-text">Tente ajustar a busca ou os filtros, ou convide um novo profissional para a equipe.</p>
-  `;
-  return div;
-}
-
-function criarCardProfissional(p) {
-  const card = document.createElement('article');
-  card.className = 'consult-card';
-
-  const status = document.createElement('div');
-  if (p.status === 'ativo') {
-    status.className = 'consult-status status--em-atendimento';
-    status.innerHTML = `<span class="status-dot"></span> Ativo`;
-  } else {
-    status.className = 'consult-status status--inativo';
-    status.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
-        <path d="M8 8l8 8M16 8l-8 8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Inativo`;
-  }
-
-  const main = document.createElement('div');
-  main.className = 'consult-main';
-  const nome = document.createElement('h3');
-  nome.className = 'consult-patient';
-  nome.textContent = p.nome_completo;
-  const meta = document.createElement('p');
-  meta.className = 'consult-meta';
-  const tipoLabel = p.tipo_usuario === 'medico' ? 'Médico' : p.tipo_usuario === 'enfermeiro' ? 'Enfermeiro' : (p.tipo_usuario || '—');
-  meta.textContent = `${tipoLabel} · ${p.email}`;
-  main.append(nome, meta);
-
-  const btn = document.createElement('button');
-  btn.className = 'btn-ghost';
-  btn.textContent = 'Gerenciar';
-  btn.addEventListener('click', () => abrirModalProfissional(p));
-
-  card.append(status, main, btn);
-  return card;
-}
-
-// ============================================
-// Paginação (com setas para os lados)
-// ============================================
-function renderizarPaginacao(totalItens, totalPaginas) {
-  const container = document.getElementById('paginacao');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  if (totalItens === 0) return;
-
-  const inicio = (paginaAtual - 1) * POR_PAGINA + 1;
-  const fim = Math.min(paginaAtual * POR_PAGINA, totalItens);
-
-  const info = document.createElement('span');
-  info.className = 'pagination-info';
-  info.textContent = `Mostrando ${inicio}–${fim} de ${totalItens}`;
-
-  const controls = document.createElement('div');
-  controls.className = 'pagination-controls';
-
-  controls.appendChild(criarBotaoPagina({
-    conteudoSvg: `<path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>`,
-    label: 'Página anterior',
-    desabilitado: paginaAtual === 1,
-    onClick: () => irParaPagina(paginaAtual - 1),
-  }));
-
-  for (let i = 1; i <= totalPaginas; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'page-btn' + (i === paginaAtual ? ' page-btn--active' : '');
-    btn.textContent = i;
-    btn.addEventListener('click', () => irParaPagina(i));
-    controls.appendChild(btn);
-  }
-
-  controls.appendChild(criarBotaoPagina({
-    conteudoSvg: `<path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>`,
-    label: 'Próxima página',
-    desabilitado: paginaAtual === totalPaginas,
-    onClick: () => irParaPagina(paginaAtual + 1),
-  }));
-
-  container.append(info, controls);
-}
-
-function criarBotaoPagina({ conteudoSvg, label, desabilitado, onClick }) {
-  const btn = document.createElement('button');
-  btn.className = 'page-btn';
-  btn.setAttribute('aria-label', label);
-  btn.disabled = desabilitado;
-  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${conteudoSvg}</svg>`;
-  btn.addEventListener('click', onClick);
-  return btn;
-}
-
-function irParaPagina(n) {
-  paginaAtual = n;
-  renderizarLista();
-  document.getElementById('lista-profissionais')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-}
 
 // ============================================
 // Modal de Cadastrar / Editar / Ativar-Desativar profissional
@@ -339,10 +103,13 @@ function atualizarBlocoPorTipo(tipo) {
 
 /**
  * Abre o modal. `profissionalResumo` é o objeto vindo da listagem
- * (sem cpf/CRM/COREN). Se for edição, buscamos o detalhe completo
- * na API antes de preencher os campos.
+ * (sem cpf/CRM/COREN), ou null para abrir em modo cadastro. Se for
+ * edição, busca o detalhe completo na API antes de preencher os
+ * campos. Exportada -- é o ponto de entrada usado por
+ * adminProfissionaisLista.js (clique em "Gerenciar" ou "Convidar
+ * profissional").
  */
-async function abrirModalProfissional(profissionalResumo) {
+export async function abrirModalProfissional(profissionalResumo) {
   const overlay = document.getElementById('prof-modal-overlay');
   const editando = profissionalResumo !== null;
 
@@ -424,7 +191,12 @@ function preencherModal(profissional) {
   definirCampoComPlaceholder('pf-uf-coren', editando ? atributos['uf-coren'] : '');
   definirCampoComPlaceholder('pf-especialidade', editando ? atributos['especialidade'] : '');
 
-  // Ativar/Desativar -- só existe em edição, no canto oposto ao Salvar
+  // Ativar/Desativar -- só existe em edição, no canto oposto ao Salvar.
+  // status !== 'ativo' cobre tanto 'pendente' (onboarding ainda não
+  // concluído) quanto 'inativo' (desativado) -- em ambos os casos o
+  // botão oferece "Ativar", que é a ação certa nos dois: tirar do
+  // onboarding pendente ou reativar quem foi desativado, os dois
+  // terminam com status 'ativo'.
   if (btnToggleStatus) {
     if (editando) {
       const estaAtivo = profissional.status === 'ativo';
@@ -582,7 +354,7 @@ async function salvarProfissional() {
       'sucesso'
     );
 
-    await carregarERenderizar();
+    await recarregarLista();
     setTimeout(fecharModalProfissional, 900);
   } catch (erro) {
     const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível salvar. Tente novamente.';
@@ -626,7 +398,7 @@ async function alternarStatusProfissional() {
     btnToggleStatus.classList.toggle('btn-danger--ativar', !estaAtivo);
     btnToggleStatus.dataset.acao = estaAtivo ? 'desativar' : 'ativar';
 
-    await carregarERenderizar();
+    await recarregarLista();
   } catch (erro) {
     const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível alterar o status. Tente novamente.';
     exibirMensagem(mensagem, 'erro');
