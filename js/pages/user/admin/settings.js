@@ -174,23 +174,24 @@ document.getElementById('btn-save').addEventListener('click', () => {
 });
 
 // ============================================
-// Persistência de tema entre recarregamentos.
-// O <html data-theme="..."> do HTML é só o fallback inicial;
-// se o usuário já salvou uma preferência antes, ela tem prioridade.
+// Sincroniza a UI do painel de Preferências com o tema já aplicado.
+// O <html data-theme="..."> em si já foi setado o mais cedo possível
+// por applyTheme.js (carregado no <head>, antes do primeiro paint --
+// evita flash de tema errado enquanto este modal ainda está sendo
+// buscado/injetado). Aqui só marcamos o swatch ativo certo e
+// sincronizamos panelState, que dependem do modal já existir no DOM.
 // ============================================
-(function restoreSavedTheme() {
-  const saved = localStorage.getItem(THEME_STORAGE_KEY);
-  if (!saved) return;
-
-  document.documentElement.dataset.theme = saved;
+(function sincronizarUiComTemaAtual() {
+  const atual = document.documentElement.dataset.theme;
+  if (!atual) return;
 
   const prefsPanel = document.getElementById('panel-preferencias');
   if (!prefsPanel) return;
 
   prefsPanel.querySelectorAll('.theme-option').forEach(b => {
-    b.classList.toggle('theme-option--active', b.dataset.themeOption === saved);
+    b.classList.toggle('theme-option--active', b.dataset.themeOption === atual);
   });
 
   const state = panelState.get(prefsPanel);
-  if (state) state.initialTheme = saved;
+  if (state) state.initialTheme = atual;
 })();
