@@ -1,0 +1,179 @@
+<!-- ============================================
+     Partial: Modal de Configurações
+     Compartilhado por todas as páginas admin (Home, Pacientes,
+     Profissionais, Empresa...). Carregado dinamicamente por
+     settingsLoader.js -- NÃO é um arquivo HTML navegável sozinho,
+     só o corpo do overlay para ser injetado no <body> de quem
+     precisar.
+
+     Depende de, no documento que injeta este partial:
+       - CSS: css/pages/user/settings.css já linkado no <head>
+       - JS:  js/pages/user/admin/settings.js carregado DEPOIS deste
+              partial estar no DOM (ver settingsLoader.js)
+       - Um botão em algum lugar da página com id="open-settings"
+         (normalmente o item de perfil na sidebar) para abrir o modal
+   ============================================ -->
+<div class="settings-overlay" id="settings-overlay">
+  <div class="settings-modal">
+
+    <button class="settings-close" id="settings-close" aria-label="Fechar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <nav class="settings-tabs">
+      <span class="settings-tabs-title">Configurações</span>
+      <button class="settings-tab settings-tab--active" data-tab="user">User</button>
+      <button class="settings-tab" data-tab="seguranca">Segurança</button>
+      <button class="settings-tab" data-tab="preferencias">Preferências</button>
+      <button class="settings-tab" data-tab="arquivos">Arquivos</button>
+    </nav>
+
+    <div class="settings-panels">
+
+      <!-- ===== USER ===== -->
+      <section class="settings-panel settings-panel--active" id="panel-user">
+        <h2 class="panel-title">Informações básicas</h2>
+        <p class="panel-subtitle">Alguns dados são gerenciados pela sua instituição e não podem ser editados aqui.</p>
+
+        <div class="avatar-row">
+          <div class="avatar-preview" id="user-avatar-iniciais"></div>
+          <div>
+            <button class="btn-secondary btn-secondary--sm">Alterar foto</button>
+            <p class="field-hint">JPG ou PNG, até 4MB.</p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="f-nome">Nome</label>
+          <input class="field-input" type="text" id="f-nome" value="" data-track>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="f-telefone">Telefone</label>
+          <input class="field-input" type="tel" id="f-telefone" value="" data-track>
+        </div>
+
+        <div class="field-group field-group--locked">
+          <label class="field-label">CRM</label>
+          <div class="field-locked" id="user-crm">
+            <span class="field-locked-tag">Gerenciado pela instituição</span>
+          </div>
+        </div>
+
+        <div class="field-group field-group--locked">
+          <label class="field-label">E-mail</label>
+          <div class="field-locked" id="user-email">
+            <span class="field-locked-tag">Gerenciado pela instituição</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SEGURANÇA ===== -->
+      <section class="settings-panel" id="panel-seguranca">
+
+        <h2 class="panel-title">Autenticação em duas etapas</h2>
+        <p class="panel-subtitle">Obrigatória via chave de acesso (WebAuthn) — passkey, chave de segurança física ou biometria do dispositivo.</p>
+
+        <div class="device-list" id="device-list">
+          <!-- Preenchido dinamicamente por preencherPainelPerfil.js a partir de webauthn.credenciais -->
+        </div>
+
+        <button class="btn-secondary" style="margin-top: 4px;">+ Adicionar novo dispositivo</button>
+
+        <div class="panel-divider"></div>
+
+        <h2 class="panel-title">Senha</h2>
+        <p class="panel-subtitle">Usada como primeiro fator, junto ao login institucional.</p>
+        <button class="btn-secondary">Alterar senha</button>
+
+        <div class="panel-divider"></div>
+
+        <h2 class="panel-title">Login</h2>
+        <div class="field-group field-group--locked">
+          <label class="field-label">Usuário de login</label>
+          <div class="field-locked" id="user-login"></div>
+        </div>
+      </section>
+
+      <!-- ===== PREFERÊNCIAS ===== -->
+      <section class="settings-panel" id="panel-preferencias" data-savable>
+
+        <h2 class="panel-title">Tema</h2>
+        <p class="panel-subtitle">Escolha o esquema de cores da aplicação.</p>
+        <div class="theme-options">
+          <button class="theme-option theme-option--active" data-theme-option="dark">
+              <span class="theme-swatch theme-swatch--dark"></span>
+              Dark
+          </button>
+          <button class="theme-option" data-theme-option="light">
+              <span class="theme-swatch theme-swatch--light"></span>
+              Light
+          </button>
+          <button class="theme-option" data-theme-option="blue">
+              <span class="theme-swatch theme-swatch--blue"></span>
+              Blue
+          </button>
+          <button class="theme-option" data-theme-option="blue-light">
+              <span class="theme-swatch theme-swatch--blue-light"></span>
+              Blue Light
+          </button>
+          <button class="theme-option" data-theme-option="burgundy">
+              <span class="theme-swatch theme-swatch--burgundy"></span>
+              Burgundy
+          </button>
+          <button class="theme-option" data-theme-option="burgundy-light">
+              <span class="theme-swatch theme-swatch--burgundy-light"></span>
+              Burgundy Light
+          </button>
+          <button class="theme-option" data-theme-option="teal">
+              <span class="theme-swatch theme-swatch--teal"></span>
+              Teal
+          </button>
+          <button class="theme-option" data-theme-option="teal-light">
+              <span class="theme-swatch theme-swatch--teal-light"></span>
+              Teal Light
+          </button>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <h2 class="panel-title">Acessibilidade</h2>
+        <div class="field-group">
+          <label class="field-label" for="f-fonte">Tamanho da fonte</label>
+          <input class="field-range" type="range" id="f-fonte" min="0" max="2" value="1" step="1" data-track>
+          <div class="field-range-labels">
+            <span>Pequena</span><span>Padrão</span><span>Grande</span>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <h2 class="panel-title">Idioma</h2>
+        <div class="field-group">
+          <label class="field-label" for="f-idioma">Idioma da interface</label>
+          <select class="field-input" id="f-idioma" data-track>
+            <option>Português (Brasil)</option>
+            <option>English</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- ===== ARQUIVOS ===== -->
+      <section class="settings-panel" id="panel-arquivos">
+      </section>
+
+    </div>
+
+    <!-- Barra de salvar/cancelar — só aparece com mudança pendente -->
+    <div class="save-bar" id="save-bar">
+      <span class="save-bar-text">Você tem alterações não salvas</span>
+      <div class="save-bar-actions">
+        <button class="btn-ghost" id="btn-cancel">Cancelar</button>
+        <button class="btn-primary" id="btn-save">Salvar alterações</button>
+      </div>
+    </div>
+
+  </div>
+</div>
