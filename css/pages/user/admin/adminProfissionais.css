@@ -280,16 +280,41 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }
 
+/* O <form> envolve header + body + footer (ver HTML), então ele
+   precisa ser, ele mesmo, um flex-column dentro do .prof-modal --
+   senão vira um bloco de altura livre que deixa o body crescer sem
+   limite e empurra o footer (com o botão Salvar/Enviar convite) pra
+   fora da área visível, já que .prof-modal tem overflow:hidden.
+   Essa era a causa do botão de salvar "sumir": ele não desaparecia,
+   ficava cortado abaixo do fim do modal. */
+#form-profissional {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .prof-modal-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   padding: 24px 28px 0;
+  flex-shrink: 0;
 }
 
 .prof-modal-body {
   padding: 20px 28px 28px;
   overflow-y: auto;
+  min-height: 0; /* essencial em flex: sem isso o body ignora o limite de altura e empurra o footer pra fora */
+}
+
+/* Hint do e-mail, movido do meio do formulário para o rodapé do
+   modal (fica logo acima da barra de botões, fora da área que rola
+   junto com os campos). */
+.prof-modal-footer-hint {
+  flex-shrink: 0;
+  padding: 12px 28px 18px;
+  margin: 0;
 }
 
 .prof-modal-footer {
@@ -297,6 +322,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  flex-shrink: 0;
   padding: 16px 28px;
   border-top: 1px solid var(--border);
   background: var(--bg-elevated);
@@ -333,13 +359,25 @@
   color: var(--palette-white-strong);
 }
 
+/* settings.css define .field-group { max-width: 420px } pensando no
+   modal de configurações (mais largo). Aqui no modal de profissional
+   isso faz os campos fora de .field-row (telefone, tipo, RQE,
+   especialidade) ficarem mais estreitos que os de dentro de
+   .field-row (que já zeram esse max-width logo abaixo) -- resultado:
+   inputs com larguras diferentes e desalinhados entre si. Como todo
+   campo aqui já vive dentro de um .prof-modal-body mais estreito que
+   420px, zeramos o limite pra todo .field-group deste modal, não só
+   os de dentro de .field-row. */
+#form-profissional .field-group {
+  max-width: none;
+}
+
 .field-row {
   display: flex;
   gap: 14px;
 }
 .field-row .field-group {
   flex: 1;
-  max-width: none;
   min-width: 0;
 }
 
@@ -428,3 +466,4 @@
   .prof-modal { max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
   .field-row { flex-direction: column; gap: 0; }
 }
+
