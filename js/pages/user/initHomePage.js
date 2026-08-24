@@ -1,6 +1,7 @@
 import { preencherPainelPerfil } from "./preencherPerfil.js";
 import { iniciarMonitoramentoSessao } from "../auth/logic/watchSession.js";
 import { modalConfiguracoesPronto } from "./settingsLoader.js";
+import { iniciarMetricasGerenciamento } from "./admin/adminHomePage/adminHomePage.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const bruto = sessionStorage.getItem("bion-dados-usuario");
@@ -22,4 +23,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   preencherPainelPerfil(dados);
 
   iniciarMonitoramentoSessao();
+
+  // Métricas da tela de Gerenciamento (cards do topo). Não depende
+  // do modal de configurações, só do DOM já estar montado.
+  iniciarMetricasGerenciamento();
 })

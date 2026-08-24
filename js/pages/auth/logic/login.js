@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   try {
     const response = await fetch(`${URL_BASE_API}/auth/check-session`, {
       method: 'GET',
-      // credentials: 'include', // obrigatório para enviar o cookie da sessão
+      credentials: 'include', // obrigatório para enviar o cookie da sessão
     });
 
     if (response.ok) {
