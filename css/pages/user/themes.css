@@ -31,8 +31,14 @@
   --palette-status-neutral-bg: rgba(154, 163, 171, 0.16);
   --palette-status-yellow:    #e0b64a;
   --palette-status-yellow-bg: rgba(224, 182, 74, 0.14);
+  --palette-status-orange:    #e0a04a;
+  --palette-status-orange-bg: rgba(224, 160, 74, 0.14);
   --palette-status-amber:     #e0894a;
   --palette-status-amber-bg:  rgba(224, 137, 74, 0.14);
+  --palette-status-red:       #e05a5a;
+  --palette-status-red-bg:    rgba(224, 90, 90, 0.14);
+  --palette-status-lime:      #8dc14b;
+  --palette-status-lime-bg:   rgba(141, 193, 75, 0.14);
   --palette-status-green:     #4bc17d;
   --palette-status-green-bg:  rgba(75, 193, 125, 0.14);
   --palette-status-blue:      #5b8fe0;
@@ -80,8 +86,14 @@
   --palette-status-neutral-bg: #eef0f2;
   --palette-status-yellow:    #c98a12;
   --palette-status-yellow-bg: #fbf1dc;
+  --palette-status-orange:    #c97a12;
+  --palette-status-orange-bg: #fbecdc;
   --palette-status-amber:     #c96a12;
   --palette-status-amber-bg:  #fbe9dc;
+  --palette-status-red:       #c94a3f;
+  --palette-status-red-bg:    #fbe0dc;
+  --palette-status-lime:      #6a9c2f;
+  --palette-status-lime-bg:   #eaf3dd;
   --palette-status-green:     #1f8a4c;
   --palette-status-green-bg:  #e6f5eb;
   --palette-status-blue:      #2f6fdb;
@@ -128,8 +140,14 @@
   --palette-status-neutral-bg: rgba(147, 160, 194, 0.16);
   --palette-status-yellow:    #e0c14a;
   --palette-status-yellow-bg: rgba(224, 193, 74, 0.14);
+  --palette-status-orange:    #e0aa4a;
+  --palette-status-orange-bg: rgba(224, 170, 74, 0.14);
   --palette-status-amber:     #e0954a;
   --palette-status-amber-bg:  rgba(224, 149, 74, 0.14);
+  --palette-status-red:       #e06060;
+  --palette-status-red-bg:    rgba(224, 96, 96, 0.14);
+  --palette-status-lime:      #8dc169;
+  --palette-status-lime-bg:   rgba(141, 193, 105, 0.14);
   --palette-status-green:     #4bc1a8;
   --palette-status-green-bg:  rgba(75, 193, 168, 0.14);
   --palette-status-blue:      #5b9fe0;
@@ -174,8 +192,14 @@
   --palette-status-neutral-bg: #eaedf6;
   --palette-status-yellow:    #b8890f;
   --palette-status-yellow-bg: #faf1da;
+  --palette-status-orange:    #ba7a12;
+  --palette-status-orange-bg: #faecda;
   --palette-status-amber:     #ba6a12;
   --palette-status-amber-bg:  #fae8da;
+  --palette-status-red:       #ba3f3f;
+  --palette-status-red-bg:    #fadfda;
+  --palette-status-lime:      #5f8a2f;
+  --palette-status-lime-bg:   #e9f2dd;
   --palette-status-green:     #1a8a6f;
   --palette-status-green-bg:  #e2f5ef;
   --palette-status-blue:      #2f6fdb;
@@ -223,8 +247,14 @@
   --palette-status-neutral-bg: rgba(176, 152, 162, 0.16);
   --palette-status-yellow:    #e0b64a;
   --palette-status-yellow-bg: rgba(224, 182, 74, 0.14);
+  --palette-status-orange:    #e0a04a;
+  --palette-status-orange-bg: rgba(224, 160, 74, 0.14);
   --palette-status-amber:     #e0894a;
   --palette-status-amber-bg:  rgba(224, 137, 74, 0.14);
+  --palette-status-red:       #d94f4f;
+  --palette-status-red-bg:    rgba(217, 79, 79, 0.14);
+  --palette-status-lime:      #8dc15c;
+  --palette-status-lime-bg:   rgba(141, 193, 92, 0.14);
   --palette-status-green:     #4bc17d;
   --palette-status-green-bg:  rgba(75, 193, 125, 0.14);
   --palette-status-blue:      #b85c70;
@@ -270,8 +300,14 @@
   --palette-status-neutral-bg: #f5edf0;
   --palette-status-yellow:    #b8890f;
   --palette-status-yellow-bg: #faf1da;
+  --palette-status-orange:    #ba7a12;
+  --palette-status-orange-bg: #faecda;
   --palette-status-amber:     #ba6a12;
   --palette-status-amber-bg:  #fae8da;
+  --palette-status-red:       #b8403f;
+  --palette-status-red-bg:    #f9e0de;
+  --palette-status-lime:      #5f8a45;
+  --palette-status-lime-bg:   #e9f2e2;
   --palette-status-green:     #1a8a58;
   --palette-status-green-bg:  #e2f5ec;
   --palette-status-blue:      #a3384f;
@@ -319,8 +355,14 @@
   --palette-status-neutral-bg: rgba(143, 174, 174, 0.16);
   --palette-status-yellow:    #e0c14a;
   --palette-status-yellow-bg: rgba(224, 193, 74, 0.14);
+  --palette-status-orange:    #e0ab4a;
+  --palette-status-orange-bg: rgba(224, 171, 74, 0.14);
   --palette-status-amber:     #e0954a;
   --palette-status-amber-bg:  rgba(224, 149, 74, 0.14);
+  --palette-status-red:       #d9594f;
+  --palette-status-red-bg:    rgba(217, 89, 79, 0.14);
+  --palette-status-lime:      #7ec14b;
+  --palette-status-lime-bg:   rgba(126, 193, 75, 0.14);
   --palette-status-green:     #3ac188;
   --palette-status-green-bg:  rgba(58, 193, 136, 0.14);
   --palette-status-blue:      #3a9bb0;
@@ -365,8 +407,14 @@
   --palette-status-neutral-bg: #eaf2f2;
   --palette-status-yellow:    #b8890f;
   --palette-status-yellow-bg: #faf1da;
+  --palette-status-orange:    #ba7a12;
+  --palette-status-orange-bg: #faecda;
   --palette-status-amber:     #ba6a12;
   --palette-status-amber-bg:  #fae8da;
+  --palette-status-red:       #b8453f;
+  --palette-status-red-bg:    #f9e0dc;
+  --palette-status-lime:      #4f8a3f;
+  --palette-status-lime-bg:   #e6f2e0;
   --palette-status-green:     #1a8a68;
   --palette-status-green-bg:  #e2f5ef;
   --palette-status-blue:      #237380;
@@ -418,4 +466,41 @@
 .status--em-observacao {
   --status-fg: var(--palette-status-blue);
   --status-bg: var(--palette-status-blue-bg);
+}
+
+/* ===== Mapeamento nivel (campo `interpretacao.nivel` das rotas de
+   estatísticas) → cor, escala de 6 tons distintos:
+   otimo (lime) > bom (green) > ok (yellow) > medio (orange)
+   > medio_ruim (amber) > ruim (red).
+   Usado pelo componente de card de estatística (metric-card--nivel-*). ===== */
+.nivel--otimo {
+  --status-fg: var(--palette-status-lime);
+  --status-bg: var(--palette-status-lime-bg);
+}
+.nivel--bom {
+  --status-fg: var(--palette-status-green);
+  --status-bg: var(--palette-status-green-bg);
+}
+.nivel--ok {
+  --status-fg: var(--palette-status-yellow);
+  --status-bg: var(--palette-status-yellow-bg);
+}
+.nivel--medio {
+  --status-fg: var(--palette-status-orange);
+  --status-bg: var(--palette-status-orange-bg);
+}
+.nivel--medio_ruim {
+  --status-fg: var(--palette-status-amber);
+  --status-bg: var(--palette-status-amber-bg);
+}
+.nivel--ruim {
+  --status-fg: var(--palette-status-red);
+  --status-bg: var(--palette-status-red-bg);
+}
+/* interpretacao.direcao == "neutro" (sem nivel definido, ex: A1, D3, D4,
+   E3) ou rota sem campo `interpretacao` -- usa a cor neutra existente,
+   sem indicar bom/ruim. */
+.nivel--neutro {
+  --status-fg: var(--palette-status-neutral);
+  --status-bg: var(--palette-status-neutral-bg);
 }

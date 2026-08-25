@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B-íon — Gerenciamento</title>
+<title>B-íon — Estatísticas</title>
 <script src="../../../../js/pages/user/themeLoader.js"></script>
-<link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminEstatisticas.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
 </head>
 <body>
@@ -17,7 +17,7 @@
     <div class="sidebar-logo">B-íon</div>
 
     <div class="nav-group nav-group--work">
-      <a href="adminHomePage.html" class="nav-item nav-item--active">
+      <a href="adminHomePage.html" class="nav-item">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="3" y="3" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -58,7 +58,7 @@
         </span>
         <span class="nav-label">Empresa</span>
       </a>
-      <a href="adminEstatisticas.html" class="nav-item">
+      <a href="adminEstatisticas.html" class="nav-item nav-item--active">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M4 20V10M11 20V4M18 20v-7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -78,9 +78,8 @@
       </a>
     </div>
 
-    <!-- espaçador empurra o grupo de sistema para o rodapé -->
     <div class="nav-spacer"></div>
- 
+
     <div class="nav-group nav-group--system">
       <button type="button" class="nav-item nav-item--profile" id="open-settings">
         <span class="nav-avatar" id="nav-avatar-iniciais"></span>
@@ -102,56 +101,67 @@
 
     <header class="main-header">
       <div>
-        <h1>Gerenciamento</h1>
-        <p class="main-subtitle">Visão geral da instituição</p>
+        <h1>Estatísticas</h1>
+        <p class="main-subtitle">Desempenho, epidemiologia e uso do sistema</p>
       </div>
-      
     </header>
 
-    <!-- Métricas — visão institucional -->
-    <section class="metrics">
-      <div class="metric-card">
-        <div class="metric-value" id="metric-profissionais-ativos">—</div>
-        <div class="metric-label">Profissionais ativos</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" id="metric-pacientes-cadastrados">—</div>
-        <div class="metric-label">Pacientes cadastrados</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" id="metric-consultas-hoje">—</div>
-        <div class="metric-label">Consultas hoje</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" id="metric-convites-pendentes">—</div>
-        <div class="metric-label metric-label--accent status--aguardando-medico">Convites pendentes</div>
+    <!-- Índices compostos (categoria E) — resumo executivo, sempre no
+         topo. Cards aqui são maiores/destacados; ficam prontos para
+         breakdown expansível quando as rotas E1/E4 forem destravadas. -->
+    <section class="section" aria-labelledby="titulo-resumo-executivo">
+      <h2 class="section-title" id="titulo-resumo-executivo">Resumo executivo</h2>
+      <div class="metrics metrics--destaque" id="grid-resumo-executivo">
+        <!-- populado via JS: iniciarCardsCategoria('resumo-executivo') -->
       </div>
     </section>
 
-    <h2 class="section-title">Desempenho e IA</h2>
-    <section class="metrics">
-      <div class="metric-card">
-        <div class="metric-value" id="metric-taxa-conclusao">—</div>
-        <div class="metric-label">Taxa de conclusão (30d)</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" id="metric-confianca-ia">—</div>
-        <div class="metric-label">Confiança média da IA (30d)</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" id="metric-versao-ia">—</div>
-        <div class="metric-label" id="metric-versao-ia-label">Versão de IA predominante</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" id="metric-efetivo-detalhe">—</div>
-        <div class="metric-label" id="metric-efetivo-detalhe-label">Efetivo por papel</div>
-      </div>
+    <!-- Abas por categoria -->
+    <div class="stat-tabs" role="tablist" aria-label="Categorias de estatísticas">
+      <button type="button" class="stat-tab stat-tab--active" role="tab" aria-selected="true" aria-controls="painel-atendimentos" id="aba-atendimentos" data-categoria="atendimentos">
+        Atendimentos
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-ia" id="aba-ia" data-categoria="ia">
+        Desempenho da IA
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-epidemiologico" id="aba-epidemiologico" data-categoria="epidemiologico">
+        Panorama regional
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-medicamentos" id="aba-medicamentos" data-categoria="medicamentos">
+        Medicamentos e alergias
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-pacientes" id="aba-pacientes" data-categoria="pacientes">
+        Perfil de pacientes
+      </button>
+    </div>
+
+    <!-- Painéis — só o ativo fica visível; carregamento é disparado
+         ao entrar em foco (ver adminEstatisticas.js), nunca todos de
+         uma vez, para não pesar a página. -->
+    <section class="stat-panel stat-panel--active" role="tabpanel" id="painel-atendimentos" aria-labelledby="aba-atendimentos">
+      <div class="metrics" id="grid-atendimentos"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-ia" aria-labelledby="aba-ia" hidden>
+      <div class="metrics" id="grid-ia"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-epidemiologico" aria-labelledby="aba-epidemiologico" hidden>
+      <div class="metrics" id="grid-epidemiologico"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-medicamentos" aria-labelledby="aba-medicamentos" hidden>
+      <div class="metrics" id="grid-medicamentos"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-pacientes" aria-labelledby="aba-pacientes" hidden>
+      <div class="metrics" id="grid-pacientes"></div>
     </section>
 
   </main>
 </div>
 
 <script type="module" src="../../../../js/pages/user/settingsLoader.js"></script>
-<script type="module" src="../../../../js/pages/user/initHomePage.js"></script>
+<script type="module" src="../../../../js/pages/user/initEstatisticasPage.js"></script>
 </body>
 </html>

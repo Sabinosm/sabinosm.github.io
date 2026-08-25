@@ -7,25 +7,9 @@
 // Animação de fundo: /js/shared/particles.js
 // Mensagens de feedback: /js/shared/feedback.js
 
-import { confirmarSegundoFator } from "./webauthn.js";
 import { exibirMensagem } from "../../../shared/feedback.js";
 import { URL_BASE_API } from "../../../config.js";
 
-window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const response = await fetch(`${URL_BASE_API}/auth/check-session`, {
-      method: 'GET',
-      credentials: 'include', // obrigatório para enviar o cookie da sessão
-    });
-
-    if (response.ok) {
-      // Se a sessão já for válida (completa), redireciona no frontend
-      window.location.href = '../../../html/pages/auth/afterLogin.html';
-    }
-  } catch (error) {
-    console.error('Erro ao verificar sessão:', error);
-  }
-});
 
 document.getElementById("login-form").addEventListener("submit", async (event) => {
   event.preventDefault();
