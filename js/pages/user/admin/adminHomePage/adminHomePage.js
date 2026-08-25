@@ -7,6 +7,11 @@ import { URL_BASE_API } from "../../../../config.js";
  *
  * Endpoint: GET {URL_BASE_API}/estatisticas/geral
  * Auth: cookie de sessão (credentials: "include")
+ *
+ * Toda rota de estatísticas responde no envelope padrão do backend:
+ *   { status: "success" | "error", message: string, data: {...} | null }
+ * (via json_success / json_error). Aqui devolvemos só o `data` já
+ * validado, para quem consome não precisar saber do envelope.
  */
 async function buscarEstatisticasGeral() {
   const resposta = await fetch(`${URL_BASE_API}/estatisticas/geral`, {
@@ -14,11 +19,13 @@ async function buscarEstatisticasGeral() {
     credentials: "include",
   });
 
-  if (!resposta.ok) {
-    throw new Error(`Falha ao buscar estatísticas (status ${resposta.status})`);
+  const corpo = await resposta.json();
+
+  if (!resposta.ok || corpo.status !== "success") {
+    throw new Error(corpo.message || `Falha ao buscar estatísticas (status ${resposta.status})`);
   }
 
-  return resposta.json();
+  return corpo.data;
 }
 
 /**
