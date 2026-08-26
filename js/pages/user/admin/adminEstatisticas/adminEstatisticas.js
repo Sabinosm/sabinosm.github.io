@@ -1,4 +1,5 @@
 import { URL_BASE_API } from "../../../../config.js";
+import { animarOdometro, animarSetaTendencia } from "../../estatisticasAnimacoes.js";
 
 /**
  * Registry central: cada entrada descreve uma métrica da página de
@@ -32,6 +33,13 @@ const REGISTRY_METRICAS = [
     label: "Tendência de eficiência",
     implementada: true,
     extrairValor: (d) => formatarPercentual(d?.variacao_percentual),
+    // campos usados só pelo odômetro (ver estatisticasAnimacoes.js) --
+    // valor numérico cru, sem formatação, pra animar de 0 até ele
+    animacao: {
+      valorNumerico: (d) => d?.variacao_percentual,
+      sufixo: "%",
+      casasDecimais: 1,
+    },
   },
   {
     id: "e3-correlacao",
@@ -40,6 +48,11 @@ const REGISTRY_METRICAS = [
     label: "Correlação completude × confiança",
     implementada: true,
     extrairValor: (d) => (typeof d?.coeficiente === "number" ? `r = ${d.coeficiente}` : "—"),
+    animacao: {
+      valorNumerico: (d) => d?.coeficiente,
+      prefixo: "r = ",
+      casasDecimais: 2,
+    },
   },
   {
     id: "e4-alerta-epidemiologico",
@@ -152,14 +165,6 @@ const REGISTRY_METRICAS = [
 
   // ===== Panorama regional (categoria C) =====
   {
-    id: "c1-top-cid-regiao",
-    categoria: "epidemiologico",
-    rota: "/epidemiologico/top-cid-regiao",
-    label: "Doença mais comum na região",
-    implementada: true,
-    extrairValor: (d) => d?.ranking?.[0]?.descricao_cid10 ?? "—",
-  },
-  {
     id: "c3-incidencia",
     categoria: "epidemiologico",
     rota: "/epidemiologico/incidencia-regiao",
@@ -178,24 +183,8 @@ const REGISTRY_METRICAS = [
     implementada: true,
     extrairValor: (d) => (typeof d?.media_horas === "number" ? `${d.media_horas}h` : "—"),
   },
-  {
-    id: "c5-queixas",
-    categoria: "epidemiologico",
-    rota: "/epidemiologico/queixas-frequentes",
-    label: "Queixa mais frequente",
-    implementada: true,
-    extrairValor: (d) => d?.termos?.[0]?.termo ?? "—",
-  },
 
   // ===== Medicamentos e alergias (categoria D) =====
-  {
-    id: "d4-top-classe",
-    categoria: "medicamentos",
-    rota: "/medicamentos/top-por-classe",
-    label: "Classe farmacêutica mais prescrita",
-    implementada: true,
-    extrairValor: (d) => d?.ranking?.[0]?.classe_farmaceutica ?? "—",
-  },
   {
     id: "f4-gravidade-alergias",
     categoria: "medicamentos",
@@ -210,14 +199,6 @@ const REGISTRY_METRICAS = [
   },
 
   // ===== Perfil de pacientes (categoria F) =====
-  {
-    id: "f1-doencas-cronicas",
-    categoria: "pacientes",
-    rota: "/pacientes/doencas-cronicas-top",
-    label: "Condição crônica mais comum",
-    implementada: true,
-    extrairValor: (d) => d?.ranking?.[0]?.descricao_cid10 ?? "—",
-  },
   {
     id: "f2-uso-continuo",
     categoria: "pacientes",
@@ -298,6 +279,70 @@ const REGISTRY_GRAFICOS = [
       return { labels: categoriasUrgencia, series };
     },
   },
+  {
+    id: "c1-top-cid-regiao",
+    categoria: "epidemiologico",
+    rota: "/epidemiologico/top-cid-regiao",
+    titulo: "Doenças mais comuns por região",
+    tipo: "barra-horizontal",
+    implementada: true,
+    // cada linha do ranking já é um par (CID, região) específico --
+    // rotulamos com os dois juntos, senão a mesma doença em regiões
+    // diferentes vira barras sem distinção (mesmo cuidado do D3: não
+    // esconder a dimensão que dá sentido ao número).
+    montarDados: (d) => {
+      const ranking = (d?.ranking ?? []).slice(0, 8);
+      return {
+        labels: ranking.map((r) => `${r.descricao_cid10} (${r.regiao})`),
+        valores: ranking.map((r) => r.total),
+      };
+    },
+  },
+  {
+    id: "c5-queixas",
+    categoria: "epidemiologico",
+    rota: "/epidemiologico/queixas-frequentes",
+    titulo: "Queixas principais mais frequentes",
+    tipo: "barra-horizontal",
+    implementada: true,
+    montarDados: (d) => {
+      const termos = (d?.termos ?? []).slice(0, 8);
+      return {
+        labels: termos.map((t) => t.termo),
+        valores: termos.map((t) => t.total),
+      };
+    },
+  },
+  {
+    id: "d4-top-classe",
+    categoria: "medicamentos",
+    rota: "/medicamentos/top-por-classe",
+    titulo: "Medicamentos mais prescritos por classe",
+    tipo: "barra-horizontal",
+    implementada: true,
+    montarDados: (d) => {
+      const ranking = (d?.ranking ?? []).slice(0, 8);
+      return {
+        labels: ranking.map((r) => r.classe_farmaceutica),
+        valores: ranking.map((r) => r.total),
+      };
+    },
+  },
+  {
+    id: "f1-doencas-cronicas",
+    categoria: "pacientes",
+    rota: "/pacientes/doencas-cronicas-top",
+    titulo: "Doenças crônicas mais comuns na base",
+    tipo: "barra-horizontal",
+    implementada: true,
+    montarDados: (d) => {
+      const ranking = (d?.ranking ?? []).slice(0, 8);
+      return {
+        labels: ranking.map((r) => r.descricao_cid10),
+        valores: ranking.map((r) => r.total),
+      };
+    },
+  },
 ];
 
 /**
@@ -356,8 +401,19 @@ function montarConteudoOk(metrica, dados) {
   const label = metrica.extrairLabel ? metrica.extrairLabel(dados) : metrica.label;
   const interpretacao = dados?.interpretacao;
 
+  // id no metric-value só quando a métrica tem animação registrada
+  // (ver estatisticasAnimacoes.js) -- é o gancho que renderizarOk usa
+  // pra animar o odômetro por cima do valor já formatado por texto.
+  const idValor = metrica.animacao ? ` id="valor-${metrica.id}"` : "";
+  const setaTendencia = metrica.animacao
+    ? `<span class="metric-card-seta" id="seta-${metrica.id}"></span>`
+    : "";
+
   let html = `
-    <div class="metric-value">${valor}</div>
+    <div class="metric-value-row">
+      <div class="metric-value"${idValor}>${valor}</div>
+      ${setaTendencia}
+    </div>
     <div class="metric-label">${label}</div>
   `;
 
@@ -419,6 +475,28 @@ function criarCardLoading(metrica) {
 function renderizarOk(card, metrica, dados) {
   card.className = "metric-card metric-card--stat metric-card--ok";
   card.innerHTML = montarConteudoOk(metrica, dados);
+
+  // resumo executivo (E1-E4): índice único, sem trajetória real --
+  // anima como odômetro (contagem), nunca como curva. Ver
+  // estatisticasAnimacoes.js para a justificativa completa.
+  if (metrica.animacao) {
+    const valorNumerico = metrica.animacao.valorNumerico(dados);
+    const elValor = document.getElementById(`valor-${metrica.id}`);
+    const elSeta = document.getElementById(`seta-${metrica.id}`);
+
+    if (elValor) {
+      animarOdometro(elValor, valorNumerico, {
+        sufixo: metrica.animacao.sufixo ?? "",
+        prefixo: metrica.animacao.prefixo ?? "",
+        casasDecimais: metrica.animacao.casasDecimais ?? 1,
+      });
+    }
+
+    if (elSeta && dados?.interpretacao?.comparacao) {
+      const classe = calcularClasseComparacao(dados.interpretacao.comparacao, dados.interpretacao.direcao);
+      animarSetaTendencia(elSeta, classe);
+    }
+  }
 }
 
 function renderizarIndisponivel(card, metrica) {
