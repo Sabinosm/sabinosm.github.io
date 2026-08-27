@@ -1,421 +1,488 @@
 // adminProfissionaisModal.js
 //
-// Modal de cadastro/edição/ativação de profissional. A lista (em
-// adminProfissionaisLista.js) chama abrirModalProfissional (exportada
-// daqui) ao clicar num card ou no botão "Convidar profissional"; este
-// arquivo chama de volta recarregarLista (importada de lá) depois de
-// salvar, criar ou ativar/desativar, para a lista refletir a mudança.
+// Modal único de "Convidar / Gerenciar profissional" -- usado tanto
+// para criar um novo usuário quanto para editar um existente (o modo
+// é decidido por abrirModalProfissional receber ou não um item).
 //
-// As regras de validação (CPF, telefone, login, UF, etc.) vivem em
-// adminProfissionaisValidacoes.js.
-// As chamadas HTTP vivem em adminProfissionaisApi.js.
-//
-// Campos sensíveis (cpf, atributos_profissionais/CRM-COREN) só vêm da
-// API em incluir_sensiveis=True -- ou seja, não vêm na listagem geral.
-// Por isso, ao abrir o modal de edição, buscamos o detalhe via
-// buscarProfissional(uuid) antes de preencher os placeholders, para
-// ter CPF e CRM/COREN atualizados.
-//
-// Modo edição: os campos começam VAZIOS, mostrando o valor atual
-// como placeholder. Só o que for efetivamente digitado entra no
-// payload de PUT -- update parcial, igual ao schema do backend.
-// Modo cadastro: todos os campos obrigatórios do schema completo
-// precisam ser preenchidos (ver validarFormularioProfissional).
-//
-// Cadastro de profissional NÃO tem campo de senha: o acesso é feito
-// por login com Conta Google usando o e-mail cadastrado aqui. Por
-// isso o e-mail é pedido duas vezes (confirmação) -- é o admin quem
-// responde por um e-mail incorreto, já que o convite de acesso vai
-// para ele.
-// ============================================
+// ALTERADO (múltiplos admins por empresa):
+// - Novo modo de abertura: abrirModalConvite() (chamada pelo botão
+//   "Convidar profissional" em adminProfissionaisLista.js). Antes o
+//   botão abria direto o formulário de médico/enfermeiro; agora, se
+//   quem está logado é o super admin, abrirModalConvite() pergunta
+//   primeiro que tipo de conta convidar (profissional ou admin),
+//   porque o formulário de admin é mais simples (sem CRM/COREN, sem
+//   senha) e porque um admin comum NUNCA deve ver a opção "Administrador"
+//   -- ele não tem permissão para criar admin (o backend bloqueia,
+//   mas nem faz sentido oferecer a opção na UI).
+// - abrirModalProfissional(item) (chamada ao clicar "Gerenciar" num
+//   card da lista) agora recebe itens que podem ser admin
+//   (item.is_admin). Quando o alvo é admin e quem está logado NÃO é
+//   super admin, o modal abre em modo somente-leitura: sem campos
+//   editáveis, sem botão salvar, sem botão ativar/desativar -- só os
+//   dados visíveis. Isso evita depender só do backend rejeitar (que
+//   ele faz) e dá uma UI coerente com a regra de negócio.
+// - O formulário de admin não usa os campos de CRM/COREN/especialidade
+//   -- monta um payload próprio (ver montarPayloadAdmin) e reaproveita
+//   os campos comuns (nome, cpf, login, telefone, email) do mesmo
+//   formulário, escondendo os blocos condicionais de médico/enfermeiro
+//   e o próprio select de tipo (fixo em "admin" quando vem desse fluxo).
 
-import { exibirMensagem } from "../../../../shared/feedback.js";
-import { validarFormularioProfissional } from "./adminProfissionaisValidacoes.js";
 import {
-  ApiError,
-  buscarProfissional,
   criarProfissional,
   atualizarProfissional,
   ativarProfissional,
   desativarProfissional,
+  buscarProfissional,
+  ApiError,
 } from "./adminProfissionaisApi.js";
+import { validarFormularioProfissional } from "./adminProfissionaisValidacoes.js";
 import { recarregarLista } from "./adminProfissionaisLista.js";
+import { souSuperAdmin, souAdmin, meuUuid } from "./adminProfissionaisSessao.js";
 
-let profissionalEditando = null; // objeto (do detalhe) sendo editado, ou null se for cadastro novo
-let salvando = false; // trava contra duplo-clique / duplo submit
+const overlay = document.getElementById('prof-modal-overlay');
+const form = document.getElementById('form-profissional');
+const titulo = document.getElementById('prof-modal-title');
+const hintEdicao = document.getElementById('prof-modal-edit-hint');
+const feedback = document.getElementById('mensagemFeedback');
+const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
+const btnSalvar = document.getElementById('prof-modal-save');
+const btnCancelar = document.getElementById('prof-modal-cancel');
+const btnFechar = document.getElementById('prof-modal-close');
+
+const campoTipo = document.getElementById('pf-tipo');
+const blocoMedico = document.getElementById('bloco-medico');
+const blocoEnfermeiro = document.getElementById('bloco-enfermeiro');
+
+// uuid do item em edição, ou null em modo de criação
+let uuidEmEdicao = null;
+// true quando o formulário está travado (visualização de admin por
+// quem não é super admin) -- nenhum campo editável, nenhuma ação.
+let somenteLeitura = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-  configurarModalProfissional();
+  campoTipo?.addEventListener('change', atualizarBlocosCondicionais);
+  btnCancelar?.addEventListener('click', fecharModal);
+  btnFechar?.addEventListener('click', fecharModal);
+  overlay?.addEventListener('click', (e) => { if (e.target === overlay) fecharModal(); });
+  form?.addEventListener('submit', aoSubmeter);
 });
 
 // ============================================
-// Modal de Cadastrar / Editar / Ativar-Desativar profissional
+// Abertura -- convite (botão "Convidar profissional")
 // ============================================
 
-function configurarModalProfissional() {
-  const overlay = document.getElementById('prof-modal-overlay');
-  const btnNovo = document.getElementById('btn-convidar-profissional');
-  const btnFechar = document.getElementById('prof-modal-close');
-  const btnCancelar = document.getElementById('prof-modal-cancel');
-  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
-  const form = document.getElementById('form-profissional');
-  const selectTipo = document.getElementById('pf-tipo');
-
-  if (!overlay) return;
-
-  btnNovo?.addEventListener('click', () => abrirModalProfissional(null));
-  btnFechar?.addEventListener('click', fecharModalProfissional);
-  btnCancelar?.addEventListener('click', fecharModalProfissional);
-  btnToggleStatus?.addEventListener('click', alternarStatusProfissional);
-
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) fecharModalProfissional();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && overlay.classList.contains('settings-overlay--visible')) {
-      fecharModalProfissional();
-    }
-  });
-
-  selectTipo?.addEventListener('change', () => {
-    atualizarBlocoPorTipo(selectTipo.value);
-    limparErroCampo('pf-tipo');
-  });
-
-  // Limpa o erro do campo assim que o usuário mexe nele de novo
-  form?.querySelectorAll('.field-input').forEach(el => {
-    el.addEventListener('input', () => limparErroCampo(el.id));
-  });
-
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    salvarProfissional();
-  });
+/**
+ * Abre o modal para criar um novo usuário. Se quem está logado é o
+ * super admin, pergunta antes que tipo de conta (profissional ou
+ * administrador) -- um admin comum vai direto para o formulário de
+ * profissional, sem nunca ver a opção de criar admin.
+ */
+export function abrirModalConvite() {
+  if (!souSuperAdmin()) {
+    abrirFormularioConvite('profissional');
+    return;
+  }
+  perguntarTipoConvite();
 }
 
-function atualizarBlocoPorTipo(tipo) {
-  const blocoMedico = document.getElementById('bloco-medico');
-  const blocoEnfermeiro = document.getElementById('bloco-enfermeiro');
+/**
+ * Pequeno seletor entre "Profissional" e "Administrador", mostrado só
+ * para o super admin. Reaproveita o próprio overlay do modal para não
+ * introduzir um segundo componente -- um passo simples antes do
+ * formulário de fato.
+ */
+function perguntarTipoConvite() {
+  limparFormulario();
+  uuidEmEdicao = null;
+  somenteLeitura = false;
+  titulo.textContent = 'Convidar';
+  hintEdicao.hidden = true;
+  esconderFeedback();
+  btnToggleStatus.hidden = true;
+  definirModoFormulario(false);
+
+  form.hidden = true;
+
+  let seletor = document.getElementById('prof-modal-seletor-tipo');
+  if (!seletor) {
+    seletor = document.createElement('div');
+    seletor.id = 'prof-modal-seletor-tipo';
+    seletor.className = 'prof-modal-body';
+    form.parentElement.insertBefore(seletor, form.nextSibling);
+  }
+  seletor.innerHTML = `
+    <p class="field-hint" style="padding: 0 0 16px;">Que tipo de conta você quer convidar?</p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button type="button" class="btn-ghost" id="prof-escolha-profissional" style="justify-content:flex-start;">
+        Profissional (médico ou enfermeiro)
+      </button>
+      <button type="button" class="btn-ghost" id="prof-escolha-admin" style="justify-content:flex-start;">
+        Administrador
+      </button>
+    </div>
+  `;
+  seletor.hidden = false;
+
+  document.getElementById('prof-escolha-profissional').addEventListener('click', () => {
+    seletor.hidden = true;
+    abrirFormularioConvite('profissional');
+  });
+  document.getElementById('prof-escolha-admin').addEventListener('click', () => {
+    seletor.hidden = true;
+    abrirFormularioConvite('admin');
+  });
+
+  overlay.classList.add('settings-overlay--visible');
+}
+
+/**
+ * Abre de fato o formulário de convite, já no modo certo:
+ *  - 'profissional': select de tipo (médico/enfermeiro) visível e livre.
+ *  - 'admin': select de tipo escondido, fixo em "admin"; blocos de
+ *    CRM/COREN nunca aparecem; nenhum campo de senha (o schema do
+ *    backend proíbe senha no cadastro de admin -- acesso é definido
+ *    depois, via onboarding, igual profissional).
+ */
+function abrirFormularioConvite(modo) {
+  limparFormulario();
+  uuidEmEdicao = null;
+  somenteLeitura = false;
+  form.dataset.modoConvite = modo; // lido em aoSubmeter/montarPayload
+
+  titulo.textContent = modo === 'admin' ? 'Convidar administrador' : 'Convidar profissional';
+  hintEdicao.hidden = true;
+  esconderFeedback();
+  btnToggleStatus.hidden = true;
+  btnSalvar.textContent = 'Enviar convite';
+  definirModoFormulario(false);
+
+  const campoTipoGroup = campoTipo?.closest('.field-group');
+  if (modo === 'admin') {
+    if (campoTipoGroup) campoTipoGroup.hidden = true;
+    blocoMedico.hidden = true;
+    blocoEnfermeiro.hidden = true;
+  } else {
+    if (campoTipoGroup) campoTipoGroup.hidden = false;
+    atualizarBlocosCondicionais();
+  }
+
+  form.hidden = false;
+  overlay.classList.add('settings-overlay--visible');
+}
+
+// ============================================
+// Abertura -- gerenciar item existente (botão "Gerenciar" no card)
+// ============================================
+
+/**
+ * Abre o modal para editar/gerenciar um usuário já existente.
+ *
+ * ALTERADO (múltiplos admins por empresa): quando o item é admin
+ * (item.is_admin) e quem está logado não é o super admin, o modal
+ * abre travado (somenteLeitura) -- mostra os dados mas nenhuma ação
+ * fica disponível. Isso é reforço de UI: o backend já rejeitaria a
+ * tentativa, mas não faz sentido oferecer botões que sempre falham.
+ *
+ * @param {object} item - item vindo da listagem (Usuario.to_dict_few:
+ *   uuid, nome_completo, email, tipo_usuario, status, is_admin)
+ */
+export async function abrirModalProfissional(item) {
+  limparFormulario();
+  uuidEmEdicao = item.uuid;
+  esconderFeedback();
+
+  const alvoEhAdmin = Boolean(item.is_admin);
+  somenteLeitura = alvoEhAdmin && !souSuperAdmin();
+
+  const seletor = document.getElementById('prof-modal-seletor-tipo');
+  if (seletor) seletor.hidden = true;
+  form.hidden = false;
+  form.dataset.modoConvite = ''; // não é fluxo de convite
+
+  titulo.textContent = item.nome_completo || 'Gerenciar profissional';
+  hintEdicao.hidden = somenteLeitura; // sem sentido mostrar "deixe em branco" se nada é editável
+  overlay.classList.add('settings-overlay--visible');
+
+  definirModoFormulario(true);
+
+  // Campos de admin (tipo, CRM/COREN) não fazem sentido de mostrar
+  // como editáveis para um admin -- esconde o bloco de tipo e os
+  // condicionais nesse caso; para médico/enfermeiro, mantém como já
+  // era.
+  const campoTipoGroup = campoTipo?.closest('.field-group');
+  if (alvoEhAdmin) {
+    if (campoTipoGroup) campoTipoGroup.hidden = true;
+    blocoMedico.hidden = true;
+    blocoEnfermeiro.hidden = true;
+  } else {
+    if (campoTipoGroup) campoTipoGroup.hidden = false;
+  }
+
+  aplicarTravaSomenteLeitura();
+
+  // Busca o detalhe completo (CPF, login, CRM/COREN/especialidade) --
+  // a listagem só traz to_dict_few. Ver adminProfissionaisApi.buscarProfissional.
+  try {
+    const resposta = await buscarProfissional(item.uuid);
+    preencherFormularioComDetalhe(resposta.data);
+  } catch (erro) {
+    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível carregar os dados do profissional.';
+    exibirMensagem(mensagem, 'erro');
+  }
+
+  configurarBotaoStatus(item);
+}
+
+function preencherFormularioComDetalhe(dados) {
+  document.getElementById('pf-nome').value = dados.nome_completo ?? '';
+  document.getElementById('pf-email').value = dados.email ?? '';
+  document.getElementById('pf-email-confirma').value = dados.email ?? '';
+  document.getElementById('pf-telefone').value = dados.telefone ?? '';
+  document.getElementById('pf-login').value = dados.user_login ?? '';
+  // CPF não vem em claro no detalhe salvo se incluir_sensiveis=True
+  // no backend -- o controller atual chama u.to_dict() sem esse flag,
+  // então dados.cpf não deve vir preenchido; deixa em branco (o campo
+  // já é opcional em modo edição).
+
+  if (dados.tipo_usuario === 'medico' || dados.tipo_usuario === 'enfermeiro') {
+    campoTipo.value = dados.tipo_usuario;
+    atualizarBlocosCondicionais();
+    const atributos = dados.atributos_profissionais || {};
+    if (dados.tipo_usuario === 'medico') {
+      document.getElementById('pf-crm').value = atributos['numero-crm'] ?? '';
+      document.getElementById('pf-uf-crm').value = atributos['uf-crm'] ?? '';
+      document.getElementById('pf-rqe').value = atributos['rqe'] ?? '';
+    } else {
+      document.getElementById('pf-coren').value = atributos['numero-coren'] ?? '';
+      document.getElementById('pf-uf-coren').value = atributos['uf-coren'] ?? '';
+      document.getElementById('pf-especialidade').value = atributos['especialidade'] ?? '';
+    }
+  }
+}
+
+// ============================================
+// Botão de ativar/desativar (rodapé do modal)
+// ============================================
+
+function configurarBotaoStatus(item) {
+  btnToggleStatus.onclick = null;
+
+  // ALTERADO (múltiplos admins por empresa): some por completo se o
+  // alvo é admin e quem está logado não é super admin -- mesma regra
+  // que trava o resto do formulário. O backend também bloqueia isso,
+  // este é só reforço de UI.
+  if (somenteLeitura) {
+    btnToggleStatus.hidden = true;
+    return;
+  }
+
+  // Igual antes: usuário pendente não tem ação de ativar/desativar
+  // manual (segue o próprio onboarding).
+  if (item.status === 'pendente') {
+    btnToggleStatus.hidden = true;
+    return;
+  }
+
+  const vaiDesativar = item.status === 'ativo';
+  btnToggleStatus.hidden = false;
+  btnToggleStatus.textContent = vaiDesativar ? 'Desativar' : 'Ativar';
+  btnToggleStatus.className = vaiDesativar ? 'btn-danger' : 'btn-danger btn-danger--ativar';
+
+  btnToggleStatus.onclick = async () => {
+    btnToggleStatus.disabled = true;
+    try {
+      if (vaiDesativar) {
+        await desativarProfissional(item.uuid);
+        exibirMensagem('Usuário desativado.', 'sucesso');
+      } else {
+        await ativarProfissional(item.uuid);
+        exibirMensagem('Usuário ativado.', 'sucesso');
+      }
+      await recarregarLista();
+      setTimeout(fecharModal, 900);
+    } catch (erro) {
+      const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível concluir a ação.';
+      exibirMensagem(mensagem, 'erro');
+    } finally {
+      btnToggleStatus.disabled = false;
+    }
+  };
+}
+
+// ============================================
+// Submissão (criar ou atualizar)
+// ============================================
+
+async function aoSubmeter(e) {
+  e.preventDefault();
+  if (somenteLeitura) return; // trava defensiva -- não deveria nem estar visível
+
+  const editando = Boolean(uuidEmEdicao);
+  const modoConvite = form.dataset.modoConvite; // 'admin' | 'profissional' | ''
+
+  let payload;
+  let erros;
+
+  if (!editando && modoConvite === 'admin') {
+    ({ payload, erros } = montarPayloadAdmin());
+  } else {
+    const campos = lerCamposFormulario();
+    ({ payload, erros } = validarFormularioProfissional(campos, editando));
+  }
+
+  limparErrosExibidos();
+  if (Object.keys(erros).length > 0) {
+    exibirErros(erros);
+    return;
+  }
+
+  btnSalvar.disabled = true;
+  esconderFeedback();
+
+  try {
+    if (editando) {
+      await atualizarProfissional(uuidEmEdicao, payload);
+      exibirMensagem('Profissional atualizado.', 'sucesso');
+    } else {
+      await criarProfissional(payload);
+      exibirMensagem('Convite enviado com sucesso.', 'sucesso');
+    }
+    await recarregarLista();
+    setTimeout(fecharModal, 900);
+  } catch (erro) {
+    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível concluir a operação.';
+    exibirMensagem(mensagem, 'erro');
+  } finally {
+    btnSalvar.disabled = false;
+  }
+}
+
+/**
+ * Monta o payload de criação de admin -- reaproveita os campos comuns
+ * do formulário (nome, cpf, login, telefone, email) e fixa
+ * tipo_usuario: "admin", sem CRM/COREN/especialidade e sem senha (o
+ * schema do backend proíbe senha no cadastro de admin -- ver
+ * schema_usuario.py, valida_campos_por_profissao).
+ *
+ * Reaproveita as mesmas funções de validação de campo individuais de
+ * adminProfissionaisValidacoes.js (nome, cpf, login, telefone, email)
+ * para não duplicar regra -- só monta o payload de um jeito diferente
+ * de validarFormularioProfissional, que é focada em médico/enfermeiro.
+ */
+function montarPayloadAdmin() {
+  const campos = lerCamposFormulario();
+  // validarFormularioProfissional já cobre nome/cpf/login/telefone/email
+  // com as mesmas regras -- passamos tipo vazio pra ela não exigir
+  // CRM/COREN, e sobrescrevemos tipo_usuario depois.
+  const { payload, erros } = validarFormularioProfissional(
+    { ...campos, tipo: '' },
+    false, // editando=false: campos obrigatórios de cadastro completo
+  );
+  delete erros['pf-tipo']; // não se aplica -- tipo é fixo, campo está escondido
+  payload.tipo_usuario = 'admin';
+  return { payload, erros };
+}
+
+function lerCamposFormulario() {
+  return {
+    nome: document.getElementById('pf-nome').value,
+    cpf: document.getElementById('pf-cpf').value,
+    login: document.getElementById('pf-login').value,
+    telefone: document.getElementById('pf-telefone').value,
+    email: document.getElementById('pf-email').value,
+    emailConfirma: document.getElementById('pf-email-confirma').value,
+    tipo: campoTipo?.value || '',
+    crm: document.getElementById('pf-crm').value,
+    ufCrm: document.getElementById('pf-uf-crm').value,
+    rqe: document.getElementById('pf-rqe').value,
+    coren: document.getElementById('pf-coren').value,
+    ufCoren: document.getElementById('pf-uf-coren').value,
+    especialidade: document.getElementById('pf-especialidade').value,
+  };
+}
+
+// ============================================
+// Utilidades de formulário / modal
+// ============================================
+
+function atualizarBlocosCondicionais() {
+  const tipo = campoTipo?.value;
   blocoMedico.hidden = tipo !== 'medico';
   blocoEnfermeiro.hidden = tipo !== 'enfermeiro';
 }
 
 /**
- * Abre o modal. `profissionalResumo` é o objeto vindo da listagem
- * (sem cpf/CRM/COREN), ou null para abrir em modo cadastro. Se for
- * edição, busca o detalhe completo na API antes de preencher os
- * campos. Exportada -- é o ponto de entrada usado por
- * adminProfissionaisLista.js (clique em "Gerenciar" ou "Convidar
- * profissional").
+ * Habilita/desabilita todos os inputs do formulário conforme
+ * `somenteLeitura`. Chamada depois de decidir o modo em
+ * abrirModalProfissional -- mantém a trava simples e num só lugar,
+ * em vez de espalhar `disabled = somenteLeitura` pelo resto do
+ * arquivo.
  */
-export async function abrirModalProfissional(profissionalResumo) {
-  const overlay = document.getElementById('prof-modal-overlay');
-  const editando = profissionalResumo !== null;
-
-  overlay.classList.add('settings-overlay--visible');
-  document.body.classList.add('no-scroll');
-
-  prepararModalCarregando(editando);
-
-  if (!editando) {
-    profissionalEditando = null;
-    preencherModal(null);
-    return;
-  }
-
-  try {
-    const resposta = await buscarProfissional(profissionalResumo.uuid);
-    profissionalEditando = resposta.data;
-  } catch (erro) {
-    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível carregar os dados do profissional.';
-    exibirMensagem(mensagem, 'erro');
-    // Sem o detalhe (cpf/CRM/COREN) não dá pra editar com segurança;
-    // ainda assim deixamos o modal aberto com o resumo que já tínhamos,
-    // caso o admin só queira ativar/desativar.
-    profissionalEditando = profissionalResumo;
-  }
-
-  preencherModal(profissionalEditando);
-}
-
-function prepararModalCarregando(editando) {
-  const titulo = document.getElementById('prof-modal-title');
-  const btnSalvar = document.getElementById('prof-modal-save');
-  const form = document.getElementById('form-profissional');
-
-  form.reset();
-  limparTodosOsErros();
-  limparFeedback();
-
-  if (titulo) titulo.textContent = editando ? 'Editar profissional' : 'Convidar profissional';
-  if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = editando ? 'Carregando…' : 'Enviar convite'; }
-
-  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
-  if (btnToggleStatus) btnToggleStatus.hidden = true;
-}
-
-function preencherModal(profissional) {
-  const titulo = document.getElementById('prof-modal-title');
-  const btnSalvar = document.getElementById('prof-modal-save');
-  const editHint = document.getElementById('prof-modal-edit-hint');
-  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
-  const editando = profissional !== null;
-
-  if (titulo) titulo.textContent = editando ? 'Editar profissional' : 'Convidar profissional';
-  if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = editando ? 'Salvar alterações' : 'Enviar convite'; }
-  if (editHint) editHint.hidden = !editando;
-
-  // Em edição: campo vazio, valor atual vira placeholder (dica visual).
-  // Em cadastro: campo realmente vazio, sem dado antigo pra mostrar.
-  definirCampoComPlaceholder('pf-nome', editando ? profissional.nome_completo : '');
-  definirCampoComPlaceholder('pf-cpf', editando ? formatarCpfExibicao(profissional.cpf) : '', '000.000.000-00');
-  definirCampoComPlaceholder('pf-login', editando ? profissional.user_login : '');
-  definirCampoComPlaceholder('pf-telefone', editando ? formatarTelefoneExibicao(profissional.telefone) : '', '(11) 91234-5678');
-
-  // E-mail nunca herda placeholder do valor antigo -- a dupla
-  // digitação de confirmação perderia o sentido se o admin só
-  // revisse o e-mail atual sem precisar redigitar.
-  definirCampoComPlaceholder('pf-email', '');
-  definirCampoComPlaceholder('pf-email-confirma', '');
-
-  const atributos = profissional?.atributos_profissionais || {};
-  const selectTipo = document.getElementById('pf-tipo');
-  selectTipo.value = editando ? (profissional.tipo_usuario || '') : '';
-  atualizarBlocoPorTipo(selectTipo.value);
-
-  definirCampoComPlaceholder('pf-crm', editando ? atributos['numero-crm'] : '');
-  definirCampoComPlaceholder('pf-uf-crm', editando ? atributos['uf-crm'] : '');
-  definirCampoComPlaceholder('pf-rqe', editando ? atributos['rqe'] : '');
-  definirCampoComPlaceholder('pf-coren', editando ? atributos['numero-coren'] : '');
-  definirCampoComPlaceholder('pf-uf-coren', editando ? atributos['uf-coren'] : '');
-  definirCampoComPlaceholder('pf-especialidade', editando ? atributos['especialidade'] : '');
-
-  // Ativar/Desativar -- só existe em edição, no canto oposto ao Salvar.
-  // status !== 'ativo' cobre tanto 'pendente' (onboarding ainda não
-  // concluído) quanto 'inativo' (desativado) -- em ambos os casos o
-  // botão oferece "Ativar", que é a ação certa nos dois: tirar do
-  // onboarding pendente ou reativar quem foi desativado, os dois
-  // terminam com status 'ativo'.
-  if (btnToggleStatus) {
-    if (editando) {
-      const ePendente = profissional.status === "pendente";
-
-      if (ePendente===true){
-          btnToggleStatus.hidden = false;
-          btnToggleStatus.textContent = 'Desativar profissional';
-          btnToggleStatus.classList.toggle('btn-danger--ativar', false);
-          btnToggleStatus.dataset.acao = 'desativar';
-      }
-      else{
-          const estaAtivo = profissional.status === 'ativo';
-          btnToggleStatus.hidden = false;
-          btnToggleStatus.textContent = estaAtivo ? 'Desativar profissional' : 'Ativar profissional';
-          btnToggleStatus.classList.toggle('btn-danger--ativar', !estaAtivo);
-          btnToggleStatus.dataset.acao = estaAtivo ? 'desativar' : 'ativar';
-      }
-      
-    } else {
-      btnToggleStatus.hidden = true;
-    }
-  }
-
-  if (editando) document.getElementById('pf-nome')?.focus();
-}
-
-function definirCampoComPlaceholder(id, valorAtual, placeholderFixo) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.value = '';
-  el.placeholder = valorAtual ? String(valorAtual) : (placeholderFixo ?? '');
-}
-
-function formatarCpfExibicao(cpf) {
-  if (!cpf) return '';
-  const digits = cpf.replace(/\D/g, '');
-  if (digits.length !== 11) return cpf;
-  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-}
-
-function formatarTelefoneExibicao(telefone) {
-  if (!telefone) return '';
-  const digits = telefone.replace(/\D/g, '');
-  if (digits.length === 11) return digits.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  if (digits.length === 10) return digits.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-  return telefone;
-}
-
-function fecharModalProfissional() {
-  const overlay = document.getElementById('prof-modal-overlay');
-  overlay?.classList.remove('settings-overlay--visible');
-  document.body.classList.remove('no-scroll');
-  profissionalEditando = null;
-  limparTodosOsErros();
-  limparFeedback();
-}
-
-// ============================================
-// Erros de campo / feedback geral
-// ============================================
-function limparErroCampo(id) {
-  const grupo = document.getElementById(id)?.closest('.field-group');
-  const erroEl = document.getElementById(id + '-error');
-  if (erroEl) erroEl.textContent = '';
-  grupo?.classList.remove('field-group--has-error');
-  document.getElementById(id)?.classList.remove('field-input--invalid');
-}
-
-function limparTodosOsErros() {
-  document.querySelectorAll('#form-profissional .field-error').forEach(el => { el.textContent = ''; });
-  document.querySelectorAll('#form-profissional .field-group--has-error').forEach(el => el.classList.remove('field-group--has-error'));
-  document.querySelectorAll('#form-profissional .field-input--invalid').forEach(el => el.classList.remove('field-input--invalid'));
-}
-
-function exibirErrosCampos(erros) {
-  limparTodosOsErros();
-  let primeiroCampo = null;
-
-  Object.entries(erros).forEach(([id, mensagem]) => {
-    const input = document.getElementById(id);
-    const grupo = input?.closest('.field-group');
-    const erroEl = document.getElementById(id + '-error');
-    if (erroEl) erroEl.textContent = mensagem;
-    grupo?.classList.add('field-group--has-error');
-    input?.classList.add('field-input--invalid');
-    if (!primeiroCampo) primeiroCampo = input;
+function aplicarTravaSomenteLeitura() {
+  form.querySelectorAll('input, select').forEach((el) => {
+    el.disabled = somenteLeitura;
   });
-
-  primeiroCampo?.focus();
-}
-
-function limparFeedback() {
-  const el = document.getElementById('mensagemFeedback');
-  if (!el) return;
-  el.textContent = '';
-  el.className = '';
-}
-
-// ============================================
-// Ler campos do form
-// ============================================
-function lerCamposFormulario() {
-  const valor = (id) => {
-    const el = document.getElementById(id);
-    if (!el) {
-      // Se isto disparar, o HTML carregado no navegador não tem esse
-      // campo -- geralmente sinal de que adminProfissionais.html está
-      // desatualizado/cacheado em relação a este JS. Conferir se o
-      // arquivo servido é o mesmo que define <input id="${id}">.
-      console.error(`lerCamposFormulario: campo #${id} não encontrado no DOM.`);
-      return '';
-    }
-    return el.value;
-  };
-  return {
-    nome: valor('pf-nome').trim(),
-    cpf: valor('pf-cpf').trim(),
-    login: valor('pf-login').trim(),
-    telefone: valor('pf-telefone').trim(),
-    email: valor('pf-email').trim(),
-    emailConfirma: valor('pf-email-confirma').trim(),
-    tipo: valor('pf-tipo').trim(),
-    crm: valor('pf-crm').trim(),
-    ufCrm: valor('pf-uf-crm').trim(),
-    rqe: valor('pf-rqe').trim(),
-    coren: valor('pf-coren').trim(),
-    ufCoren: valor('pf-uf-coren').trim(),
-    especialidade: valor('pf-especialidade').trim(),
-  };
-}
-
-// ============================================
-// Salvar (criar ou atualizar) via API
-// ============================================
-async function salvarProfissional() {
-  if (salvando) return;
-
-  const editando = profissionalEditando !== null;
-  const campos = lerCamposFormulario();
-  const { payload, erros } = validarFormularioProfissional(campos, editando);
-
-  if (Object.keys(erros).length > 0) {
-    exibirErrosCampos(erros);
-    exibirMensagem('Corrija os campos destacados antes de continuar.', 'erro');
-    return;
-  }
-
-  if (editando && Object.keys(payload).length === 0) {
-    exibirMensagem('Nenhuma alteração para salvar.', 'info');
-    return;
-  }
-
-  const btnSalvar = document.getElementById('prof-modal-save');
-  salvando = true;
-  if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = 'Salvando…'; }
-
-  try {
-    if (editando) {
-      await atualizarProfissional(profissionalEditando.uuid, payload);
-    } else {
-      await criarProfissional(payload);
-    }
-
+  btnSalvar.hidden = somenteLeitura;
+  if (somenteLeitura) {
     exibirMensagem(
-      editando ? 'Profissional atualizado com sucesso!' : 'Convite enviado com sucesso!',
-      'sucesso'
+      'Apenas o administrador principal pode gerenciar outro administrador.',
+      'info',
     );
-
-    await recarregarLista();
-    setTimeout(fecharModalProfissional, 900);
-  } catch (erro) {
-    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível salvar. Tente novamente.';
-    exibirMensagem(mensagem, 'erro');
-  } finally {
-    salvando = false;
-    if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = editando ? 'Salvar alterações' : 'Enviar convite'; }
   }
 }
 
-// ============================================
-// Ativar / Desativar via API
-// ============================================
-async function alternarStatusProfissional() {
-  if (salvando || !profissionalEditando) return;
+/** Mostra/esconde os botões conforme é criação ou edição (independente da trava de somenteLeitura). */
+function definirModoFormulario(editando) {
+  hintEdicao.hidden = !editando || somenteLeitura;
+  btnSalvar.hidden = somenteLeitura ? true : false;
+  btnSalvar.textContent = editando ? 'Salvar alterações' : 'Enviar convite';
+}
 
-  const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
-  const acao = btnToggleStatus?.dataset.acao; // 'ativar' | 'desativar'
-  if (!acao) return;
+function limparFormulario() {
+  form.reset();
+  limparErrosExibidos();
+  esconderFeedback();
+  blocoMedico.hidden = true;
+  blocoEnfermeiro.hidden = true;
+  form.querySelectorAll('input, select').forEach((el) => { el.disabled = false; });
+  const campoTipoGroup = campoTipo?.closest('.field-group');
+  if (campoTipoGroup) campoTipoGroup.hidden = false;
+  btnSalvar.hidden = false;
+}
 
-  salvando = true;
-  const textoOriginal = btnToggleStatus.textContent;
-  btnToggleStatus.disabled = true;
-  btnToggleStatus.textContent = acao === 'ativar' ? 'Ativando…' : 'Desativando…';
+function limparErrosExibidos() {
+  form.querySelectorAll('.field-group--has-error').forEach((el) => el.classList.remove('field-group--has-error'));
+  form.querySelectorAll('.field-error').forEach((el) => { el.textContent = ''; });
+  form.querySelectorAll('.field-input--invalid').forEach((el) => el.classList.remove('field-input--invalid'));
+}
 
-  try {
-    const resposta = acao === 'ativar'
-      ? await ativarProfissional(profissionalEditando.uuid)
-      : await desativarProfissional(profissionalEditando.uuid);
+function exibirErros(erros) {
+  Object.entries(erros).forEach(([idCampo, mensagem]) => {
+    const input = document.getElementById(idCampo);
+    const erroEl = document.getElementById(`${idCampo}-error`);
+    const group = input?.closest('.field-group');
+    if (group) group.classList.add('field-group--has-error');
+    if (input) input.classList.add('field-input--invalid');
+    if (erroEl) erroEl.textContent = mensagem;
+  });
+}
 
-    profissionalEditando = { ...profissionalEditando, ...resposta.data };
+function exibirMensagem(texto, tipo) {
+  feedback.textContent = texto;
+  feedback.className = `prof-form-feedback ${tipo}`;
+}
 
-    exibirMensagem(
-      acao === 'ativar' ? 'Profissional ativado com sucesso!' : 'Profissional desativado com sucesso!',
-      'sucesso'
-    );
+function esconderFeedback() {
+  feedback.textContent = '';
+  feedback.className = 'prof-form-feedback';
+}
 
-    // Atualiza o botão para refletir o novo estado, sem fechar o modal
-    const estaAtivo = profissionalEditando.status === 'ativo';
-    btnToggleStatus.textContent = estaAtivo ? 'Desativar profissional' : 'Ativar profissional';
-    btnToggleStatus.classList.toggle('btn-danger--ativar', !estaAtivo);
-    btnToggleStatus.dataset.acao = estaAtivo ? 'desativar' : 'ativar';
-
-    await recarregarLista();
-  } catch (erro) {
-    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível alterar o status. Tente novamente.';
-    exibirMensagem(mensagem, 'erro');
-    btnToggleStatus.textContent = textoOriginal;
-  } finally {
-    salvando = false;
-    btnToggleStatus.disabled = false;
-  }
+function fecharModal() {
+  overlay.classList.remove('settings-overlay--visible');
+  const seletor = document.getElementById('prof-modal-seletor-tipo');
+  if (seletor) seletor.hidden = true;
+  form.hidden = false;
+  limparFormulario();
+  uuidEmEdicao = null;
+  somenteLeitura = false;
 }

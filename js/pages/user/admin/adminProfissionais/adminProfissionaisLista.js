@@ -10,13 +10,26 @@
 // modal chama de volta recarregarLista (exportada daqui) depois de
 // salvar/ativar/desativar, para a lista refletir a mudança.
 //
-// Modelo de dados que a API devolve (Usuario.to_dict()):
-//   { uuid, nome_completo, email, telefone, user_login, tipo_usuario,
-//     status: "ativo" | "inativo" | "pendente", ultimo_acesso, id_empresa }
-// Campos sensíveis (cpf, atributos_profissionais/CRM-COREN) só vêm em
-// incluir_sensiveis=True -- ou seja, aqui na listagem geral eles NÃO
-// vêm (só no detalhe, buscado em adminProfissionaisModal.js quando
-// o admin abre a edição).
+// Modelo de dados que a API devolve (Usuario.to_dict_few(), usado na
+// listagem GET /):
+//   { uuid, nome_completo, email, tipo_usuario, status, is_admin }
+// Campos sensíveis (cpf, atributos_profissionais/CRM-COREN) só vêm no
+// detalhe (GET /<uuid>, Usuario.to_dict() completo), buscado em
+// adminProfissionaisModal.js quando o admin abre a edição.
+//
+// ALTERADO (múltiplos admins por empresa):
+// - A listagem agora PODE incluir admins comuns (o backend só exclui
+//   o super admin/fundador -- ver repository.find_all_param). Cada
+//   item vem com `is_admin` para o card diferenciar o rótulo.
+// - O botão "Convidar profissional" abre um seletor de tipo quando o
+//   usuário logado é super admin (pode convidar médico, enfermeiro ou
+//   admin); para admin comum, continua abrindo direto o formulário de
+//   médico/enfermeiro (ele nunca pode criar admin -- ver
+//   adminProfissionaisModal.js).
+// - `souSuperAdmin` é lido da sessão (GET /me, já chamado em algum
+//   lugar do carregamento da página -- aqui é lido de window.__sessaoUsuario
+//   se disponível, com fallback pedindo pro modal checar via API caso
+//   ainda não tenha sido carregado). Ver nota em configurarSessao().
 //
 // Paginação: GET /?pagina=&status=&especialidade= usa 'pagina' como
 // NÚMERO DA PÁGINA (0, 1, 2...), não offset em itens -- o backend
@@ -45,7 +58,7 @@
 // ============================================
 
 import { ApiError, listarProfissionais } from "./adminProfissionaisApi.js";
-import { abrirModalProfissional } from "./adminProfissionaisModal.js";
+import { abrirModalProfissional, abrirModalConvite } from "./adminProfissionaisModal.js";
 
 const POR_PAGINA = 8;
 
@@ -67,6 +80,7 @@ let carregando = false; // trava contra requests de listagem sobrepostos
 document.addEventListener('DOMContentLoaded', () => {
   configurarBusca();
   configurarFiltros();
+  configurarBotaoConvidar();
   carregarERenderizar();
 });
 
@@ -78,6 +92,17 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 export function recarregarLista() {
   return carregarERenderizar();
+}
+
+// ============================================
+// Botão "Convidar profissional" -- abre o modal certo conforme o
+// papel de quem está logado (ver adminProfissionaisModal.js sobre
+// como ele decide se oferece a opção "Administrador").
+// ============================================
+function configurarBotaoConvidar() {
+  const btn = document.getElementById('btn-convidar-profissional');
+  if (!btn) return;
+  btn.addEventListener('click', () => abrirModalConvite());
 }
 
 // ============================================
@@ -249,6 +274,10 @@ function criarEstadoVazio() {
 function criarCardProfissional(p) {
   const card = document.createElement('article');
   card.className = 'consult-card';
+  // ADICIONADO: marcador visual leve para admin (ver CSS) -- não é
+  // estritamente necessário, mas ajuda a diferenciar o card de admin
+  // dos de médico/enfermeiro numa lista mista.
+  if (p.is_admin) card.classList.add('consult-card--admin');
 
   const status = document.createElement('div');
   if (p.status === 'ativo') {
@@ -282,7 +311,13 @@ function criarCardProfissional(p) {
   nome.textContent = p.nome_completo;
   const meta = document.createElement('p');
   meta.className = 'consult-meta';
-  const tipoLabel = p.tipo_usuario === 'medico' ? 'Médico' : p.tipo_usuario === 'enfermeiro' ? 'Enfermeiro' : (p.tipo_usuario || '—');
+  // ADICIONADO: rótulo "Administrador" -- p.tipo_usuario já vem como
+  // "admin" nesse caso (Usuario.tipo_usuario property), então só
+  // precisa de um label amigável a mais no mapa abaixo.
+  const tipoLabel = p.tipo_usuario === 'medico' ? 'Médico'
+    : p.tipo_usuario === 'enfermeiro' ? 'Enfermeiro'
+    : p.tipo_usuario === 'admin' ? 'Administrador'
+    : (p.tipo_usuario || '—');
   meta.textContent = `${tipoLabel} · ${p.email}`;
   main.append(nome, meta);
 

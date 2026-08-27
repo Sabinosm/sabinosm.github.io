@@ -28,6 +28,15 @@
 // blueprint. Importante: URL_BASE_API já inclui o prefixo /v1/api,
 // então aqui só concatenamos o restante do caminho (/usuarios...),
 // sem repetir /v1/api de novo.
+//
+// ALTERADO (múltiplos admins por empresa): criarProfissional(payload)
+// continua servindo para médico/enfermeiro. Para criar um admin, o
+// backend exige que o solicitante seja o super admin (checagem no
+// service, não aqui) -- do lado do front, isso só muda o payload
+// (tipo_usuario: "admin", sem CRM/COREN, sem senha). Não é uma rota
+// nova, é a MESMA POST / -- então criarProfissional já serve; não é
+// necessário duplicar a função, só o payload muda dependendo do
+// formulário usado (ver adminProfissionaisModal.js).
 
 import { URL_BASE_API } from "../../../../config.js";
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../stepup.js"
@@ -79,6 +88,11 @@ export class ApiError extends Error {
 /**
  * GET / — lista os usuários/profissionais da empresa da sessão atual.
  *
+ * ALTERADO (múltiplos admins por empresa): a listagem agora pode
+ * incluir admins comuns (o backend só exclui o super admin -- ver
+ * repository.find_all_param). Cada item vem com `is_admin` (ver
+ * Usuario.to_dict_few) para o front diferenciar o card.
+ *
  * @param {object} [opcoes]
  * @param {number} [opcoes.pagina=0]        — número da página (0, 1, 2...).
  *   O backend multiplica por 8 internamente para calcular o offset
@@ -101,12 +115,28 @@ export function listarProfissionais({ pagina = 0, status, especialidade } = {}) 
   return requisitar(`/?${params.toString()}`, { method: 'GET' });
 }
 
-/** GET /<uuid> — detalhe de um usuário específico. */
+/** GET /<uuid> — detalhe de um usuário específico.
+ *
+ * ALTERADO (múltiplos admins por empresa): o detalhe (Usuario.to_dict())
+ * agora também traz `is_super_admin` -- relevante só quando o alvo é
+ * admin, para o modal decidir se mostra ações de gerenciamento (o
+ * super admin nunca aparece na listagem, mas pode ser alcançado aqui
+ * se algum dia for necessário abrir o detalhe dele diretamente).
+ */
 export function buscarProfissional(uuid) {
   return requisitar(`/${uuid}`, { method: 'GET' });
 }
 
-/** POST / — cria um novo profissional (schema completo de cadastro). */
+/**
+ * POST / — cria um novo usuário (médico, enfermeiro ou admin).
+ *
+ * ALTERADO (múltiplos admins por empresa): o backend exige que só o
+ * super admin envie payload com tipo_usuario: "admin" -- se um admin
+ * comum tentar, a API responde 400/403 com uma mensagem de negócio,
+ * que sobe como ApiError igual qualquer outro erro de validação (o
+ * front não precisa de tratamento especial para esse caso, só exibir
+ * erro.message).
+ */
 export function criarProfissional(payload) {
   return requisitar('/', {
     method: 'POST',
@@ -114,7 +144,16 @@ export function criarProfissional(payload) {
   });
 }
 
-/** PUT /<uuid> — atualiza parcialmente um profissional existente. */
+/** PUT /<uuid> — atualiza parcialmente um profissional existente.
+ *
+ * ALTERADO (múltiplos admins por empresa): o backend bloqueia:
+ *   - qualquer troca de/para tipo_usuario "admin" (promoção/rebaixamento
+ *     não existem via edição, só via criação);
+ *   - edição de um usuário que já é admin, se o solicitante não for o
+ *     super admin.
+ * Ambos os casos sobem como ApiError com a mensagem de negócio do
+ * backend -- nenhum tratamento especial necessário aqui.
+ */
 export function atualizarProfissional(uuid, payload) {
   return requisitar(`/${uuid}`, {
     method: 'PUT',
@@ -122,12 +161,19 @@ export function atualizarProfissional(uuid, payload) {
   });
 }
 
-/** POST /<uuid>/ativar */
+/** POST /<uuid>/ativar
+ *
+ * ALTERADO (múltiplos admins por empresa): se o alvo for admin e o
+ * solicitante não for o super admin, o backend responde com erro de
+ * negócio (sobe como ApiError). O front pode evitar chegar a chamar
+ * isso mostrando o botão só quando fizer sentido -- ver
+ * adminProfissionaisModal.js (podeGerenciarAlvo).
+ */
 export async function ativarProfissional(uuid) {
   return solicitarComStepUp(`/${uuid}/ativar`, "ativar_profissional");
 }
 
-/** POST /<uuid>/desativar */
+/** POST /<uuid>/desativar — mesma observação de ativarProfissional. */
 export async function desativarProfissional(uuid) {
   return solicitarComStepUp(`/${uuid}/desativar`, "desativar_profissional");
 }
