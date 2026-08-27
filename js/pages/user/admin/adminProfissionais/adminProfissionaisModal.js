@@ -199,11 +199,22 @@ function preencherModal(profissional) {
   // terminam com status 'ativo'.
   if (btnToggleStatus) {
     if (editando) {
-      const estaAtivo = profissional.status === 'ativo';
-      btnToggleStatus.hidden = false;
-      btnToggleStatus.textContent = estaAtivo ? 'Desativar profissional' : 'Ativar profissional';
-      btnToggleStatus.classList.toggle('btn-danger--ativar', !estaAtivo);
-      btnToggleStatus.dataset.acao = estaAtivo ? 'desativar' : 'ativar';
+      const ePendente = profissional.status === "pendente";
+
+      if (ePendente===true){
+          btnToggleStatus.hidden = false;
+          btnToggleStatus.textContent = 'Desativar profissional';
+          btnToggleStatus.classList.toggle('btn-danger--ativar', false);
+          btnToggleStatus.dataset.acao = 'desativar';
+      }
+      else{
+          const estaAtivo = profissional.status === 'ativo';
+          btnToggleStatus.hidden = false;
+          btnToggleStatus.textContent = estaAtivo ? 'Desativar profissional' : 'Ativar profissional';
+          btnToggleStatus.classList.toggle('btn-danger--ativar', !estaAtivo);
+          btnToggleStatus.dataset.acao = estaAtivo ? 'desativar' : 'ativar';
+      }
+      
     } else {
       btnToggleStatus.hidden = true;
     }
