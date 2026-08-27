@@ -1,5 +1,5 @@
 import { preencherPainelPerfil } from "./preencherPerfil.js";
-import { iniciarMonitoramentoSessao } from "../auth/logic/watchSession.js";
+import { iniciarMonitoramentoSessao } from "../auth/watchSession.js";
 import { modalConfiguracoesPronto } from "./settingsLoader.js";
 import { iniciarPaginaEstatisticas } from "./admin/adminEstatisticas/adminEstatisticas.js";
 

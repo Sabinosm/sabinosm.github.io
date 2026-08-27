@@ -113,7 +113,7 @@ export async function pedirConfirmacao(acao) {
 // mesmo modal já no DOM).
 // ============================================
 
-const PARTIAL_PATH = "../../../html/user/stepupModal.html";
+const PARTIAL_PATH = "../../user/stepupModal.html";
 let modalCarregadoPromise = null;
 
 function garantirModalCarregado() {

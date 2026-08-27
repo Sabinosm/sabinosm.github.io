@@ -30,6 +30,7 @@
 // sem repetir /v1/api de novo.
 
 import { URL_BASE_API } from "../../../../config.js";
+import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../stepup.js"
 
 const BASE_URL = `${URL_BASE_API}/usuarios`;
 
@@ -45,12 +46,12 @@ async function requisitar(path, options = {}) {
   let resposta;
   try {
     resposta = await fetch(`${BASE_URL}${path}`, {
-      credentials: 'include',
+      credentials: "include",
       headers: headersPadrao(),
       ...options,
     });
   } catch (erroRede) {
-    throw new ApiError('Não foi possível conectar ao servidor. Verifique sua internet.', 0);
+    throw new ApiError("Não foi possível conectar ao servidor. Verifique sua internet.", 0);
   }
 
   let corpo;
@@ -122,11 +123,27 @@ export function atualizarProfissional(uuid, payload) {
 }
 
 /** POST /<uuid>/ativar */
-export function ativarProfissional(uuid) {
-  return requisitar(`/${uuid}/ativar`, { method: 'POST' });
+export async function ativarProfissional(uuid) {
+  return solicitarComStepUp(`/${uuid}/ativar`, "ativar_profissional");
 }
 
 /** POST /<uuid>/desativar */
-export function desativarProfissional(uuid) {
-  return requisitar(`/${uuid}/desativar`, { method: 'POST' });
+export async function desativarProfissional(uuid) {
+  return solicitarComStepUp(`/${uuid}/desativar`, "desativar_profissional");
+}
+
+async function solicitarComStepUp(path, acao) {
+  let token;
+  try {
+    token = await pedirConfirmacao(acao);
+  } catch (erro) {
+    if (erro instanceof ConfirmacaoCanceladaError) return; // usuário desistiu
+    exibirMensagem(erro.message, "erro");
+    return;
+  }
+
+  return requisitar(path, {
+    method: "POST",
+    headers: { "X-Stepup-Token": token },
+  });
 }
