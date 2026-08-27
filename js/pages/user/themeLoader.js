@@ -17,6 +17,14 @@
 // marcar o botão de tema ativo em #panel-preferencias, sincronizar
 // panelState -- continua em settings.js, que roda depois.
 //
+// localStorage aqui é só um CACHE local para matar o FOUC -- a fonte
+// de verdade é a API. Assim que o payload de /me chega (login ou
+// refresh de sessão), preencherPainelPerfil.js (preencherTema) pisa
+// em cima do que estiver aqui com o valor oficial da API e também
+// atualiza este mesmo localStorage, para que a próxima carga de
+// página (antes do /me responder) já comece com o valor mais recente
+// conhecido.
+//
 // Uso: <script src=".../applyTheme.js"></script> (SEM type="module",
 // SEM defer/async) colocado no <head>, antes de qualquer <link
 // rel="stylesheet"> que dependa de --var de tema, e certamente antes

@@ -385,3 +385,21 @@ body.no-scroll {
   .settings-panels { grid-row: 2; padding: 24px 20px; }
   .save-bar { grid-column: 1; padding: 14px 20px; }
 }
+
+.feedback-mensagem {
+        min-height: 1.1em;
+        margin: 4px 0 0;
+        font-size: 0.8rem;
+        line-height: 1.3;
+        padding-left: 35%;
+        margin-bottom: 8%;
+      }
+.feedback-mensagem:empty {
+        margin: 0;
+      }
+.feedback-mensagem.erro {
+        color: var(--color-error, #e5484d);
+      }
+.feedback-mensagem.sucesso {
+        color: var(--color-success, #30a46c);
+      }

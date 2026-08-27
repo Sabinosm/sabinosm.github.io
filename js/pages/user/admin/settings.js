@@ -8,7 +8,146 @@
 // destrutiva/imediata e não passa por "salvar em lote".
 // ============================================
 
+import { exibirMensagem } from '../../../shared/feedback.js';
+import {URL_BASE_API} from '../../../config.js';
+
 const THEME_STORAGE_KEY = 'bion-theme';
+const CONFIGURACAO_API_URL = URL_BASE_API +'/configuracoes/';
+
+const FEEDBACK_SUCESSO_DURACAO_MS = 2500;
+let feedbackTimeoutId = null;
+
+// exibirMensagem faz feedback.className = tipo, sobrescrevendo TODA a
+// classe do elemento (não só adicionando) -- isso apagaria a classe
+// base "feedback-mensagem" do CSS. Como esse comportamento é
+// compartilhado com login/onboarding e não queremos mexer nele aqui,
+// reforçamos a classe base logo em seguida, só neste módulo.
+
+function exibirFeedbackConfiguracoes(texto, tipo) {
+  if (feedbackTimeoutId !== null) {
+    clearTimeout(feedbackTimeoutId);
+    feedbackTimeoutId = null;
+  }
+  exibirMensagem(texto, tipo);
+  const el = document.getElementById('mensagemFeedback');
+  if (el) el.classList.add('feedback-mensagem');
+}
+
+function limparFeedbackConfiguracoes() {
+  const el = document.getElementById('mensagemFeedback');
+  if (!el) return;
+  if (feedbackTimeoutId !== null) {
+    clearTimeout(feedbackTimeoutId);
+    feedbackTimeoutId = null;
+  }
+  el.textContent = '';
+  el.className = 'feedback-mensagem';
+}
+
+/**
+ * Mostra o feedback de sucesso e some sozinho depois de um tempo --
+ * erro fica até o usuário agir (corrigir e salvar de novo, ou sair).
+ */
+function exibirFeedbackSucessoTemporario(texto) {
+  exibirFeedbackConfiguracoes(texto, 'sucesso');
+  if (feedbackTimeoutId !== null) clearTimeout(feedbackTimeoutId);
+  feedbackTimeoutId = setTimeout(() => {
+    feedbackTimeoutId = null;
+    limparFeedbackConfiguracoes();
+  }, FEEDBACK_SUCESSO_DURACAO_MS);
+}
+
+
+// ============================================
+// Mapeamento entre os elementos [data-track] do painel Preferências
+// (identificados pelo id do elemento, ver settingsModal.html) e a
+// estrutura de configuracoes que a API espera (ver
+// ConfiguracaoService.CONFIGURACOES_DEFAULT):
+//   { design: { tema, tamanho_fonte }, preferencias: { linguagem } }
+//
+// f-idioma: <select> já tem value="pt-BR"/"en-US" no HTML -- envia
+// o value direto, sem transformação.
+//
+// f-fonte: <input type="range" min="0" max="2">, não texto -- precisa
+// converter o índice para o nome que o schema.py do backend espera.
+// Se o range de opções mudar no HTML, ajustar este mapa junto.
+// ============================================
+
+const TAMANHO_FONTE_POR_INDICE = ['pequeno', 'medio', 'grande'];
+
+/**
+ * Monta o corpo de configuracoes no formato da API a partir do payload
+ * plano { idDoElemento: valor, theme?: valor } usado internamente pelo
+ * settings.js.
+ */
+function montarConfiguracoesParaApi(payloadPlano) {
+  const configuracoes = { design: {}, preferencias: {} };
+
+  if (payloadPlano.theme !== undefined) {
+    configuracoes.design.tema = payloadPlano.theme;
+  }
+
+  if (payloadPlano['f-fonte'] !== undefined) {
+    const indice = Number(payloadPlano['f-fonte']);
+    const nome = TAMANHO_FONTE_POR_INDICE[indice];
+    if (nome) configuracoes.design.tamanho_fonte = nome;
+  }
+
+  if (payloadPlano['f-idioma'] !== undefined) {
+    configuracoes.preferencias.linguagem = [payloadPlano['f-idioma']];
+  }
+
+  // Remove seções que ficaram vazias (nada mapeado nelas)
+  Object.keys(configuracoes).forEach(secao => {
+    if (Object.keys(configuracoes[secao]).length === 0) delete configuracoes[secao];
+  });
+
+  return configuracoes;
+}
+
+/**
+ * Envia as configurações atualizadas para a API.
+ *
+ * Retorna { ok: boolean, mensagem?: string }. Quem chama decide o que
+ * fazer com a UI (reverter campos, manter save-bar visível, etc) --
+ * esta função só cuida da chamada de rede e de extrair a mensagem de
+ * erro que o backend manda (ver ConfiguracaoController/json_error).
+ */
+async function salvarConfiguracoesNaApi(payloadPlano) {
+  const configuracoes = montarConfiguracoesParaApi(payloadPlano);
+  if (Object.keys(configuracoes).length === 0) return { ok: true };
+
+  try {
+    const resposta = await fetch(CONFIGURACAO_API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // front e API ficam em domínios/subdomínios diferentes -- 'same-origin' não enviaria o cookie httpOnly da sessão nesse caso
+      body: JSON.stringify({ configuracoes }),
+    });
+
+    if (!resposta.ok) {
+      // json_error retorna { success: false, message: "..." } -- ver
+      // src/core/responses.py. Se o corpo não for esse formato (ex:
+      // erro 500 sem JSON), cai no fallback genérico abaixo.
+      let mensagem = 'Não foi possível salvar as configurações. Tente novamente.';
+      try {
+        const corpo = await resposta.json();
+        if (corpo?.message) mensagem = corpo.message;
+      } catch {
+        // corpo não era JSON -- mantém a mensagem genérica
+      }
+      return { ok: false, mensagem };
+    }
+
+    return { ok: true };
+  } catch (erro) {
+    console.error('settings.js: erro de rede ao salvar configurações', erro);
+    return {
+      ok: false,
+      mensagem: 'Sem conexão com o servidor. Verifique sua internet e tente novamente.',
+    };
+  }
+}
 
 // ===== Abrir / fechar modal =====
 const overlay = document.getElementById('settings-overlay');
@@ -23,6 +162,7 @@ function openSettings() {
 function closeSettings() {
   // Sair sem salvar descarta automaticamente as alterações do painel ativo
   revertActivePanel();
+  limparFeedbackConfiguracoes();
   overlay.classList.remove('settings-overlay--visible');
   document.body.classList.remove('no-scroll');
 }
@@ -142,10 +282,15 @@ function revertActivePanel() {
   saveBar.classList.remove('save-bar--visible');
 }
 
-document.getElementById('btn-cancel').addEventListener('click', revertActivePanel);
+document.getElementById('btn-cancel').addEventListener('click', () => {
+  revertActivePanel();
+  limparFeedbackConfiguracoes();
+});
 
 // ===== Salvar — só afeta o painel ativo (hoje: Preferências) =====
-document.getElementById('btn-save').addEventListener('click', () => {
+const btnSave = document.getElementById('btn-save');
+
+btnSave.addEventListener('click', async () => {
   const panel = getActivePanel();
   if (!panel || !panel.hasAttribute('data-savable')) return;
 
@@ -154,13 +299,30 @@ document.getElementById('btn-save').addEventListener('click', () => {
 
   const trackedFields = panel.querySelectorAll('[data-track]');
 
-  // TODO: montar o payload e enviar para a API aqui.
   // Como o estado agora é por painel, o payload já sai isolado por contexto
   // (ex: só campos de Preferências), sem misturar com outras abas.
   const payload = {};
   trackedFields.forEach(el => { payload[el.id] = el.value; });
   if (state.pendingTheme !== null) payload.theme = state.pendingTheme;
-  // console.log('Payload para API:', payload);
+
+  // Espera a API confirmar ANTES de aplicar como definitivo. Se der
+  // erro (ex: valor fora do formato aceito), os campos continuam com
+  // o que o usuário digitou e a save-bar continua visível -- ele pode
+  // corrigir e tentar salvar de novo, sem perder o que já preencheu.
+  btnSave.disabled = true;
+  const resultado = await salvarConfiguracoesNaApi(payload);
+  btnSave.disabled = false;
+
+  if (!resultado.ok) {
+    exibirFeedbackConfiguracoes(resultado.mensagem, 'erro');
+    // Nota: o preview de tema (aplicado no clique do swatch, ver
+    // sincronizarUiComTemaAtual/theme-option handler) NÃO é revertido
+    // aqui de propósito -- o usuário ainda está com a save-bar aberta
+    // e pode corrigir outro campo e tentar salvar de novo. Se ele
+    // desistir, fechar o modal ou clicar Cancelar chama
+    // revertActivePanel(), que aí sim desfaz o preview.
+    return; // mantém campos e save-bar como estavam
+  }
 
   trackedFields.forEach(el => state.initialValues.set(el, el.value));
 
@@ -171,6 +333,7 @@ document.getElementById('btn-save').addEventListener('click', () => {
   }
 
   saveBar.classList.remove('save-bar--visible');
+  exibirFeedbackSucessoTemporario('Configurações salvas com sucesso.');
 });
 
 // ============================================
