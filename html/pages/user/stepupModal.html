@@ -1,0 +1,67 @@
+<!-- ============================================
+     Partial: Modal de Confirmação de Identidade (Step-Up)
+     Injetado sob demanda por stepUp.js (garantirModalCarregado) na
+     primeira chamada a pedirConfirmacao() -- não precisa estar
+     presente no HTML de nenhuma página, e é injetado uma única vez
+     mesmo que pedirConfirmacao() seja chamado várias vezes.
+
+     Não depende de nenhum botão fixo para abrir -- diferente do
+     settingsModal.html (que tem #open-settings), este modal só abre
+     via chamada de código (pedirConfirmacao(acao)).
+
+     Precisa de css stepUp 
+   ============================================ -->
+<div class="stepup-overlay" id="stepup-overlay">
+  <div class="stepup-modal">
+
+    <button class="stepup-close" id="stepup-fechar" aria-label="Fechar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <h2 class="stepup-titulo">Confirme sua identidade</h2>
+    <p class="stepup-subtitulo">
+      Para continuar com <strong id="stepup-acao-nome">esta ação</strong>,
+      confirme novamente quem você é.
+    </p>
+
+    <!-- Carregando (consultando /stepup/iniciar) -->
+    <div class="stepup-painel" id="stepup-painel-carregando" hidden>
+      <p class="stepup-hint">Verificando método disponível...</p>
+    </div>
+
+    <!-- Método WebAuthn (chave/biometria) -->
+    <div class="stepup-painel" id="stepup-painel-webauthn" hidden>
+      <p class="stepup-hint">
+        Use sua chave de segurança, PIN ou biometria do dispositivo
+        quando solicitado pelo navegador.
+      </p>
+      <button class="btn-secondary" id="stepup-tentar-novamente" type="button">
+        Tentar novamente
+      </button>
+    </div>
+
+    <!-- Método fallback: senha + Google -->
+    <div class="stepup-painel" id="stepup-painel-senha" hidden>
+      <form id="stepup-form-senha">
+        <div class="field-group">
+          <label class="field-label" for="stepup-senha">Senha atual</label>
+          <input class="field-input" type="password" id="stepup-senha" autocomplete="current-password" required>
+        </div>
+        <p class="stepup-hint">
+          Depois de confirmar sua senha, você entrará com sua conta Google
+          em uma nova janela para concluir a confirmação.
+        </p>
+        <button class="btn-primary" type="submit">Confirmar senha</button>
+      </form>
+    </div>
+
+    <p class="stepup-feedback" id="stepup-feedback"></p>
+
+    <div class="stepup-actions">
+      <button class="btn-ghost" id="stepup-cancelar" type="button">Cancelar</button>
+    </div>
+
+  </div>
+</div>

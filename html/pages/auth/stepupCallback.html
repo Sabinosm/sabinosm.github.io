@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<!--
+  stepup_callback.html
+
+  Destino estático para onde src/domains/auth/step_up.py
+  (stepup_google_callback) redireciona ao final do fluxo
+  "senha + Google" -- ver CAMINHO_APOS_REAUTENTICACAO naquele arquivo.
+
+  Esta página só existe dentro do popup aberto por stepUp.js
+  (abrirPopupGoogle). Sua única responsabilidade é ler o resultado da
+  query string, repassar para a aba que abriu o popup via
+  postMessage(), e se fechar. Não deve ser navegável diretamente --
+  sem window.opener não há para quem mandar o resultado.
+
+  Query string esperada (montada pelo backend):
+    ?token_confirmacao=...&acao=...&expira_em_segundos=...   (sucesso)
+    ?erro=...                                                  (falha)
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmando...</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #0f1115;
+      color: #e6e6e6;
+    }
+    p { font-size: 0.95rem; opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <p id="mensagem">Confirmando, aguarde...</p>
+
+  <script>
+    import { FRONT_ORIGIN } from "../../../../js/config.js";
+    // Mesma origin declarada em stepUp.js (FRONTEND_ORIGIN) -- as duas
+    // pontas do postMessage precisam concordar. Preencher com a URL
+    // real de produção antes de subir; localhost aceito em dev.
+    const FRONTEND_ORIGIN = FRONT_ORIGIN;
+
+    function origemDestinoConfiavel() {
+      // window.opener.location não é legível entre origins diferentes
+      // (é exatamente por isso que confiamos em FRONTEND_ORIGIN fixo
+      // como targetOrigin do postMessage, não em ler a origin do
+      // opener). Aqui só decidimos qual origin usar como destino.
+      return FRONTEND_ORIGIN;
+    }
+
+    function finalizar(dados) {
+      const mensagemEl = document.getElementById("mensagem");
+
+      if (!window.opener) {
+        // Sem aba de origem (ex: usuário abriu este link direto, ou o
+        // popup foi destacado/recarregado) -- não há para quem mandar
+        // o resultado. Não expõe o token na tela por segurança;
+        // apenas orienta a fechar.
+        mensagemEl.textContent = dados.erro
+          ? "Não foi possível concluir. Feche esta janela e tente novamente."
+          : "Confirmação recebida. Feche esta janela e volte para a aba anterior.";
+        return;
+      }
+
+      try {
+        window.opener.postMessage(
+          { tipo: "stepup-resultado", ...dados },
+          origemDestinoConfiavel()
+        );
+      } catch (e) {
+        // targetOrigin não bateu com a origin real do opener (ex:
+        // FRONTEND_ORIGIN mal configurado) -- não silencia, mostra
+        // algo visível em vez de fechar sem avisar nada.
+        mensagemEl.textContent = "Não foi possível repassar a confirmação. Feche esta janela e tente novamente.";
+        console.error("stepup_callback: falha ao postMessage para o opener", e);
+        return;
+      }
+
+      mensagemEl.textContent = "Confirmado! Você já pode fechar esta janela.";
+      // Pequeno atraso só para não fechar tão abrupto que pareça um
+      // bug -- a aba principal já recebeu o resultado e prossegue
+      // independente deste setTimeout.
+      setTimeout(() => window.close(), 400);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const erro = params.get("erro");
+
+    if (erro) {
+      finalizar({ erro });
+    } else {
+      const token = params.get("token_confirmacao");
+      const acao = params.get("acao");
+
+      if (!token || !acao) {
+        finalizar({ erro: "falha_google" });
+      } else {
+        finalizar({ token, acao });
+      }
+    }
+  </script>
+</body>
+</html>

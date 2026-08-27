@@ -9,8 +9,8 @@
 // conta, para quem quiser usá-lo como segundo fator em logins futuros
 // por senha. Ao definir a senha com sucesso, o backend já libera a
 // sessão completa.
-import { exibirMensagem } from "../../../shared/feedback.js";
-import { URL_BASE_API } from "../../../config.js";
+import { exibirMensagem } from "../../shared/feedback.js";
+import { URL_BASE_API } from "../../config.js";
 
 const formSenha = document.getElementById("form-senha");
 
@@ -30,7 +30,7 @@ async function sincronizarPasso() {
 
     if (!resp.ok) {
       // Sessão inválida/expirada -- volta para o login.
-      window.location.href = "../../../../html/pages/auth/login.html";
+      window.location.href = "../../../html/pages/auth/login.html";
       return;
     }
 
@@ -40,7 +40,7 @@ async function sincronizarPasso() {
       // Sessão não está mais em onboarding (ex.: concluído em outra
       // aba, ou já completa) -- deixa o afterLogin decidir o destino
       // certo em vez de assumir aqui.
-      window.location.href = "../../../../html/pages/auth/afterLogin.html";
+      window.location.href = "../../../html/pages/auth/afterLogin.html";
       return;
     }
 
@@ -65,7 +65,7 @@ formSenha.addEventListener("submit", async (event) => {
   try {
     await concluirOnboarding(senha);
     exibirMensagem("Cadastro concluído! Redirecionando...", "sucesso");
-    window.location.href = "../../../../html/pages/user/standartUser/medicHomePage.html";
+    window.location.href = "../../../html/pages/user/standartUser/medicHomePage.html";
   } catch (erro) {
     console.error("Falha ao definir senha:", erro);
     exibirMensagem(erro.message || "Não foi possível definir a senha.", "erro");

@@ -7,8 +7,8 @@
 // Animação de fundo: /js/shared/particles.js
 // Mensagens de feedback: /js/shared/feedback.js
 
-import { exibirMensagem } from "../../../shared/feedback.js";
-import { URL_BASE_API } from "../../../config.js";
+import { exibirMensagem } from "../../shared/feedback.js";
+import { URL_BASE_API } from "../../config.js";
 
 
 document.getElementById("login-form").addEventListener("submit", async (event) => {
@@ -21,7 +21,7 @@ document.getElementById("login-form").addEventListener("submit", async (event) =
   try {
     const resultado = await enviarLogin(dadosObjeto);
 
-    window.location.href = '/html/pages/auth/afterLogin.html';
+    window.location.href = '../../../html/pages/auth/afterLogin.html';
 
   } catch (erro) {
     console.error("Falha na comunicação:", erro);

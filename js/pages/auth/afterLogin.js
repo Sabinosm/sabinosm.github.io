@@ -14,9 +14,9 @@
 //   - qualquer outra coisa / erro -> volta para o login
 
 import { confirmarSegundoFator, SemAutenticadorDisponivelError, LimiteTentativasExcedidoError } from "./webauthn.js";
-import { exibirMensagem } from "../../../shared/feedback.js";
+import { exibirMensagem } from "../../shared/feedback.js";
 import { consultarStatusSessao } from "./sessionStatus.js";
-import { URL_BASE_API } from "../../../config.js";
+import { URL_BASE_API } from "../../config.js";
 
 const CHAVE_SESSION_STORAGE = "bion-dados-usuario";
 
@@ -24,12 +24,12 @@ const CHAVE_SESSION_STORAGE = "bion-dados-usuario";
 // que decide navegação inicial pós-login. watchSession.js (rodando
 // dentro das homes) nunca precisa disso, só sabe voltar pro login.
 const DESTINO_POR_TIPO = {
-  medico: "../../../../html/pages/user/standartUser/medicHomePage.html",
-  enfermeiro: "../../../../html/pages/user/standartUser/medicHomePage.html",
-  admin: "../../../../html/pages/user/admin/adminHomePage.html",
+  medico: "../../../html/pages/user/standartUser/medicHomePage.html",
+  enfermeiro: "../../../html/pages/user/standartUser/medicHomePage.html",
+  admin: "../../../html/pages/user/admin/adminHomePage.html",
 };
 
-const ROTA_LOGIN = "../../../../html/pages/auth/login.html";
+const ROTA_LOGIN = "../../../html/pages/auth/login.html";
 
 const botaoTentarNovamente = document.getElementById("btn-tentar-novamente");
 
@@ -76,7 +76,7 @@ async function tratarPosLogin() {
 
     case "onboarding_pendente": {
       const senhaJaDefinida = resultado.senhaDefinida ? "1" : "0";
-      window.location.href = `../../../../html/pages/auth/onboarding.html?senha_definida=${senhaJaDefinida}`;
+      window.location.href = `../../../html/pages/auth/onboarding.html?senha_definida=${senhaJaDefinida}`;
       break;
     }
 
