@@ -99,7 +99,12 @@ function perguntarTipoConvite() {
   hintEdicao.hidden = true;
   esconderFeedback();
   btnToggleStatus.hidden = true;
-  definirModoFormulario(false);
+
+  // ADICIONADO: enquanto o tipo de convite (profissional/admin) ainda
+  // não foi escolhido, não existe formulário válido para submeter --
+  // o botão de salvar fica indisponível até abrirFormularioConvite()
+  // rodar (chamada só depois do clique numa das duas opções abaixo).
+  btnSalvar.hidden = true;
 
   form.hidden = true;
 

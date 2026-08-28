@@ -24,6 +24,11 @@
 import { preencherPainelEmpresa } from './preencherEmpresa.js';
 import { ligarValidacaoEmTempoReal, validarFormularioEdicaoEmpresa, limparErros } from './empresaEditValidation.js';
 import { URL_BASE_API } from '../../config.js';
+// ALTERADO (múltiplos admins por empresa): edição de empresa passou a
+// ser restrita ao super admin no backend -- reaproveita o mesmo
+// helper de sessão já usado na tela de Profissionais, em vez de
+// duplicar a leitura de sessionStorage aqui.
+import { souSuperAdmin } from '../user/admin/adminProfissionais/adminProfissionaisSessao.js';
 
 const URL_BASE = `${URL_BASE_API}/empresas/`;
 
@@ -140,6 +145,12 @@ function ligarBuscaDeCep() {
 
 // ── alternância modo exibição / edição ─────────────────────────
 function entrarModoEdicao() {
+  // Reforço: mesmo que o botão "Alterar" tenha sido acionado por algum
+  // outro caminho (ex: reexibido manualmente via devtools), não entra
+  // em modo de edição se quem está logado não é super admin -- o PUT
+  // falharia no backend de qualquer forma.
+  if (!souSuperAdmin()) return;
+
   CAMPOS_EDITAVEIS.forEach((id) => {
     const input = document.getElementById(id);
     if (!input) return;
@@ -238,6 +249,17 @@ async function iniciar() {
   ligarBuscaDeCep();
   ligarValidacaoEmTempoReal();
   ligarControlesDeEdicao();
+
+  // ADICIONADO (múltiplos admins por empresa): a rota PUT /empresas/
+  // agora é restrita ao super admin no backend -- esconde o botão
+  // "Alterar" para qualquer outro usuário (admin comum incluso), já
+  // que a tentativa de edição sempre falharia no servidor. Feito antes
+  // de qualquer outra coisa, para não haver um "flash" do botão
+  // habilitado antes de ser escondido.
+  if (!souSuperAdmin()) {
+    const btnAlterar = document.getElementById('empresa-btn-alterar');
+    if (btnAlterar) btnAlterar.hidden = true;
+  }
 
   try {
     empresaAtual = await buscarEmpresa();
