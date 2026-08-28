@@ -104,7 +104,11 @@ function perguntarTipoConvite() {
   // não foi escolhido, não existe formulário válido para submeter --
   // o botão de salvar fica indisponível até abrirFormularioConvite()
   // rodar (chamada só depois do clique numa das duas opções abaixo).
+  // Texto também resetado aqui -- caso o modal tenha sido usado antes
+  // para editar (texto "Salvar alterações"), não queremos esse texto
+  // vazando por um instante antes do hidden=true surtir efeito.
   btnSalvar.hidden = true;
+  btnSalvar.textContent = 'Enviar convite';
 
   form.hidden = true;
 

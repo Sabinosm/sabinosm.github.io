@@ -359,6 +359,20 @@
   color: var(--palette-white-strong);
 }
 
+/* CORRIGIDO (múltiplos admins por empresa): #prof-modal-save é
+   escondido/mostrado via atributo [hidden] em JS (adminProfissionaisModal.js),
+   mas botões dentro de .prof-modal-footer-right provavelmente herdam
+   `display: inline-flex` de uma regra genérica de .btn-primary/.btn-ghost
+   em settings.css ou adminHomePage.css -- essa regra tem a mesma
+   especificidade (ou maior) que o UA stylesheet aplica a [hidden]
+   (que é só `display: none`), então o botão ficava visível mesmo com
+   hidden=true. Reforça aqui com !important para garantir que [hidden]
+   sempre vence, independente de outras folhas de estilo. */
+#prof-modal-save[hidden],
+.prof-modal-footer [hidden] {
+  display: none !important;
+}
+
 /* settings.css define .field-group { max-width: 420px } pensando no
    modal de configurações (mais largo). Aqui no modal de profissional
    isso faz os campos fora de .field-row (telefone, tipo, RQE,
@@ -466,4 +480,3 @@
   .prof-modal { max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
   .field-row { flex-direction: column; gap: 0; }
 }
-
