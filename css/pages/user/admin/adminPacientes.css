@@ -1,0 +1,38 @@
+/* ============================================
+   B-íon — Pacientes
+   Reusa a toolbar de busca/filtros e a paginação já definidas em
+   adminProfissionais.css (mesmas classes: .toolbar, .search-input,
+   .filter-panel, .pagination, .page-btn, .empty-state...) -- por
+   isso este arquivo só acrescenta o que for específico de Pacientes,
+   sem redefinir nada que já existe lá.
+
+   Linkar DEPOIS de adminProfissionais.css no <head> desta página.
+   ============================================ */
+
+/* Mesma centralização de conteúdo usada em Profissionais, para as
+   duas telas terem a mesma largura de leitura. */
+.main {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
+    margin-right: auto;
+  }
+}
+
+/* Filtro "quem cadastrou" ainda não tem uma fonte de dados para virar
+   select (ver TODO em adminPacientesLista.js) -- por ora é um botão
+   de mesmo estilo dos demais campos do painel de filtro, ocupando o
+   espaço reservado até virar um select real. */
+.filter-field--placeholder .btn-ghost {
+  width: 100%;
+  text-align: left;
+}
+
+@media (max-width: 760px) {
+  .main { max-width: 100%; margin-left: 0; }
+}

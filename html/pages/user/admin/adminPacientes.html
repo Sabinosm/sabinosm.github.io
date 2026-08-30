@@ -7,6 +7,9 @@
 <script src="../../../../js/pages/user/themeLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminProfissionais.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminPacientes.css">
+<link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
 </head>
 <body>
 
@@ -80,7 +83,7 @@
 
     <!-- espaçador empurra o grupo de sistema para o rodapé -->
     <div class="nav-spacer"></div>
- 
+
     <div class="nav-group nav-group--system">
       <button type="button" class="nav-item nav-item--profile" id="open-settings">
         <span class="nav-avatar" id="nav-avatar-iniciais"></span>
@@ -105,37 +108,72 @@
         <h1>Pacientes</h1>
         <p class="main-subtitle">Todos os pacientes cadastrados na instituição</p>
       </div>
-      
     </header>
 
     <section class="section">
-      <div class="card-list">
 
-        <article class="consult-card">
-          <div class="consult-main">
-            <h3 class="consult-patient">Marcos Vinícius Oliveira</h3>
-            <p class="consult-meta">CPF ***.***.***-21 · Cadastrado em 12/03/2026</p>
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="busca-paciente" placeholder="Buscar por nome ou CPF">
           </div>
-          <button class="btn-ghost">Ver ficha</button>
-        </article>
+          <button class="btn-filter" id="btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Filtros
+          </button>
+        </div>
 
-        <article class="consult-card">
-          <div class="consult-main">
-            <h3 class="consult-patient">Helena Cristina Souza</h3>
-            <p class="consult-meta">CPF ***.***.***-04 · Cadastrado em 08/01/2026</p>
+        <!-- Painel de filtros: status e sexo biológico vão pro servidor
+             (únicos aceitos pela API hoje -- ver find_all_param no
+             backend). "Quem cadastrou" fica como placeholder de UI:
+             não existe filtro correspondente na API ainda. -->
+        <div class="filter-panel" id="filter-panel">
+          <div class="filter-field">
+            <label for="filtro-status">Status</label>
+            <select id="filtro-status">
+              <option value="">Todos</option>
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
+              <option value="obito">Óbito</option>
+            </select>
           </div>
-          <button class="btn-ghost">Ver ficha</button>
-        </article>
-
-        <article class="consult-card">
-          <div class="consult-main">
-            <h3 class="consult-patient">João Pedro Almeida</h3>
-            <p class="consult-meta">CPF ***.***.***-77 · Cadastrado em 22/11/2025</p>
+          <div class="filter-field">
+            <label for="filtro-sexo-biologico">Sexo biológico</label>
+            <select id="filtro-sexo-biologico">
+              <option value="">Todos</option>
+              <option value="masculino">Masculino</option>
+              <option value="feminino">Feminino</option>
+            </select>
           </div>
-          <button class="btn-ghost">Ver ficha</button>
-        </article>
-
+          <!-- "Quem cadastrou": qualquer pessoa pode cadastrar um
+               paciente, e não há filtro correspondente na API
+               (find_all_param não aceita esse parâmetro) -- só o nome
+               de quem cadastrou aparece no card. Fica como botão
+               placeholder -- ver TODO em adminPacientesLista.js. -->
+          <div class="filter-field filter-field--placeholder">
+            <label for="btn-filtro-cadastrado-por">Quem cadastrou</label>
+            <button class="btn-ghost" id="btn-filtro-cadastrado-por" type="button">Selecionar…</button>
+          </div>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="btn-limpar-filtros" type="button">Limpar</button>
+          </div>
+        </div>
       </div>
+
+      <div class="card-list" id="lista-pacientes">
+        <!-- Preenchido dinamicamente por adminPacientesLista.js -->
+      </div>
+
+      <div class="pagination" id="paginacao">
+        <!-- Preenchido dinamicamente por adminPacientesLista.js -->
+      </div>
+
     </section>
 
   </main>
@@ -143,6 +181,7 @@
 
 
 <script type="module" src="../../../../js/pages/user/settingsLoader.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminPacientes/adminPacientesLista.js"></script>
 <script type="module" src="../../../../js/pages/user/initHomePage.js"></script>
 </body>
 </html>
