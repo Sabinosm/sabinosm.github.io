@@ -30,15 +30,36 @@
 // A busca por texto aqui é só client-side, sobre os itens já
 // carregados na página atual -- ver adminPacientesLista.js.
 //
-// Dados sensíveis/completos do paciente só vêm no detalhe (GET
-// /pacientes/<uuid>), e essa rota é protegida por step-up: cada
-// acesso confirma a identidade de quem está vendo e (segundo o que
-// foi combinado) fica registrado que aquela pessoa visualizou o
-// prontuário a partir daquele momento. Por enquanto pedimos
-// confirmação sempre com a ação "visualizar_paciente" -- se o backend
-// vier a diferenciar visualizar/editar como ações de step-up
-// distintas, trocar o parâmetro `acao` de buscarDetalhePaciente por
-// essa ação específica (ver TODO abaixo).
+// ============================================
+// DETALHE DO PACIENTE (ficha completa)
+// ============================================
+//
+//   GET /pacientes/clinico/<uuid>  -> resumo_clinico + alergias[] +
+//                                      doencas_cronicas[] +
+//                                      medicamentos_em_uso[] +
+//                                      consentimento_ativo
+//   GET /pacientes/pessoal/<uuid>  -> dados cadastrais (pessoal: nome,
+//                                      cpf, rg, telefone, email,
+//                                      endereço, contato de emergência)
+//
+// Duas rotas separadas, cada uma protegida por step-up (ação
+// "visualizar_paciente", tipo acao_sensivel) -- mesmo sendo só
+// leitura, o acesso a dado clínico/pessoal completo é sensível o
+// bastante para exigir reconfirmação de identidade e ficar
+// registrado no log de auditoria a partir do momento em que a pessoa
+// visualiza. Cada requisição usa seu PRÓPRIO token: o backend valida
+// tokens de uso único, então NÃO é seguro reusar o mesmo token nas
+// duas chamadas -- é preciso chamar pedirConfirmacao('visualizar_paciente')
+// duas vezes (uma por request).
+//
+// Isso poderia parecer que exige duas confirmações visualmente
+// sobrepostas se as chamadas forem disparadas "em paralelo" (sem
+// await entre elas) -- mas stepup.js serializa internamente chamadas
+// concorrentes a pedirConfirmacao() (ver fila em stepup.js), então do
+// lado de quem chama aqui é seguro usar Promise.all: as duas
+// confirmações acontecem em sequência (uma de cada vez, sem
+// sobreposição visual), e só os fetches finais (já com token em mãos)
+// rodam de fato em paralelo. Ver buscarDetalheCompleto abaixo.
 
 import { URL_BASE_API } from "../../../../config.js";
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../stepup.js";
@@ -100,25 +121,26 @@ export function listarPacientes({ pagina = 0, status, sexoBiologico } = {}) {
   if (status) params.set('status', status);
   if (sexoBiologico) params.set('sexo_biologico', sexoBiologico);
 
-  return requisitar(`/pessoal/resumo?${params.toString()}`, { method: 'GET' });
+  return requisitar(`/resumo?${params.toString()}`, { method: 'GET' });
 }
 
 /**
- * GET /pacientes/<uuid> — detalhe completo do paciente, protegido por
- * step-up. Cada chamada pede reconfirmação de identidade antes de
- * liberar o dado sensível, e (do lado do backend) deve registrar que
- * esta pessoa visualizou o prontuário a partir de agora.
+ * GET /pacientes/clinico/<uuid> — bloco clínico completo do paciente:
+ * resumo_clinico (contadores + flags para os alertas fixos da ficha),
+ * alergias[], doencas_cronicas[], medicamentos_em_uso[] e
+ * consentimento_ativo. Protegido por step-up (ação
+ * "visualizar_paciente") -- pede sua PRÓPRIA confirmação e usa um
+ * token de uso único.
  *
- * TODO: se o backend vier a diferenciar ação "visualizar" de
- * "editar" no step-up, trocar a string fixa abaixo pelo parâmetro
- * correspondente (ex: acao = modoEdicao ? 'editar_paciente' :
- * 'visualizar_paciente').
+ * Geralmente você não chama isso direto -- use
+ * buscarDetalheCompleto(uuid), que busca este endpoint junto com
+ * buscarDetalhePessoal() com a serialização de step-up correta.
  *
  * @param {string} uuid
  * @returns {Promise<object|undefined>} resolve com a resposta da API,
  *   ou undefined se o usuário cancelar a confirmação.
  */
-export async function buscarDetalhePaciente(uuid) {
+export async function buscarDetalheClinico(uuid) {
   let token;
   try {
     token = await pedirConfirmacao('visualizar_paciente');
@@ -127,8 +149,70 @@ export async function buscarDetalhePaciente(uuid) {
     throw erro;
   }
 
-  return requisitar(`/${uuid}`, {
+  return requisitar(`/clinico/${uuid}`, {
     method: 'GET',
     headers: { 'X-Stepup-Token': token },
   });
+}
+
+/**
+ * GET /pacientes/pessoal/<uuid> — dados cadastrais completos do
+ * paciente (nome, CPF, RG, telefone, email, endereço, contato de
+ * emergência). Protegido por step-up (ação "visualizar_paciente") --
+ * pede sua PRÓPRIA confirmação e usa um token de uso único (diferente
+ * do usado em buscarDetalheClinico, mesmo sendo a mesma ação).
+ *
+ * Geralmente você não chama isso direto -- use
+ * buscarDetalheCompleto(uuid).
+ *
+ * @param {string} uuid
+ * @returns {Promise<object|undefined>} resolve com a resposta da API,
+ *   ou undefined se o usuário cancelar a confirmação.
+ */
+export async function buscarDetalhePessoal(uuid) {
+  let token;
+  try {
+    token = await pedirConfirmacao('visualizar_paciente');
+  } catch (erro) {
+    if (erro instanceof ConfirmacaoCanceladaError) return; // usuário desistiu
+    throw erro;
+  }
+
+  return requisitar(`/pessoal/${uuid}`, {
+    method: 'GET',
+    headers: { 'X-Stepup-Token': token },
+  });
+}
+
+/**
+ * Busca a ficha completa do paciente (clínico + pessoal) para a
+ * página de detalhe, pedindo as duas confirmações de step-up
+ * necessárias e disparando os dois fetches finais em paralelo.
+ *
+ * Do ponto de vista de quem chama, isto é um Promise.all comum -- a
+ * serialização das duas confirmações de identidade (para não
+ * sobrepor visualmente o modal de step-up) já é resolvida dentro de
+ * stepup.js, de forma transparente aqui.
+ *
+ * Se o usuário cancelar QUALQUER UMA das duas confirmações, a busca
+ * inteira é tratada como cancelada (retorna undefined) -- não faz
+ * sentido mostrar a ficha com só metade dos dados.
+ *
+ * @param {string} uuid
+ * @returns {Promise<{clinico: object, pessoal: object}|undefined>}
+ *   resolve com os dois blocos de dados (cada um já no formato
+ *   `{ status, message, data }` da API), ou undefined se o usuário
+ *   cancelar alguma das confirmações.
+ */
+export async function buscarDetalheCompleto(uuid) {
+  const [clinico, pessoal] = await Promise.all([
+    buscarDetalheClinico(uuid),
+    buscarDetalhePessoal(uuid),
+  ]);
+
+  // Qualquer uma das duas pode vir undefined se o usuário cancelou
+  // aquela confirmação específica -- trata como cancelamento total.
+  if (!clinico || !pessoal) return undefined;
+
+  return { clinico, pessoal };
 }

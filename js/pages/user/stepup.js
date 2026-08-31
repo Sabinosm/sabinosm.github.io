@@ -92,6 +92,18 @@ export class PopupBloqueadoError extends Error {
  *  - ou pede a senha atual e abre um popup para o Google, se não
  *    tiver WebAuthn (fallback).
  *
+ * CHAMADAS CONCORRENTES: o modal é um único overlay compartilhado no
+ * DOM (ver garantirModalCarregado) -- não seria seguro abrir duas
+ * confirmações ao mesmo tempo sobre os mesmos elementos (o segundo
+ * `iniciar()` pisaria no estado visual e nos listeners do primeiro).
+ * Por isso, chamadas a pedirConfirmacao() são automaticamente
+ * SERIALIZADAS: se já existe uma confirmação em andamento, a próxima
+ * espera a anterior terminar (resolver ou rejeitar) antes de abrir o
+ * modal para a nova ação. Quem chama não precisa se preocupar com
+ * isso -- ex: dois `pedirConfirmacao(...)` disparados "ao mesmo
+ * tempo" (sem await entre eles) resultam em duas confirmações em
+ * sequência, uma de cada vez, cada uma com seu próprio token.
+ *
  * @param {string} acao Identificador da ação sensível (mesmo valor
  *   usado no decorator @requer_confirmacao_recente do backend).
  * @returns {Promise<string>} O token de confirmação, de uso único e
@@ -101,10 +113,22 @@ export class PopupBloqueadoError extends Error {
  *   fallback Google.
  * @throws {Error} Falha de rede ou erro inesperado do backend.
  */
-export async function pedirConfirmacao(acao) {
-  await garantirModalCarregado();
-  return abrirModalConfirmacao(acao);
+export function pedirConfirmacao(acao) {
+  // Encadeia esta chamada depois da anterior, sucesso ou falha -- o
+  // .catch(() => {}) no elo interno da fila garante que uma rejeição
+  // (ex: ConfirmacaoCanceladaError) não trave a fila para quem vier
+  // depois; o erro real ainda é propagado normalmente pela Promise
+  // retornada aqui, só não pela fila interna.
+  const executarAgora = () => garantirModalCarregado().then(() => abrirModalConfirmacao(acao));
+  const resultado = filaConfirmacao.then(executarAgora, executarAgora);
+  filaConfirmacao = resultado.catch(() => {});
+  return resultado;
 }
+
+// Fila interna que serializa chamadas concorrentes a
+// pedirConfirmacao() -- ver comentário acima. Começa resolvida (não
+// há nenhuma confirmação em andamento ainda).
+let filaConfirmacao = Promise.resolve();
 
 // ============================================
 // Carregamento sob demanda do partial do modal

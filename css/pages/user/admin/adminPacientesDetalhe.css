@@ -1,0 +1,397 @@
+/* ============================================
+   B-íon — Ficha do Paciente (detalhe)
+   Reusa tokens de themes.css e os padrões de layout de
+   adminHomePage.css/adminProfissionais.css. Reaproveita as classes de
+   abas do modal de Configurações (.settings-tabs/.settings-panel são
+   pensadas para um modal estreito de 200px de coluna -- aqui usamos
+   uma variante própria, .patient-tabs/.patient-panel, para uma faixa
+   horizontal de abas no topo de uma página larga, não uma coluna
+   lateral dentro de um modal).
+   ============================================ */
+
+.main {
+  max-width: 960px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 960px) / 2));
+    margin-right: auto;
+  }
+}
+
+/* ===== Header da ficha: nome, status, metadados de cadastro ===== */
+.patient-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.patient-header-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.patient-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--palette-white-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.patient-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.patient-name-row h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.patient-meta {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.patient-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  transition: color 0.15s ease;
+}
+.patient-back:hover { color: var(--accent); }
+.patient-back svg { width: 16px; height: 16px; }
+
+/* ===== Alertas clínicos fixos (sempre visíveis, independente da aba
+   ativa) -- resumo_clinico do backend já vem pronto pra isso. ===== */
+.patient-alerts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.alert-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  box-shadow:
+    4px 4px 10px var(--neu-shadow-dark),
+    -4px -4px 10px var(--neu-shadow-light);
+}
+
+/* Variante de destaque: usada quando há alergia grave (tem_grave) --
+   a única condição em que um alerta clínico precisa se destacar
+   visualmente mesmo antes de abrir qualquer aba. */
+.alert-card--critico {
+  border-color: var(--danger, #e0625b);
+  background: rgba(224, 98, 91, 0.08);
+}
+
+.alert-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.alert-card--critico .alert-icon { color: var(--danger, #e0625b); }
+.alert-icon svg { width: 100%; height: 100%; }
+
+.alert-body { min-width: 0; }
+
+.alert-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.alert-card--critico .alert-title { color: var(--danger, #e0625b); }
+
+.alert-summary {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.alert-summary-item {
+  display: block;
+}
+
+.alert-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ===== Abas da ficha (faixa horizontal, não coluna lateral) ===== */
+.patient-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.patient-tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 10px 4px;
+  margin-right: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.patient-tab:hover {
+  color: var(--text);
+}
+
+.patient-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.patient-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.patient-tab--active .patient-tab-count {
+  background: var(--status-bg);
+  border-color: transparent;
+  color: var(--accent);
+}
+
+.patient-panel {
+  display: none;
+}
+.patient-panel--active {
+  display: block;
+}
+
+/* ===== Cabeçalho de bloco dentro de uma aba (título + editar) ===== */
+.block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.block-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.block-header .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.block-header .btn-ghost svg { width: 14px; height: 14px; }
+
+/* ===== Grid de campos somente-leitura (aba Pessoal) ===== */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 24px;
+  margin-bottom: 28px;
+}
+
+.field-readonly dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.field-readonly dd {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.field-readonly dd:empty::before,
+.field-readonly dd.field-readonly--vazio::before {
+  content: "—";
+  color: var(--text-muted);
+}
+
+/* ===== Cards de item clínico (alergia, doença, medicamento) ===== */
+.clinical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.clinical-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow:
+    4px 4px 10px var(--neu-shadow-dark),
+    -4px -4px 10px var(--neu-shadow-light);
+}
+
+.clinical-card--grave {
+  border-color: var(--danger, #e0625b);
+}
+
+.clinical-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.clinical-card-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.clinical-card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.clinical-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.clinical-tag--grave {
+  background: rgba(224, 98, 91, 0.12);
+  border-color: rgba(224, 98, 91, 0.3);
+  color: var(--danger, #e0625b);
+}
+
+.clinical-tag--moderada {
+  background: var(--status-bg);
+  border-color: transparent;
+  color: var(--status-fg);
+}
+
+.clinical-tag--ativo,
+.clinical-tag--ativa {
+  background: var(--status-bg);
+  border-color: transparent;
+  color: var(--status-fg);
+}
+
+.clinical-card-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.clinical-card-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.clinical-card-meta strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Sub-lista de reações dentro de uma alergia (histórico de ocorrências) */
+.reactions-list {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reaction-item {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* ===== Consentimento (aba Clínico) ===== */
+.consent-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 24px;
+}
+
+.consent-banner svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--status-fg);
+}
+
+.consent-banner--ausente svg {
+  color: var(--danger, #e0625b);
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 760px) {
+  .main { max-width: 100%; margin-left: 0; }
+  .patient-alerts { grid-template-columns: 1fr; }
+  .field-grid { grid-template-columns: 1fr; }
+  .patient-header { flex-direction: column; }
+}

@@ -14,10 +14,11 @@
 // não há um segundo campo com o uuid nesta listagem.
 //
 // Qualquer outro dado do paciente (CPF completo, endereço, prontuário
-// etc.) só é acessado depois de um step-up de identidade -- ver botão
-// "Ver ficha" abaixo, que hoje só existe como placeholder clicável
-// (chama pedirConfirmacao, mas a abertura da ficha em si ainda não
-// está implementada; ver TODO em abrirFichaPaciente).
+// etc.) só é acessado depois de um step-up de identidade -- o botão
+// "Ver ficha" abaixo navega para adminPacienteDetalhe.html, que é
+// quem de fato pede a confirmação e busca os dados completos (ver
+// buscarDetalheCompleto em adminPacientesApi.js). Nada sensível é
+// buscado aqui na lista.
 //
 // Paginação: mesmo esquema de profissionais -- 'pagina' é o número da
 // página (0, 1, 2...), tamanho fixo em 8 por página (repo faz
@@ -40,8 +41,7 @@
 // em profissionais.
 // ============================================
 
-import { ApiError, listarPacientes, buscarDetalhePaciente } from "./adminPacientesApi.js";
-import { ConfirmacaoCanceladaError } from "../../stepup.js";
+import { ApiError, listarPacientes } from "./adminPacientesApi.js";
 
 const POR_PAGINA = 8;
 
@@ -298,27 +298,13 @@ function criarCardPaciente(p) {
 }
 
 // ============================================
-// Ficha do paciente — protegida por step-up.
-//
-// TODO: hoje isso só chama a confirmação e busca o detalhe via
-// buscarDetalhePaciente (que já embute o pedirConfirmacao). A UI da
-// ficha em si (modal/página com os dados completos) ainda não existe
-// -- este é o "meio caminho andado" pedido: o clique já dispara o
-// fluxo de confirmação de identidade e busca os dados, só falta
-// desenhar onde/como exibi-los.
+// Ficha do paciente — navega para a página de detalhe, que é quem
+// pede o step-up e busca os dados completos (clínico + pessoal). O
+// uuid vai na querystring; nada sensível trafega aqui na lista.
 // ============================================
-async function abrirFichaPaciente(pacienteResumo) {
-  try {
-    const resposta = await buscarDetalhePaciente(pacienteResumo.uuid);
-    if (!resposta) return; // usuário cancelou a confirmação
-    // TODO: renderizar a ficha completa (resposta.data) em um
-    // modal/painel próprio, ainda a implementar.
-    console.log('Detalhe do paciente (ficha ainda não implementada na UI):', resposta.data);
-  } catch (erro) {
-    if (erro instanceof ConfirmacaoCanceladaError) return;
-    const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível abrir a ficha do paciente.';
-    console.error(mensagem);
-  }
+function abrirFichaPaciente(pacienteResumo) {
+  const params = new URLSearchParams({ uuid: pacienteResumo.uuid });
+  window.location.href = `adminPacienteDetalhe.html?${params.toString()}`;
 }
 
 // ============================================
