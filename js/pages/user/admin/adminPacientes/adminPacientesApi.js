@@ -121,7 +121,7 @@ export function listarPacientes({ pagina = 0, status, sexoBiologico } = {}) {
   if (status) params.set('status', status);
   if (sexoBiologico) params.set('sexo_biologico', sexoBiologico);
 
-  return requisitar(`/resumo?${params.toString()}`, { method: 'GET' });
+  return requisitar(`/pessoal/resumo?${params.toString()}`, { method: 'GET' });
 }
 
 /**
