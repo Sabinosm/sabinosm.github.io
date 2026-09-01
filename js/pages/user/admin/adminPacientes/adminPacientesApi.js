@@ -216,3 +216,93 @@ export async function buscarDetalheCompleto(uuid) {
 
   return { clinico, pessoal };
 }
+
+// ============================================
+// CRIAÇÃO DE PACIENTE
+// ============================================
+//
+// Fluxo mínimo obrigatório: dados essenciais (passo 1) + consentimento
+// LGPD (passo 2, normal ou dispensado por emergência). Blocos clínicos
+// (alergias, doenças crônicas, medicamentos, tipo sanguíneo) NÃO fazem
+// parte da criação -- são adicionados depois, a qualquer momento, pela
+// própria ficha do paciente (ver TODOs em adminPacienteDetalheLista.js).
+//
+// Nenhuma dessas rotas de escrita é protegida por step-up (diferente
+// das rotas de leitura de detalhe) -- CRIAR um paciente novo não tem
+// um "alvo" preexistente para step-up proteger da mesma forma que
+// visualizar/editar um já existente. Se isso mudar no backend, ajustar
+// aqui.
+
+/**
+ * POST /pacientes/pessoal/ — cria o paciente (Paciente +
+ * PacienteDadosPessoais). Retorna o uuid que alimenta todos os passos
+ * seguintes (consentimento, blocos clínicos).
+ *
+ * @param {object} payload
+ * @param {string} payload.nome_completo
+ * @param {string} payload.cpf                — só dígitos
+ * @param {string} payload.telefone            — só dígitos
+ * @param {string} payload.sexo_biologico      — 'F' | 'M'
+ * @param {string} payload.data_nascimento     — 'YYYY-MM-DD'
+ * @param {string} [payload.email]
+ * @param {string} [payload.logradouro]
+ * @param {string} [payload.numero_residencia]
+ * @param {string} [payload.cep]
+ * @param {string} [payload.contato_emergencia_nome]
+ * @param {string} [payload.contato_emergencia_telefone]
+ * @returns {Promise<object>} resposta da API, `data.uuid` é o
+ *   identificador do paciente recém-criado.
+ */
+export function criarPacientePessoal(payload) {
+  return requisitar('/pessoal/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Os 4 valores aceitos pelo enum canal_coleta (coluna do banco). */
+export const CANAIS_COLETA_CONSENTIMENTO = [
+  'presencial-papel',
+  'presencial-digital',
+  'portal-online',
+  'totem',
+];
+
+/**
+ * POST /pacientes/lgpd/<uuid>/consentimentos — fluxo normal de
+ * consentimento (paciente presente e capaz de consentir).
+ *
+ * @param {string} uuid
+ * @param {object} payload
+ * @param {string} payload.versao_termo   — ex: 'v2.1'
+ * @param {string} payload.canal_coleta   — um de CANAIS_COLETA_CONSENTIMENTO
+ * @returns {Promise<object>} resposta da API (201), data.status === 'ativo'
+ */
+export function registrarConsentimento(uuid, { versao_termo, canal_coleta }) {
+  return requisitar(`/lgpd/${uuid}/consentimentos`, {
+    method: 'POST',
+    body: JSON.stringify({ versao_termo, canal_coleta }),
+  });
+}
+
+/**
+ * POST /pacientes/lgpd/<uuid>/consentimentos/dispensar-emergencia —
+ * usado quando não é possível coletar o consentimento no momento
+ * (paciente inconsciente, admissão de urgência, etc.). Exige uma
+ * justificativa textual, que fica registrada em `observacao` na
+ * resposta e é a base do log de auditoria dessa dispensa.
+ *
+ * O consentimento nasce com status "dispensado_emergencia" (não
+ * "ativo") -- fica sinalizado como pendente de coleta numa consulta
+ * futura; ver comentário no formulário de criação sobre isso.
+ *
+ * @param {string} uuid
+ * @param {string} motivo — justificativa da dispensa (obrigatória)
+ * @returns {Promise<object>} resposta da API (201)
+ */
+export function dispensarConsentimentoEmergencia(uuid, motivo) {
+  return requisitar(`/lgpd/${uuid}/consentimentos/dispensar-emergencia`, {
+    method: 'POST',
+    body: JSON.stringify({ motivo }),
+  });
+}

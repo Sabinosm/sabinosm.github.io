@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Novo Paciente</title>
+<script src="../../../../js/pages/user/themeLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminProfissionais.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminPacientesCriacao.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">B-íon</div>
+
+    <div class="nav-group nav-group--work">
+      <a href="adminHomePage.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="3" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="12" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="3" y="16" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Gerenciamento</span>
+      </a>
+      <a href="adminPacientes.html" class="nav-item nav-item--active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Pacientes</span>
+      </a>
+      <a href="adminProfissionais.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="9" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.5 20c0-3.5 2.8-6 6.5-6s6.5 2.5 6.5 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 4.5c1.6.4 2.8 1.9 2.8 3.5S17.6 11.1 16 11.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 14.3c1.9.7 3.2 2.6 3.2 4.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Profissionais</span>
+      </a>
+      <a href="../../enterprise/adminEmpresa.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 21V6l8-3 8 3v15" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21v-6h6v6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 10h.01M12 10h.01M15 10h.01M9 14h.01M15 14h.01" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Empresa</span>
+      </a>
+      <a href="adminEstatisticas.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 20V10M11 20V4M18 20v-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Estatísticas</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 4h9a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8l4-4z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 4v4H5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 13.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Auditoria</span>
+      </a>
+    </div>
+
+    <div class="nav-spacer"></div>
+
+    <div class="nav-group nav-group--system">
+      <button type="button" class="nav-item nav-item--profile" id="open-settings">
+        <span class="nav-avatar" id="nav-avatar-iniciais"></span>
+        <span class="nav-label-group">
+          <span class="nav-label" id="nav-nome-usuario"></span>
+          <span class="nav-sublabel">· Perfil</span>
+        </span>
+        <span class="nav-profile-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <a href="adminPacientes.html" class="patient-back" style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 16px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Cancelar e voltar para Pacientes
+    </a>
+
+    <header class="main-header">
+      <div>
+        <h1>Novo paciente</h1>
+        <p class="main-subtitle">Dados essenciais e consentimento LGPD. Alergias, medicamentos e doenças crônicas podem ser adicionados depois, na ficha do paciente.</p>
+      </div>
+    </header>
+
+    <!-- ===== Indicador de etapas ===== -->
+    <div class="creation-steps">
+      <div class="creation-step creation-step--active" id="step-indicator-essencial">
+        <span class="creation-step-number">1</span>
+        Essencial
+      </div>
+      <div class="creation-step-divider"></div>
+      <div class="creation-step" id="step-indicator-consentimento">
+        <span class="creation-step-number">2</span>
+        Consentimento
+      </div>
+    </div>
+
+    <div id="mensagemFeedback" class="prof-form-feedback" role="alert" aria-live="polite"></div>
+
+    <!-- ===== PASSO 1: ESSENCIAL ===== -->
+    <section class="creation-panel creation-panel--active" id="painel-essencial">
+      <div class="creation-card">
+
+        <p class="creation-section-title">Identificação</p>
+        <div class="field-group">
+          <label class="field-label" for="pac-nome">Nome completo</label>
+          <input class="field-input" type="text" id="pac-nome" autocomplete="name">
+          <p class="field-error" id="pac-nome-error"></p>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-cpf">CPF</label>
+            <input class="field-input" type="text" id="pac-cpf" placeholder="000.000.000-00" inputmode="numeric">
+            <p class="field-error" id="pac-cpf-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-nascimento">Data de nascimento</label>
+            <input class="field-input" type="date" id="pac-nascimento">
+            <p class="field-error" id="pac-nascimento-error"></p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="pac-sexo">Sexo biológico</label>
+          <select class="field-input" id="pac-sexo">
+            <option value="">Selecione</option>
+            <option value="F">Feminino</option>
+            <option value="M">Masculino</option>
+          </select>
+          <p class="field-error" id="pac-sexo-error"></p>
+        </div>
+
+        <p class="creation-section-title">Contato</p>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-telefone">Telefone</label>
+            <input class="field-input" type="tel" id="pac-telefone" placeholder="(11) 91234-5678">
+            <p class="field-error" id="pac-telefone-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-email">E-mail <span class="field-optional">(opcional)</span></label>
+            <input class="field-input" type="email" id="pac-email" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Campos do formulário completo -- opcionais no mínimo, mas
+             fazem parte do mesmo POST /pacientes/pessoal/ quando
+             preenchidos. Ficam recolhidos por padrão pra não pesar o
+             fluxo rápido (ex: dentro de consulta). -->
+        <details style="margin-top: 8px;">
+          <summary class="btn-ghost btn-ghost--sm" style="display: inline-block; cursor: pointer;">+ Endereço e contato de emergência (opcional)</summary>
+
+          <p class="creation-section-title">Endereço</p>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="pac-logradouro">Logradouro</label>
+              <input class="field-input" type="text" id="pac-logradouro" placeholder="Rua, número">
+            </div>
+            <div class="field-group field-group--sm">
+              <label class="field-label" for="pac-numero">Número</label>
+              <input class="field-input" type="text" id="pac-numero">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-cep">CEP</label>
+            <input class="field-input" type="text" id="pac-cep" placeholder="00000-000" inputmode="numeric">
+          </div>
+
+          <p class="creation-section-title">Contato de emergência</p>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="pac-emergencia-nome">Nome</label>
+              <input class="field-input" type="text" id="pac-emergencia-nome">
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="pac-emergencia-telefone">Telefone</label>
+              <input class="field-input" type="tel" id="pac-emergencia-telefone" placeholder="(11) 91234-5678">
+            </div>
+          </div>
+        </details>
+
+      </div>
+
+      <div class="creation-footer">
+        <div class="creation-footer-right">
+          <button class="btn-primary" type="button" id="btn-avancar-consentimento">Avançar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PASSO 2: CONSENTIMENTO ===== -->
+    <section class="creation-panel" id="painel-consentimento">
+      <div class="creation-card">
+
+        <p class="creation-section-title">Como registrar o consentimento?</p>
+
+        <div class="consent-mode-toggle">
+          <button type="button" class="consent-mode-option consent-mode-option--active" id="btn-modo-normal" data-modo="normal">
+            <p class="consent-mode-title">Consentimento coletado</p>
+            <p class="consent-mode-desc">O paciente está presente e concorda com o termo de uso de dados.</p>
+          </button>
+          <button type="button" class="consent-mode-option consent-mode-option--emergencia" id="btn-modo-emergencia" data-modo="emergencia">
+            <p class="consent-mode-title">Dispensar por emergência</p>
+            <p class="consent-mode-desc">Não é possível coletar consentimento agora (paciente inconsciente, urgência, etc.).</p>
+          </button>
+        </div>
+
+        <!-- Modo normal -->
+        <div id="bloco-consentimento-normal">
+          <div class="field-group">
+            <label class="field-label" for="pac-versao-termo">Versão do termo</label>
+            <input class="field-input" type="text" id="pac-versao-termo" value="v2.1">
+            <p class="field-hint">Versão do termo de consentimento apresentado ao paciente.</p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-canal-coleta">Canal de coleta</label>
+            <select class="field-input" id="pac-canal-coleta">
+              <option value="presencial-digital">Presencial · digital</option>
+              <option value="presencial-papel">Presencial · papel</option>
+              <option value="portal-online">Portal online</option>
+              <option value="totem">Totem</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Modo emergência -->
+        <div id="bloco-consentimento-emergencia" class="consent-emergencia-box">
+          <p class="consent-emergencia-hint">
+            O consentimento nasce com status <strong>dispensado_emergencia</strong> em vez de
+            <strong>ativo</strong>. Isso fica registrado no histórico do paciente e sinaliza que o
+            consentimento formal ainda precisa ser coletado numa consulta futura, assim que o
+            paciente estiver em condições de consentir.
+          </p>
+          <div class="field-group" style="max-width: none;">
+            <label class="field-label" for="pac-motivo-emergencia">Justificativa</label>
+            <textarea class="field-input" id="pac-motivo-emergencia" placeholder="Descreva o motivo da dispensa (ex: paciente inconsciente, admissão via SAMU, base legal aplicável...)."></textarea>
+            <p class="field-error" id="pac-motivo-emergencia-error"></p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="creation-footer">
+        <button class="btn-ghost" type="button" id="btn-voltar-essencial">Voltar</button>
+        <div class="creation-footer-right">
+          <button class="btn-primary" type="button" id="btn-concluir-cadastro">Concluir cadastro</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+
+<script type="module" src="../../../../js/pages/user/settingsLoader.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminPacientes/adminPacienteCriacao.js"></script>
+<script type="module" src="../../../../js/pages/user/initHomePage.js"></script>
+</body>
+</html>

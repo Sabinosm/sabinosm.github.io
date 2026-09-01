@@ -1,0 +1,178 @@
+/* ============================================
+   B-íon — Criação de Paciente
+   Reusa .field-group/.field-error/.field-input--invalid de
+   adminProfissionais.css e .prof-form-feedback (mesma classe, cores
+   reaproveitadas). Linkar DEPOIS de adminProfissionais.css.
+   ============================================ */
+
+.main {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 720px) / 2));
+    margin-right: auto;
+  }
+}
+
+/* ===== Indicador de etapas (Essencial -> Consentimento) ===== */
+.creation-steps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.creation-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.creation-step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.creation-step--active .creation-step-number {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--palette-white);
+}
+.creation-step--active { color: var(--text-strong); }
+
+.creation-step--concluido .creation-step-number {
+  background: var(--status-bg);
+  border-color: transparent;
+  color: var(--status-fg);
+}
+
+.creation-step-divider {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  max-width: 60px;
+}
+
+.creation-panel {
+  display: none;
+}
+.creation-panel--active {
+  display: block;
+}
+
+.creation-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  box-shadow:
+    4px 4px 10px var(--neu-shadow-dark),
+    -4px -4px 10px var(--neu-shadow-light);
+}
+
+.creation-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin: 24px 0 14px;
+}
+.creation-section-title:first-child { margin-top: 0; }
+
+/* ===== Consentimento: escolha entre fluxo normal e dispensa ===== */
+.consent-mode-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.consent-mode-option {
+  flex: 1;
+  text-align: left;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.consent-mode-option--active {
+  border-color: var(--accent);
+}
+
+.consent-mode-option--emergencia.consent-mode-option--active {
+  border-color: var(--danger, #e0625b);
+}
+
+.consent-mode-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.consent-mode-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.consent-emergencia-box {
+  display: none;
+  background: rgba(224, 98, 91, 0.08);
+  border: 1px solid rgba(224, 98, 91, 0.3);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-top: 4px;
+}
+.consent-emergencia-box--visivel { display: block; }
+
+.consent-emergencia-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+textarea.field-input {
+  resize: vertical;
+  min-height: 84px;
+  font-family: inherit;
+}
+
+/* ===== Rodapé com ações (voltar / avançar / concluir) ===== */
+.creation-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.creation-footer-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+@media (max-width: 760px) {
+  .main { max-width: 100%; margin-left: 0; }
+  .creation-card { padding: 20px; }
+  .consent-mode-toggle { flex-direction: column; }
+}
