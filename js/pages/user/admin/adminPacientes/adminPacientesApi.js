@@ -225,7 +225,7 @@ export async function buscarDetalheCompleto(uuid) {
 // LGPD (passo 2, normal ou dispensado por emergência). Blocos clínicos
 // (alergias, doenças crônicas, medicamentos, tipo sanguíneo) NÃO fazem
 // parte da criação -- são adicionados depois, a qualquer momento, pela
-// própria ficha do paciente (ver TODOs em adminPacienteDetalheLista.js).
+// própria ficha do paciente (ver TODOs em adminPacientesDetalheLista.js).
 //
 // Nenhuma dessas rotas de escrita é protegida por step-up (diferente
 // das rotas de leitura de detalhe) -- CRIAR um paciente novo não tem

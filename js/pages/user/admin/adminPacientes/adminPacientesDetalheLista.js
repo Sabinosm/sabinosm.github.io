@@ -1,6 +1,6 @@
-// adminPacienteDetalheLista.js
+// adminPacientesDetalheLista.js
 //
-// Orquestra a página de ficha do paciente (adminPacienteDetalhe.html):
+// Orquestra a página de ficha do paciente (adminPacientesDetalhe.html):
 //   1. lê o uuid da querystring (?uuid=...)
 //   2. busca clínico + pessoal via buscarDetalheCompleto (pede as duas
 //      confirmações de step-up necessárias, serializadas -- ver

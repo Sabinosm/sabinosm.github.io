@@ -15,7 +15,7 @@
 //
 // Qualquer outro dado do paciente (CPF completo, endereço, prontuário
 // etc.) só é acessado depois de um step-up de identidade -- o botão
-// "Ver ficha" abaixo navega para adminPacienteDetalhe.html, que é
+// "Ver ficha" abaixo navega para adminPacientesDetalhe.html, que é
 // quem de fato pede a confirmação e busca os dados completos (ver
 // buscarDetalheCompleto em adminPacientesApi.js). Nada sensível é
 // buscado aqui na lista.
@@ -304,7 +304,7 @@ function criarCardPaciente(p) {
 // ============================================
 function abrirFichaPaciente(pacienteResumo) {
   const params = new URLSearchParams({ uuid: pacienteResumo.uuid });
-  window.location.href = `adminPacienteDetalhe.html?${params.toString()}`;
+  window.location.href = `adminPacientesDetalhe.html?${params.toString()}`;
 }
 
 // ============================================

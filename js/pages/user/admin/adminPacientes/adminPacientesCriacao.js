@@ -1,7 +1,7 @@
-// adminPacienteCriacao.js
+// adminPacientesCriacao.js
 //
 // Orquestra o formulário de criação de paciente
-// (adminPacienteCriacao.html): passo Essencial -> passo Consentimento
+// (adminPacientesCriacao.html): passo Essencial -> passo Consentimento
 // -> POST /pacientes/pessoal/ seguido de POST .../consentimentos (ou
 // .../dispensar-emergencia).
 //
@@ -167,7 +167,7 @@ async function enviarCadastro() {
     // Paciente criado com sucesso -- vai direto para a ficha, de onde
     // dá para adicionar alergias, medicamentos e doenças crônicas
     // quando fizer sentido (ver botões "Adicionar" já preparados lá).
-    window.location.href = `adminPacienteDetalhe.html?uuid=${encodeURIComponent(uuid)}`;
+    window.location.href = `adminPacientesDetalhe.html?uuid=${encodeURIComponent(uuid)}`;
   } catch (erro) {
     // Se o paciente já foi criado (uuid existe) mas o consentimento
     // falhou, não tentamos criar de novo -- isso duplicaria o

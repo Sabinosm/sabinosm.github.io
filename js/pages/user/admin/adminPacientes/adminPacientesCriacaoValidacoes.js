@@ -1,4 +1,4 @@
-// adminPacienteCriacaoValidacoes.js
+// adminPacientesCriacaoValidacoes.js
 //
 // Validações do formulário de criação de paciente (passo Essencial).
 // CPF, telefone e nome usam os MESMOS algoritmos já usados no
