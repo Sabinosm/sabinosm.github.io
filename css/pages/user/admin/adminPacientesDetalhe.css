@@ -327,6 +327,19 @@
   color: var(--status-fg);
 }
 
+.clinical-tag--interrompido,
+.clinical-tag--em-remissao {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+.clinical-tag--concluido {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
 .clinical-card-desc {
   font-size: 13px;
   color: var(--text-muted);

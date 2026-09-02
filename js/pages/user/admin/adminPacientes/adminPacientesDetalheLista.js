@@ -453,20 +453,48 @@ function configurarAbas() {
 // ============================================
 // Botões de edição/adição por bloco -- só design por enquanto.
 //
-// TODO (edição por bloco, ainda não implementada):
+// TODO (edição por bloco, ainda não implementada) -- contratos
+// confirmados contra os schemas Pydantic reais do backend:
+//
 //   - #btn-editar-pessoal      -> abrir formulário editável dos dados
 //     pessoais (provavelmente um modal nos moldes de
 //     adminProfissionaisModal.js), PUT /pacientes/pessoal/<uuid>
 //     (endpoint de escrita ainda não confirmado).
-//   - #btn-editar-alergias     -> abrir formulário para
-//     adicionar/editar uma alergia (substancia, tipo_reacao,
-//     gravidade, descricao_reacao, reacoes[]).
-//   - #btn-editar-medicamentos -> abrir formulário para
-//     adicionar/editar um medicamento em uso (descricao, dose,
-//     frequencia, desde, status_uso).
-//   - #btn-editar-cronicas     -> abrir formulário para
-//     adicionar/editar uma doença crônica (codigo_cid10, desde,
-//     status, observacoes).
+//
+//   - #btn-editar-alergias     -> POST /pacientes/clinico/<uuid>/alergias
+//     Campos (AlergiaCreateSchema): substancia* (1-255 chars),
+//     codigo_substancia (opcional, até 100 chars -- não existe no
+//     front hoje, precisa entrar no formulário), flag_confirmado
+//     (bool, default false), tipo_reacao* (enum: cutanea |
+//     respiratoria | anafilaxia | gastrointestinal | cardiovascular |
+//     sistemica), gravidade* (enum: leve | moderada | grave),
+//     descricao_reacao (opcional, texto livre). * = obrigatório.
+//     Cria a alergia E a primeira reação juntas na mesma chamada.
+//
+//   - #btn-editar-medicamentos -> POST /pacientes/clinico/<uuid>/medicamentos-em-uso
+//     Campos (MedicamentoEmUsoCreateSchema): id_catalogo* (inteiro >0,
+//     precisa vir de autocomplete/select contra catalogo_medicamentos
+//     -- NÃO pode ser texto livre, o backend rejeita com 422 se o id
+//     não existir), descricao* (texto livre), dose (opcional, até 100
+//     chars), frequencia (opcional, até 100 chars), desde (opcional,
+//     data), flag_em_uso (bool, default true), status_uso (enum: ativo
+//     | interrompido | concluido -- se omitido, o backend deriva de
+//     flag_em_uso: true vira "ativo", false vira "interrompido").
+//
+//   - #btn-editar-cronicas     -> POST /pacientes/clinico/<uuid>/doencas-cronicas
+//     Campos (DoencaCronicaCreateSchema): codigo_cid10* (1-10 chars),
+//     descricao_cid10* (1-255 chars), desde* (data, obrigatória --
+//     diferente de medicamento, aqui não é opcional), status* (enum:
+//     ativa | em-remissao -- SÓ ESSES DOIS, "inativa"/"resolvida" não
+//     existem no enum), observacoes (opcional, texto livre).
+//
+//   - Tipo sanguíneo -> POST /pacientes/clinico/<uuid>/tipo-sanguineo
+//     Campo único: tipo_sanguineo* (enum: A+ | A- | B+ | B- | AB+ |
+//     AB- | O+ | O- | desconhecido). Ainda não tem botão próprio na
+//     ficha -- hoje só aparece como texto somativo no header/aba
+//     Pessoal; avaliar se merece um "Editar" próprio ou se entra
+//     dentro do bloco Pessoal.
+//
 // Cada uma dessas ações de escrita provavelmente também precisa de
 // step-up próprio (acao_sensivel), já que são write -- não reusar o
 // token de visualizar_paciente, que é de uso único e já foi

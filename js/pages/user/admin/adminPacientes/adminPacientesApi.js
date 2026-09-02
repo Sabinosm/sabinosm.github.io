@@ -306,3 +306,110 @@ export function dispensarConsentimentoEmergencia(uuid, motivo) {
     body: JSON.stringify({ motivo }),
   });
 }
+
+// ============================================
+// BLOCOS CLÍNICOS (alergia, doença crônica, medicamento em uso, tipo
+// sanguíneo) -- usados tanto no passo opcional "Dados clínicos" do
+// fluxo de criação quanto (futuramente) pelos botões "Adicionar" na
+// ficha do paciente. Contratos confirmados contra os schemas Pydantic
+// reais do backend (AlergiaCreateSchema, DoencaCronicaCreateSchema,
+// MedicamentoEmUsoCreateSchema, TipoSanguineoCreateSchema).
+// ============================================
+
+/** Enums de AlergiaCreateSchema/ReacaoAlergiaCreateSchema (copiados do db.Enum). */
+export const TIPOS_REACAO_ALERGIA = [
+  'cutanea', 'respiratoria', 'anafilaxia', 'gastrointestinal', 'cardiovascular', 'sistemica',
+];
+export const GRAVIDADES_ALERGIA = ['leve', 'moderada', 'grave'];
+
+/**
+ * POST /pacientes/clinico/<uuid>/alergias — cria uma alergia E a
+ * primeira reação juntas (ver Alergia.registrar_reacao no backend).
+ *
+ * @param {string} uuid
+ * @param {object} payload
+ * @param {string} payload.substancia         — 1-255 chars
+ * @param {string} [payload.codigo_substancia] — opcional, até 100 chars
+ * @param {boolean} [payload.flag_confirmado]  — default false
+ * @param {string} payload.tipo_reacao         — um de TIPOS_REACAO_ALERGIA
+ * @param {string} payload.gravidade           — um de GRAVIDADES_ALERGIA
+ * @param {string} [payload.descricao_reacao]
+ */
+export function criarAlergia(uuid, payload) {
+  return requisitar(`/clinico/${uuid}/alergias`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Enum de DoencaCronicaCreateSchema.status (copiado do db.Enum). */
+export const STATUS_DOENCA_CRONICA = ['ativa', 'em-remissao'];
+
+/**
+ * POST /pacientes/clinico/<uuid>/doencas-cronicas
+ *
+ * @param {string} uuid
+ * @param {object} payload
+ * @param {string} payload.codigo_cid10      — 1-10 chars
+ * @param {string} payload.descricao_cid10   — 1-255 chars
+ * @param {string} payload.desde             — 'YYYY-MM-DD', OBRIGATÓRIO
+ * @param {string} payload.status            — um de STATUS_DOENCA_CRONICA
+ * @param {string} [payload.observacoes]
+ */
+export function criarDoencaCronica(uuid, payload) {
+  return requisitar(`/clinico/${uuid}/doencas-cronicas`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Enum de MedicamentoEmUsoCreateSchema.status_uso (copiado do db.Enum). */
+export const STATUS_USO_MEDICAMENTO = ['ativo', 'interrompido', 'concluido'];
+
+/**
+ * POST /pacientes/clinico/<uuid>/medicamentos-em-uso
+ *
+ * ATENÇÃO: id_catalogo é OBRIGATÓRIO e precisa existir de fato em
+ * catalogo_medicamentos (o service faz essa checagem e devolve 422 se
+ * não existir) -- NÃO é texto livre. Ainda não temos uma rota de
+ * busca/autocomplete do catálogo integrada no front -- por ora o
+ * campo correspondente no formulário é um input de texto simples
+ * (placeholder), sem validação real contra o catálogo (ver TODO em
+ * adminPacientesCriacaoClinico.js). Ajustar quando a rota de busca do
+ * catálogo existir.
+ *
+ * @param {string} uuid
+ * @param {object} payload
+ * @param {number} payload.id_catalogo      — inteiro >0, TODO: ainda sem autocomplete
+ * @param {string} payload.descricao        — texto livre, obrigatório
+ * @param {string} [payload.dose]           — até 100 chars
+ * @param {string} [payload.frequencia]     — até 100 chars
+ * @param {string} [payload.desde]          — 'YYYY-MM-DD', opcional (diferente de doença crônica)
+ * @param {boolean} [payload.flag_em_uso]   — default true
+ * @param {string} [payload.status_uso]     — um de STATUS_USO_MEDICAMENTO;
+ *   se omitido, o backend deriva de flag_em_uso (true -> "ativo", false -> "interrompido")
+ */
+export function criarMedicamentoEmUso(uuid, payload) {
+  return requisitar(`/clinico/${uuid}/medicamentos-em-uso`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Enum de TipoSanguineoCreateSchema.tipo_sanguineo (copiado do db.Enum). */
+export const TIPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'desconhecido'];
+
+/**
+ * POST /pacientes/clinico/<uuid>/tipo-sanguineo — observação de tipo
+ * sanguíneo. Campo único, mas ainda assim POST (não é parte do
+ * payload de criação do paciente).
+ *
+ * @param {string} uuid
+ * @param {string} tipoSanguineo — um de TIPOS_SANGUINEOS
+ */
+export function registrarTipoSanguineo(uuid, tipoSanguineo) {
+  return requisitar(`/clinico/${uuid}/tipo-sanguineo`, {
+    method: 'POST',
+    body: JSON.stringify({ tipo_sanguineo: tipoSanguineo }),
+  });
+}

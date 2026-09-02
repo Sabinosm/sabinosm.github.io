@@ -176,3 +176,170 @@ textarea.field-input {
   .creation-card { padding: 20px; }
   .consent-mode-toggle { flex-direction: column; }
 }
+
+/* ============================================
+   Tela de transição pós-cadastro: "Adicionar dados clínicos agora?"
+   ============================================ */
+.transition-card {
+  text-align: center;
+  padding: 40px 32px;
+}
+
+.transition-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--status-fg);
+  margin: 0 auto 16px;
+}
+.transition-icon svg { width: 100%; height: 100%; }
+
+.transition-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.transition-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 420px;
+  margin: 0 auto 28px;
+  line-height: 1.5;
+}
+
+.transition-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   Passo "Dados clínicos" (opcional, pós-criação)
+   ============================================ */
+.clinical-section {
+  margin-bottom: 8px;
+}
+
+.clinical-section + .clinical-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.clinical-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.clinical-section-header h2 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.clinical-section-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Item de formulário dinâmico (uma alergia/medicamento/doença em
+   edição, antes de ser enviado ou já enviado). Reusa .field-group por
+   dentro, mas o "cartão" em si precisa de moldura própria pra separar
+   visualmente um item do outro numa lista de vários. */
+.dynamic-item {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-bottom: 12px;
+}
+
+.dynamic-item--salvo {
+  border-color: rgba(127, 216, 138, 0.4);
+  background: var(--status-bg);
+}
+
+.dynamic-item--erro {
+  border-color: rgba(224, 98, 91, 0.4);
+  background: rgba(224, 98, 91, 0.06);
+}
+
+.dynamic-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dynamic-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.dynamic-item-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dynamic-item-status--salvo { color: var(--status-fg); }
+.dynamic-item-status--erro { color: var(--danger, #e0625b); }
+.dynamic-item-status--salvando { color: var(--text-muted); }
+
+.dynamic-item-status svg { width: 14px; height: 14px; }
+
+.dynamic-item-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.dynamic-item-remove:hover {
+  color: var(--danger, #e0625b);
+  background: rgba(224, 98, 91, 0.1);
+}
+.dynamic-item-remove svg { width: 16px; height: 16px; }
+
+.dynamic-item-error-text {
+  font-size: 12px;
+  color: var(--danger, #e0625b);
+  margin-top: 8px;
+}
+
+.btn-add-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-add-item:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-add-item svg { width: 16px; height: 16px; }
+
+.clinical-section-empty {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 10px;
+}
