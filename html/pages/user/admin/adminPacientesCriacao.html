@@ -101,309 +101,144 @@
   <!-- ===== CONTEÚDO PRINCIPAL ===== -->
   <main class="main">
 
-    <a href="adminPacientes.html" class="patient-back" style="display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 600; margin-bottom: 16px;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-        <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Cancelar e voltar para Pacientes
-    </a>
-
     <header class="main-header">
       <div>
         <h1>Novo paciente</h1>
-        <p class="main-subtitle">Dados essenciais e consentimento LGPD. Alergias, medicamentos e doenças crônicas são opcionais neste momento — podem ser adicionados agora ou depois, na ficha do paciente.</p>
+        <p class="main-subtitle">Dados pessoais do paciente. Alergias, medicamentos, doenças crônicas e consentimento LGPD são registrados durante a consulta.</p>
       </div>
     </header>
 
-    <!-- ===== Indicador de etapas ===== -->
-    <div class="creation-steps">
-      <div class="creation-step creation-step--active" id="step-indicator-essencial">
-        <span class="creation-step-number">1</span>
-        Essencial
-      </div>
-      <div class="creation-step-divider"></div>
-      <div class="creation-step" id="step-indicator-consentimento">
-        <span class="creation-step-number">2</span>
-        Consentimento
-      </div>
-      <div class="creation-step-divider"></div>
-      <div class="creation-step" id="step-indicator-clinico">
-        <span class="creation-step-number">3</span>
-        Dados clínicos
-      </div>
-    </div>
-
     <div id="mensagemFeedback" class="prof-form-feedback" role="alert" aria-live="polite"></div>
 
-    <!-- ===== PASSO 1: ESSENCIAL ===== -->
-    <section class="creation-panel creation-panel--active" id="painel-essencial">
-      <div class="creation-card">
+    <div class="creation-card">
 
-        <p class="creation-section-title">Identificação</p>
-        <div class="field-group">
-          <label class="field-label" for="pac-nome">Nome completo</label>
-          <input class="field-input" type="text" id="pac-nome" autocomplete="name">
-          <p class="field-error" id="pac-nome-error"></p>
-        </div>
-
-        <div class="field-row">
-          <div class="field-group">
-            <label class="field-label" for="pac-cpf">CPF</label>
-            <input class="field-input" type="text" id="pac-cpf" placeholder="000.000.000-00" inputmode="numeric">
-            <p class="field-error" id="pac-cpf-error"></p>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pac-nascimento">Data de nascimento</label>
-            <input class="field-input" type="date" id="pac-nascimento">
-            <p class="field-error" id="pac-nascimento-error"></p>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="pac-sexo">Sexo biológico</label>
-          <select class="field-input" id="pac-sexo">
-            <option value="">Selecione</option>
-            <option value="F">Feminino</option>
-            <option value="M">Masculino</option>
-            <option value="I">Indeterminado</option>
-          </select>
-          <p class="field-error" id="pac-sexo-error"></p>
-        </div>
-
-        <p class="creation-section-title">Contato</p>
-        <div class="field-row">
-          <div class="field-group">
-            <label class="field-label" for="pac-telefone">Telefone</label>
-            <input class="field-input" type="tel" id="pac-telefone" placeholder="(11) 91234-5678">
-            <p class="field-error" id="pac-telefone-error"></p>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pac-email">E-mail <span class="field-optional">(opcional)</span></label>
-            <input class="field-input" type="email" id="pac-email" autocomplete="off">
-          </div>
-        </div>
-
-        <!-- Campos do formulário completo -- opcionais no mínimo, mas
-             fazem parte do mesmo POST /pacientes/pessoal/ quando
-             preenchidos. Ficam recolhidos por padrão pra não pesar o
-             fluxo rápido (ex: dentro de consulta). -->
-        <details style="margin-top: 8px;">
-          <summary class="btn-ghost btn-ghost--sm" style="display: inline-block; cursor: pointer;">+ Mais informações (opcional)</summary>
-
-          <p class="creation-section-title">Identificação adicional</p>
-          <div class="field-group">
-            <label class="field-label" for="pac-rg">RG</label>
-            <input class="field-input" type="text" id="pac-rg" placeholder="Ex: MG-12.345.678">
-          </div>
-
-          <p class="creation-section-title">Endereço</p>
-          <div class="field-row">
-            <div class="field-group">
-              <label class="field-label" for="pac-logradouro">Logradouro</label>
-              <input class="field-input" type="text" id="pac-logradouro" placeholder="Rua, número">
-            </div>
-            <div class="field-group field-group--sm">
-              <label class="field-label" for="pac-numero">Número</label>
-              <input class="field-input" type="text" id="pac-numero">
-            </div>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pac-cep">CEP</label>
-            <input class="field-input" type="text" id="pac-cep" placeholder="00000-000" inputmode="numeric">
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pac-bairro">Bairro <span class="field-optional">(opcional)</span></label>
-            <input class="field-input" type="text" id="pac-bairro" placeholder="Preenchido automaticamente pelo CEP, se deixado em branco">
-          </div>
-
-          <p class="creation-section-title">Contato de emergência</p>
-          <div class="field-row">
-            <div class="field-group">
-              <label class="field-label" for="pac-emergencia-nome">Nome</label>
-              <input class="field-input" type="text" id="pac-emergencia-nome">
-            </div>
-            <div class="field-group">
-              <label class="field-label" for="pac-emergencia-telefone">Telefone</label>
-              <input class="field-input" type="tel" id="pac-emergencia-telefone" placeholder="(11) 91234-5678">
-            </div>
-          </div>
-
-          <p class="creation-section-title">Dados clínicos e atendimento</p>
-          <div class="field-row">
-            <div class="field-group">
-              <label class="field-label" for="pac-tipo-sanguineo">Tipo sanguíneo</label>
-              <select class="field-input" id="pac-tipo-sanguineo">
-                <option value="">Não informar agora</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-                <option value="desconhecido">Desconhecido</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label class="field-label" for="pac-primeiro-atendimento">Data do primeiro atendimento</label>
-              <input class="field-input" type="date" id="pac-primeiro-atendimento">
-              <p class="field-hint">Se não informado, o sistema assume um valor padrão.</p>
-            </div>
-          </div>
-        </details>
-
+      <p class="creation-section-title">Identificação</p>
+      <div class="field-group">
+        <label class="field-label" for="pac-nome">Nome completo</label>
+        <input class="field-input" type="text" id="pac-nome" autocomplete="name">
+        <p class="field-error" id="pac-nome-error"></p>
       </div>
 
-      <div class="creation-footer">
-        <div class="creation-footer-right">
-          <button class="btn-primary" type="button" id="btn-avancar-consentimento">Avançar</button>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="pac-cpf">CPF</label>
+          <input class="field-input" type="text" id="pac-cpf" placeholder="000.000.000-00" inputmode="numeric">
+          <p class="field-error" id="pac-cpf-error"></p>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="pac-nascimento">Data de nascimento</label>
+          <input class="field-input" type="date" id="pac-nascimento">
+          <p class="field-error" id="pac-nascimento-error"></p>
         </div>
       </div>
-    </section>
 
-    <!-- ===== PASSO 2: CONSENTIMENTO ===== -->
-    <section class="creation-panel" id="painel-consentimento">
-      <div class="creation-card">
+      <div class="field-group">
+        <label class="field-label" for="pac-sexo">Sexo biológico</label>
+        <select class="field-input" id="pac-sexo">
+          <option value="">Selecione</option>
+          <option value="F">Feminino</option>
+          <option value="M">Masculino</option>
+          <option value="I">Indeterminado</option>
+        </select>
+        <p class="field-error" id="pac-sexo-error"></p>
+      </div>
 
-        <p class="creation-section-title">Como registrar o consentimento?</p>
+      <p class="creation-section-title">Contato</p>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label" for="pac-telefone">Telefone</label>
+          <input class="field-input" type="tel" id="pac-telefone" placeholder="(11) 91234-5678">
+          <p class="field-error" id="pac-telefone-error"></p>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="pac-email">E-mail <span class="field-optional">(opcional)</span></label>
+          <input class="field-input" type="email" id="pac-email" autocomplete="off">
+        </div>
+      </div>
 
-        <div class="consent-mode-toggle">
-          <button type="button" class="consent-mode-option consent-mode-option--active" id="btn-modo-normal" data-modo="normal">
-            <p class="consent-mode-title">Consentimento coletado</p>
-            <p class="consent-mode-desc">O paciente está presente e concorda com o termo de uso de dados.</p>
-          </button>
-          <button type="button" class="consent-mode-option consent-mode-option--emergencia" id="btn-modo-emergencia" data-modo="emergencia">
-            <p class="consent-mode-title">Dispensar por emergência</p>
-            <p class="consent-mode-desc">Não é possível coletar consentimento agora (paciente inconsciente, urgência, etc.).</p>
-          </button>
+      <!-- Campos opcionais do formulário completo -- fazem parte do
+           mesmo POST /pacientes/pessoal/ quando preenchidos. Ficam
+           recolhidos por padrão pra não pesar o fluxo rápido (ex:
+           dentro de consulta). -->
+      <details style="margin-top: 8px;">
+        <summary class="btn-ghost btn-ghost--sm" style="display: inline-block; cursor: pointer;">+ Mais informações (opcional)</summary>
+
+        <p class="creation-section-title">Identificação adicional</p>
+        <div class="field-group">
+          <label class="field-label" for="pac-rg">RG</label>
+          <input class="field-input" type="text" id="pac-rg" placeholder="Ex: MG-12.345.678">
         </div>
 
-        <!-- Modo normal -->
-        <div id="bloco-consentimento-normal">
+        <p class="creation-section-title">Endereço</p>
+        <div class="field-row">
           <div class="field-group">
-            <label class="field-label" for="pac-versao-termo">Versão do termo</label>
-            <input class="field-input" type="text" id="pac-versao-termo" value="v2.1">
-            <p class="field-hint">Versão do termo de consentimento apresentado ao paciente.</p>
+            <label class="field-label" for="pac-logradouro">Logradouro</label>
+            <input class="field-input" type="text" id="pac-logradouro" placeholder="Rua, número">
+          </div>
+          <div class="field-group field-group--sm">
+            <label class="field-label" for="pac-numero">Número</label>
+            <input class="field-input" type="text" id="pac-numero">
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="pac-cep">CEP</label>
+          <input class="field-input" type="text" id="pac-cep" placeholder="00000-000" inputmode="numeric">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="pac-bairro">Bairro <span class="field-optional">(opcional)</span></label>
+          <input class="field-input" type="text" id="pac-bairro" placeholder="Preenchido automaticamente pelo CEP, se deixado em branco">
+        </div>
+
+        <p class="creation-section-title">Contato de emergência</p>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-emergencia-nome">Nome</label>
+            <input class="field-input" type="text" id="pac-emergencia-nome">
           </div>
           <div class="field-group">
-            <label class="field-label" for="pac-canal-coleta">Canal de coleta</label>
-            <select class="field-input" id="pac-canal-coleta">
-              <option value="presencial-digital">Presencial · digital</option>
-              <option value="presencial-papel">Presencial · papel</option>
-              <option value="portal-online">Portal online</option>
-              <option value="totem">Totem</option>
+            <label class="field-label" for="pac-emergencia-telefone">Telefone</label>
+            <input class="field-input" type="tel" id="pac-emergencia-telefone" placeholder="(11) 91234-5678">
+          </div>
+        </div>
+
+        <p class="creation-section-title">Dados clínicos e atendimento</p>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-tipo-sanguineo">Tipo sanguíneo</label>
+            <select class="field-input" id="pac-tipo-sanguineo">
+              <option value="">Não informar agora</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="desconhecido">Desconhecido</option>
             </select>
           </div>
-        </div>
-
-        <!-- Modo emergência -->
-        <div id="bloco-consentimento-emergencia" class="consent-emergencia-box">
-          <p class="consent-emergencia-hint">
-            O consentimento nasce com status <strong>dispensado_emergencia</strong> em vez de
-            <strong>ativo</strong>. Isso fica registrado no histórico do paciente e sinaliza que o
-            consentimento formal ainda precisa ser coletado numa consulta futura, assim que o
-            paciente estiver em condições de consentir.
-          </p>
-          <div class="field-group" style="max-width: none;">
-            <label class="field-label" for="pac-motivo-emergencia">Justificativa</label>
-            <textarea class="field-input" id="pac-motivo-emergencia" placeholder="Descreva o motivo da dispensa (ex: paciente inconsciente, admissão via SAMU, base legal aplicável...)."></textarea>
-            <p class="field-error" id="pac-motivo-emergencia-error"></p>
+          <div class="field-group">
+            <label class="field-label" for="pac-primeiro-atendimento">Data do primeiro atendimento</label>
+            <input class="field-input" type="date" id="pac-primeiro-atendimento">
+            <p class="field-hint">Se não informado, o sistema assume um valor padrão.</p>
           </div>
         </div>
+      </details>
 
+    </div>
+
+    <!-- ===== Ações finais -----
+         "Salvar e iniciar consulta" só aparece para médico/enfermeiro
+         (ver souProfissionalDeSaude() em adminProfissionaisSessao.js).
+         Cancelar não cria nada -- só os outros dois fazem o POST. -->
+    <div class="creation-footer">
+      <button class="btn-ghost" type="button" id="btn-cancelar">Cancelar</button>
+      <div class="creation-footer-right">
+        <button class="btn-secondary" type="button" id="btn-salvar-sair">Salvar e sair</button>
+        <button class="btn-primary" type="button" id="btn-salvar-consulta" hidden>Salvar e iniciar consulta</button>
       </div>
-
-      <div class="creation-footer">
-        <button class="btn-ghost" type="button" id="btn-voltar-essencial">Voltar</button>
-        <div class="creation-footer-right">
-          <button class="btn-primary" type="button" id="btn-criar-paciente">Criar paciente</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== TRANSIÇÃO: paciente já criado, oferece dados clínicos ===== -->
-    <section class="creation-panel" id="painel-transicao">
-      <div class="creation-card transition-card">
-        <div class="transition-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8.5 13.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <p class="transition-title">Paciente criado com sucesso</p>
-        <p class="transition-subtitle">
-          Quer aproveitar e já registrar alergias, medicamentos em uso, doenças crônicas ou tipo
-          sanguíneo? É opcional — dá para adicionar isso a qualquer momento pela ficha do paciente.
-        </p>
-        <div class="transition-actions">
-          <button class="btn-ghost" type="button" id="btn-pular-clinico">Pular e ir para a ficha</button>
-          <button class="btn-primary" type="button" id="btn-adicionar-clinico">Adicionar dados clínicos</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== PASSO 3 (opcional): DADOS CLÍNICOS ===== -->
-    <section class="creation-panel" id="painel-clinico">
-      <div class="creation-card">
-
-        <!-- ALERGIAS -->
-        <div class="clinical-section" id="secao-alergias">
-          <div class="clinical-section-header">
-            <h2>Alergias</h2>
-            <span class="clinical-section-count" id="contagem-alergias"></span>
-          </div>
-          <p class="clinical-section-empty" id="alergias-vazio">Nenhuma alergia adicionada ainda.</p>
-          <div id="lista-form-alergias"></div>
-          <button class="btn-add-item" type="button" id="btn-add-alergia">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Adicionar alergia
-          </button>
-        </div>
-
-        <!-- MEDICAMENTOS EM USO -->
-        <div class="clinical-section" id="secao-medicamentos">
-          <div class="clinical-section-header">
-            <h2>Medicamentos em uso</h2>
-            <span class="clinical-section-count" id="contagem-medicamentos"></span>
-          </div>
-          <p class="clinical-section-empty" id="medicamentos-vazio">Nenhum medicamento adicionado ainda.</p>
-          <div id="lista-form-medicamentos"></div>
-          <button class="btn-add-item" type="button" id="btn-add-medicamento">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Adicionar medicamento
-          </button>
-        </div>
-
-        <!-- DOENÇAS CRÔNICAS -->
-        <div class="clinical-section" id="secao-cronicas">
-          <div class="clinical-section-header">
-            <h2>Doenças crônicas</h2>
-            <span class="clinical-section-count" id="contagem-cronicas"></span>
-          </div>
-          <p class="clinical-section-empty" id="cronicas-vazio">Nenhuma doença crônica adicionada ainda.</p>
-          <div id="lista-form-cronicas"></div>
-          <button class="btn-add-item" type="button" id="btn-add-cronica">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Adicionar doença crônica
-          </button>
-        </div>
-
-      </div>
-
-      <div class="creation-footer">
-        <button class="btn-ghost" type="button" id="btn-pular-clinico-2">Pular e ir para a ficha</button>
-        <div class="creation-footer-right">
-          <button class="btn-primary" type="button" id="btn-salvar-clinico">Salvar e ir para a ficha</button>
-        </div>
-      </div>
-    </section>
+    </div>
 
   </main>
 </div>

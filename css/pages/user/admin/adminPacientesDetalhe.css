@@ -84,6 +84,16 @@
 .patient-back:hover { color: var(--accent); }
 .patient-back svg { width: 16px; height: 16px; }
 
+/* ============================================
+   NÃO USADO ATUALMENTE (a partir daqui até o fim do arquivo, ou onde
+   indicado) -- dados clínicos, abas e consentimento LGPD foram
+   removidos da ficha do paciente (decisão de produto: passaram a ser
+   registrados durante a consulta, não geridos aqui). Estas classes
+   ficam reservadas para quando o módulo de Consultas existir e a
+   ficha (ou uma futura aba clínica nela) voltar a exibi-los -- ver
+   TODO em adminPacientesDetalheLista.js.
+   ============================================ */
+
 /* ===== Alertas clínicos fixos (sempre visíveis, independente da aba
    ativa) -- resumo_clinico do backend já vem pronto pra isso. ===== */
 .patient-alerts {

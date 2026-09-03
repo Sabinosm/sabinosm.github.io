@@ -27,17 +27,25 @@ function lerDadosUsuario() {
     return null;
   }
 }
-
+ 
 /** true se o usuário logado é o administrador principal (fundador) da empresa. */
 export function souSuperAdmin() {
   return Boolean(lerDadosUsuario()?.is_super_admin);
 }
-
+ 
 /** true se o usuário logado é admin (comum ou super). */
 export function souAdmin() {
   return lerDadosUsuario()?.tipo_usuario === "admin";
 }
-
+ 
+/** true se o usuário logado é médico ou enfermeiro (profissional de
+ * saúde) -- usado para decidir se ações clínicas (ex: "Salvar e
+ * iniciar consulta" no cadastro de paciente) aparecem na UI. */
+export function souProfissionalDeSaude() {
+  const tipo = lerDadosUsuario()?.tipo_usuario;
+  return tipo === "medico" || tipo === "enfermeiro";
+}
+ 
 /** uuid do usuário logado, ou null se a sessão não estiver disponível. */
 export function meuUuid() {
   return lerDadosUsuario()?.uuid ?? null;

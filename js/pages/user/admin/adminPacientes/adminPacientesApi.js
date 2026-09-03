@@ -121,20 +121,22 @@ export function listarPacientes({ pagina = 0, status, sexoBiologico } = {}) {
   if (status) params.set('status', status);
   if (sexoBiologico) params.set('sexo_biologico', sexoBiologico);
 
-  return requisitar(`/pessoal/resumo?${params.toString()}`, { method: 'GET' });
+  return requisitar(`/resumo?${params.toString()}`, { method: 'GET' });
 }
 
 /**
  * GET /pacientes/clinico/<uuid> — bloco clínico completo do paciente:
- * resumo_clinico (contadores + flags para os alertas fixos da ficha),
+ * resumo_clinico (contadores + flags para alertas clínicos),
  * alergias[], doencas_cronicas[], medicamentos_em_uso[] e
  * consentimento_ativo. Protegido por step-up (ação
  * "visualizar_paciente") -- pede sua PRÓPRIA confirmação e usa um
  * token de uso único.
  *
- * Geralmente você não chama isso direto -- use
- * buscarDetalheCompleto(uuid), que busca este endpoint junto com
- * buscarDetalhePessoal() com a serialização de step-up correta.
+ * NÃO usada pela ficha do paciente hoje (adminPacientesDetalheLista.js
+ * usa só buscarDetalhePessoal) -- dados clínicos passaram a ser
+ * geridos durante a consulta, não na ficha administrativa. Mantida
+ * aqui para quando o fluxo de consulta (ou uma futura aba clínica na
+ * própria ficha) precisar ler esses dados.
  *
  * @param {string} uuid
  * @returns {Promise<object|undefined>} resolve com a resposta da API,
@@ -159,11 +161,11 @@ export async function buscarDetalheClinico(uuid) {
  * GET /pacientes/pessoal/<uuid> — dados cadastrais completos do
  * paciente (nome, CPF, RG, telefone, email, endereço, contato de
  * emergência). Protegido por step-up (ação "visualizar_paciente") --
- * pede sua PRÓPRIA confirmação e usa um token de uso único (diferente
- * do usado em buscarDetalheClinico, mesmo sendo a mesma ação).
+ * pede sua própria confirmação e usa um token de uso único.
  *
- * Geralmente você não chama isso direto -- use
- * buscarDetalheCompleto(uuid).
+ * É a única chamada de detalhe usada pela ficha do paciente hoje (ver
+ * adminPacientesDetalheLista.js) -- dados clínicos não fazem mais
+ * parte da ficha administrativa (ver TODO lá).
  *
  * @param {string} uuid
  * @returns {Promise<object|undefined>} resolve com a resposta da API,
@@ -185,9 +187,11 @@ export async function buscarDetalhePessoal(uuid) {
 }
 
 /**
- * Busca a ficha completa do paciente (clínico + pessoal) para a
- * página de detalhe, pedindo as duas confirmações de step-up
- * necessárias e disparando os dois fetches finais em paralelo.
+ * Busca clínico + pessoal juntos, pedindo as duas confirmações de
+ * step-up necessárias e disparando os dois fetches finais em
+ * paralelo. NÃO usada pela ficha do paciente hoje (que só busca
+ * pessoal) -- mantida para quando um fluxo (consulta, ou uma futura
+ * aba clínica) precisar dos dois de uma vez.
  *
  * Do ponto de vista de quem chama, isto é um Promise.all comum -- a
  * serialização das duas confirmações de identidade (para não
@@ -221,11 +225,17 @@ export async function buscarDetalheCompleto(uuid) {
 // CRIAÇÃO DE PACIENTE
 // ============================================
 //
-// Fluxo mínimo obrigatório: dados essenciais (passo 1) + consentimento
-// LGPD (passo 2, normal ou dispensado por emergência). Blocos clínicos
-// (alergias, doenças crônicas, medicamentos, tipo sanguíneo) NÃO fazem
-// parte da criação -- são adicionados depois, a qualquer momento, pela
-// própria ficha do paciente (ver TODOs em adminPacientesDetalheLista.js).
+// SIMPLIFICADO (decisão de produto): o cadastro de paciente cobre
+// SÓ dados pessoais (POST /pacientes/pessoal/). Consentimento LGPD e
+// blocos clínicos (alergias, doenças crônicas, medicamentos, tipo
+// sanguíneo) NÃO fazem mais parte deste fluxo -- passaram a ser
+// registrados durante a CONSULTA, não no cadastro do paciente (ver
+// adminPacientesCriacao.js). As funções de consentimento e blocos
+// clínicos permanecem abaixo porque continuam corretas e serão
+// usadas pelo futuro fluxo de consulta (ainda não implementado) e
+// pelos botões "Adicionar" da ficha do paciente (ver TODOs em
+// adminPacientesDetalheLista.js) -- só não são mais chamadas durante
+// a criação do paciente em si.
 //
 // Nenhuma dessas rotas de escrita é protegida por step-up (diferente
 // das rotas de leitura de detalhe) -- CRIAR um paciente novo não tem
@@ -235,14 +245,15 @@ export async function buscarDetalheCompleto(uuid) {
 
 /**
  * POST /pacientes/pessoal/ — cria o paciente (Paciente +
- * PacienteDadosPessoais). Retorna o uuid que alimenta todos os passos
- * seguintes (consentimento, blocos clínicos).
+ * PacienteDadosPessoais). Único passo do cadastro de paciente -- não
+ * há mais passos seguintes de consentimento/clínico neste fluxo (ver
+ * comentário da seção acima).
  *
  * @param {object} payload
  * @param {string} payload.nome_completo
  * @param {string} payload.cpf                — só dígitos
  * @param {string} payload.telefone            — só dígitos
- * @param {string} payload.sexo_biologico      — 'F' | 'M'
+ * @param {string} payload.sexo_biologico      — 'F' | 'M' | 'I'
  * @param {string} payload.data_nascimento     — 'YYYY-MM-DD'
  * @param {string} [payload.email]
  * @param {string} [payload.logradouro]
@@ -259,6 +270,13 @@ export function criarPacientePessoal(payload) {
     body: JSON.stringify(payload),
   });
 }
+
+// ============================================
+// CONSENTIMENTO LGPD -- NÃO usado no fluxo de criação de paciente
+// (ver comentário no topo da seção CRIAÇÃO DE PACIENTE). Mantido aqui
+// para uso futuro pelo fluxo de consulta, onde o consentimento passa
+// a ser coletado.
+// ============================================
 
 /** Os 4 valores aceitos pelo enum canal_coleta (coluna do banco). */
 export const CANAIS_COLETA_CONSENTIMENTO = [
@@ -294,7 +312,7 @@ export function registrarConsentimento(uuid, { versao_termo, canal_coleta }) {
  *
  * O consentimento nasce com status "dispensado_emergencia" (não
  * "ativo") -- fica sinalizado como pendente de coleta numa consulta
- * futura; ver comentário no formulário de criação sobre isso.
+ * futura.
  *
  * @param {string} uuid
  * @param {string} motivo — justificativa da dispensa (obrigatória)
@@ -309,11 +327,20 @@ export function dispensarConsentimentoEmergencia(uuid, motivo) {
 
 // ============================================
 // BLOCOS CLÍNICOS (alergia, doença crônica, medicamento em uso, tipo
-// sanguíneo) -- usados tanto no passo opcional "Dados clínicos" do
-// fluxo de criação quanto (futuramente) pelos botões "Adicionar" na
-// ficha do paciente. Contratos confirmados contra os schemas Pydantic
-// reais do backend (AlergiaCreateSchema, DoencaCronicaCreateSchema,
+// sanguíneo) -- NÃO usados no fluxo de criação de paciente (decisão
+// de produto: passaram a ser registrados durante a consulta, não no
+// cadastro). Mantidos aqui para uso futuro pelo fluxo de consulta
+// (ainda não implementado) e pelos botões "Adicionar" da ficha do
+// paciente (ver TODOs em adminPacientesDetalheLista.js). Contratos
+// confirmados contra os schemas Pydantic reais do backend
+// (AlergiaCreateSchema, DoencaCronicaCreateSchema,
 // MedicamentoEmUsoCreateSchema, TipoSanguineoCreateSchema).
+//
+// Exceção: tipo_sanguineo tem UM outro caminho de entrada, que É
+// usado na criação -- PacienteCriarSchema aceita tipo_sanguineo
+// direto no payload de POST /pacientes/pessoal/ (ver
+// adminPacientesCriacao.js). registrarTipoSanguineo() abaixo continua
+// sendo só para ATUALIZAR depois de já criado.
 // ============================================
 
 /** Enums de AlergiaCreateSchema/ReacaoAlergiaCreateSchema (copiados do db.Enum). */

@@ -140,21 +140,13 @@
         </div>
       </header>
 
-      <!-- ===== ALERTAS CLÍNICOS FIXOS (sempre visíveis, independente da aba) ===== -->
-      <div class="patient-alerts" id="patient-alerts">
-        <!-- Preenchido por adminPacientesDetalheLista.js a partir de resumo_clinico -->
-      </div>
-
-      <!-- ===== ABAS ===== -->
-      <nav class="patient-tabs">
-        <button class="patient-tab patient-tab--active" data-tab="pessoal">Pessoal</button>
-        <button class="patient-tab" data-tab="alergias">Alergias<span class="patient-tab-count" id="count-alergias"></span></button>
-        <button class="patient-tab" data-tab="medicamentos">Medicamentos<span class="patient-tab-count" id="count-medicamentos"></span></button>
-        <button class="patient-tab" data-tab="cronicas">Doenças crônicas<span class="patient-tab-count" id="count-cronicas"></span></button>
-      </nav>
-
-      <!-- ===== PAINEL: PESSOAL (gerenciamento + dados pessoais) ===== -->
-      <section class="patient-panel patient-panel--active" id="painel-pessoal">
+      <!-- ===== PAINEL: PESSOAL (gerenciamento + dados pessoais) =====
+           Única seção da ficha por enquanto -- alergias, medicamentos,
+           doenças crônicas e consentimento LGPD passaram a ser
+           registrados durante a CONSULTA, não geridos aqui (decisão de
+           produto). Ver bloco "Dados clínicos" (placeholder) logo
+           abaixo e o TODO em adminPacientesDetalheLista.js. -->
+      <section id="painel-pessoal">
         <div class="block-header">
           <h2>Dados pessoais</h2>
           <button class="btn-ghost" id="btn-editar-pessoal" type="button">
@@ -242,60 +234,27 @@
         </dl>
       </section>
 
-      <!-- ===== PAINEL: ALERGIAS ===== -->
-      <section class="patient-panel" id="painel-alergias">
-        <div class="block-header">
-          <h2>Alergias</h2>
-          <button class="btn-ghost" id="btn-editar-alergias" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Adicionar
-          </button>
+      <!-- ===== DADOS CLÍNICOS (placeholder) =====
+           TODO: alergias, medicamentos em uso, doenças crônicas e
+           consentimento LGPD passaram a ser registrados durante a
+           CONSULTA (fluxo ainda não implementado -- ver
+           adminPacientesCriacao.js, botão "Salvar e iniciar consulta").
+           Quando o módulo de Consultas existir, esta seção deve voltar
+           a exibir (e possivelmente editar) esses dados, nos moldes do
+           que já existia aqui antes desta simplificação: alertas fixos
+           a partir de resumo_clinico, abas Alergias/Medicamentos/
+           Doenças crônicas, e o banner de consentimento_ativo. Ver
+           buscarDetalheClinico/buscarDetalheCompleto em
+           adminPacientesApi.js, que já ficaram prontas para isso. -->
+      <section class="panel-divider" style="margin-top: 28px; border: none; height: auto;">
+        <div class="block-header" style="margin-bottom: 8px;">
+          <h2>Dados clínicos</h2>
         </div>
-        <div class="clinical-list" id="lista-alergias">
-          <!-- Preenchido por adminPacientesDetalheLista.js -->
-        </div>
-      </section>
-
-      <!-- ===== PAINEL: MEDICAMENTOS EM USO ===== -->
-      <section class="patient-panel" id="painel-medicamentos">
-        <div class="block-header">
-          <h2>Medicamentos em uso</h2>
-          <button class="btn-ghost" id="btn-editar-medicamentos" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Adicionar
-          </button>
-        </div>
-        <div class="clinical-list" id="lista-medicamentos">
-          <!-- Preenchido por adminPacientesDetalheLista.js -->
-        </div>
-      </section>
-
-      <!-- ===== PAINEL: DOENÇAS CRÔNICAS ===== -->
-      <section class="patient-panel" id="painel-cronicas">
-        <div class="block-header">
-          <h2>Doenças crônicas</h2>
-          <button class="btn-ghost" id="btn-editar-cronicas" type="button">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            Adicionar
-          </button>
-        </div>
-        <div class="clinical-list" id="lista-cronicas">
-          <!-- Preenchido por adminPacientesDetalheLista.js -->
-        </div>
-
-        <div class="consent-banner" id="consent-banner">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M8.5 13.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
-            <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
-          </svg>
-          <span id="consent-banner-texto"></span>
-        </div>
+        <p class="empty-state-text" style="padding: 0;">
+          Alergias, medicamentos em uso, doenças crônicas e consentimento LGPD são registrados
+          durante a consulta. Esta seção será exibida aqui assim que o módulo de Consultas
+          estiver disponível.
+        </p>
       </section>
 
     </div>
