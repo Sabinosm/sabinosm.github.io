@@ -36,7 +36,6 @@ import {
   criarAlergia,
   criarDoencaCronica,
   criarMedicamentoEmUso,
-  registrarTipoSanguineo,
   TIPOS_REACAO_ALERGIA,
   GRAVIDADES_ALERGIA,
   STATUS_DOENCA_CRONICA,
@@ -128,11 +127,15 @@ function lerCamposEssencial() {
     sexoBiologico: document.getElementById('pac-sexo').value,
     dataNascimento: document.getElementById('pac-nascimento').value,
     email: document.getElementById('pac-email').value.trim(),
+    rg: document.getElementById('pac-rg').value.trim(),
     logradouro: document.getElementById('pac-logradouro').value.trim(),
     numeroResidencia: document.getElementById('pac-numero').value.trim(),
     cep: document.getElementById('pac-cep').value.trim(),
+    bairro: document.getElementById('pac-bairro').value.trim(),
     contatoEmergenciaNome: document.getElementById('pac-emergencia-nome').value.trim(),
     contatoEmergenciaTelefone: document.getElementById('pac-emergencia-telefone').value.trim(),
+    tipoSanguineo: document.getElementById('pac-tipo-sanguineo').value,
+    dataPrimeiroAtendimento: document.getElementById('pac-primeiro-atendimento').value,
   };
 }
 
@@ -574,24 +577,9 @@ async function salvarDadosClinicos() {
     }
   }
 
-  const selectSangue = document.getElementById('clin-tipo-sanguineo');
-  const statusSangue = document.getElementById('status-tipo-sanguineo');
-  if (selectSangue.value && !selectSangue.dataset.salvo) {
-    statusSangue.textContent = 'Salvando…';
-    statusSangue.className = 'dynamic-item-status dynamic-item-status--salvando';
-    try {
-      await registrarTipoSanguineo(pacienteUuid, selectSangue.value);
-      selectSangue.dataset.salvo = 'true';
-      selectSangue.disabled = true;
-      statusSangue.textContent = 'Salvo';
-      statusSangue.className = 'dynamic-item-status dynamic-item-status--salvo';
-    } catch (erro) {
-      houveErro = true;
-      const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível salvar o tipo sanguíneo.';
-      statusSangue.textContent = mensagem;
-      statusSangue.className = 'dynamic-item-status dynamic-item-status--erro';
-    }
-  }
+  // Tipo sanguíneo NÃO é mais tratado aqui -- vai direto no payload
+  // de POST /pacientes/pessoal/ (ver passo Essencial), já que
+  // PacienteCriarSchema aceita esse campo na criação.
 
   enviando = false;
   btn.disabled = false;

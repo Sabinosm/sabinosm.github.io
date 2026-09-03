@@ -107,7 +107,7 @@ export function validarDataNascimento(valor) {
 }
 
 export function validarSexoBiologico(valor) {
-  if (!['F', 'M'].includes(valor)) return 'Selecione o sexo biológico.';
+  if (!['F', 'M', 'I'].includes(valor)) return 'Selecione o sexo biológico.';
   return null;
 }
 
@@ -160,8 +160,11 @@ export function validarEssencial(campos) {
   }
 
   // ---- campos opcionais do formulário completo (endereço, e-mail,
-  // contato de emergência) -- não fazem parte do "mínimo", mas se
-  // preenchidos, entram no mesmo payload de POST /pacientes/pessoal/.
+  // contato de emergência, tipo sanguíneo, primeiro atendimento) --
+  // não fazem parte do "mínimo", mas se preenchidos, entram no mesmo
+  // payload de POST /pacientes/pessoal/ (PacienteCriarSchema aceita
+  // todos eles diretamente na criação -- confirmado contra o schema
+  // real do backend).
   if (campos.email) payload.email = campos.email.trim().toLowerCase();
   if (campos.logradouro) payload.logradouro = campos.logradouro.trim();
   if (campos.numeroResidencia) payload.numero_residencia = campos.numeroResidencia.trim();
@@ -170,6 +173,18 @@ export function validarEssencial(campos) {
   if (campos.contatoEmergenciaTelefone) {
     payload.contato_emergencia_telefone = limparDigitos(campos.contatoEmergenciaTelefone);
   }
+  if (campos.rg) payload.rg = campos.rg.trim();
+  // tipo_sanguineo: PacienteCriarSchema aceita isso direto no payload
+  // de criação -- por decisão confirmada, este é o ÚNICO caminho para
+  // definir o tipo sanguíneo neste formulário (não existe mais um
+  // POST separado para isso no fluxo de criação; o bloco "Dados
+  // clínicos" do passo 4 cobre só alergias/medicamentos/doenças).
+  if (campos.tipoSanguineo) payload.tipo_sanguineo = campos.tipoSanguineo;
+  if (campos.dataPrimeiroAtendimento) payload.data_primeiro_atendimento = campos.dataPrimeiroAtendimento;
+  // bairro: aceito pelo schema com prioridade sobre o valor resolvido
+  // automaticamente a partir do CEP pelo CepService -- só sobrescreve
+  // o automático quando informado; ausente, o backend resolve sozinho.
+  if (campos.bairro) payload.bairro = campos.bairro.trim();
 
   return { payload, erros };
 }

@@ -400,9 +400,17 @@ export function criarMedicamentoEmUso(uuid, payload) {
 export const TIPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'desconhecido'];
 
 /**
- * POST /pacientes/clinico/<uuid>/tipo-sanguineo — observação de tipo
- * sanguíneo. Campo único, mas ainda assim POST (não é parte do
- * payload de criação do paciente).
+ * POST /pacientes/clinico/<uuid>/tipo-sanguineo — cria uma nova
+ * observação de tipo sanguíneo (histórico: quem registrou, quando --
+ * ver Paciente.registrar_tipo_sanguineo no backend).
+ *
+ * NÃO é usada no fluxo de CRIAÇÃO do paciente -- PacienteCriarSchema
+ * aceita tipo_sanguineo direto no payload de POST /pacientes/pessoal/,
+ * e por decisão de produto esse é o único caminho no formulário de
+ * criação (ver adminPacientesCriacao.js). Esta função existe para o
+ * caso de ATUALIZAR/registrar o tipo sanguíneo depois, pela ficha do
+ * paciente já existente (botão "Editar" ainda não implementado -- ver
+ * TODO em adminPacientesDetalheLista.js).
  *
  * @param {string} uuid
  * @param {string} tipoSanguineo — um de TIPOS_SANGUINEOS
