@@ -1,13 +1,13 @@
 // adminProfissionaisSessao.js
 //
 // Pequeno helper para ler os dados do usuário logado já armazenados
-// em sessionStorage por afterLogin (ver initHomePage.js), sem
+// no cache de sessão (ver userCache.js / afterLogin.js), sem
 // depender de um novo fetch a /me só para saber o papel de quem está
 // usando a tela.
 //
-// Formato esperado em sessionStorage["bion-dados-usuario"]:
-//   { usuario: { uuid, nome_completo, email, tipo_usuario,
-//                is_super_admin, status, ... }, configuracoes, webauthn }
+// Formato esperado em dados.usuario (payload de /me):
+//   { uuid, nome_completo, email, tipo_usuario,
+//     is_super_admin, status, ... }
 // (é o retorno de GET /auth/me -- ver status.py no backend)
 //
 // ALTERADO (múltiplos admins por empresa): é_super_admin() e
@@ -17,15 +17,10 @@
 //   - se os botões de ativar/desativar/editar aparecem quando o alvo
 //     já é admin (só o super admin gerencia admin).
 
+import { lerDadosUsuarioCache } from "../../../../sharedConfig/userCache.js";
+
 function lerDadosUsuario() {
-  const bruto = sessionStorage.getItem("bion-dados-usuario");
-  if (!bruto) return null;
-  try {
-    const dados = JSON.parse(bruto);
-    return dados?.usuario ?? null;
-  } catch {
-    return null;
-  }
+  return lerDadosUsuarioCache()?.usuario ?? null;
 }
  
 /** true se o usuário logado é o administrador principal (fundador) da empresa. */

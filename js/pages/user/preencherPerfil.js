@@ -44,15 +44,25 @@ export function preencherPainelPerfil(dados) {
 }
 
 /**
- * Sincroniza o tema com o valor vindo da API (fonte de verdade).
+ * Sincroniza o tema com o valor vindo do payload (sessionStorage,
+ * ver USER_CACHE_KEY em userCache.js -- este payload É o snapshot de
+ * /me, não um fetch novo).
  *
  * themeLoader.js já aplicou o tema salvo em localStorage antes do
- * primeiro paint (evita FOUC). Aqui, assim que o payload de /me chega,
- * sobrescrevemos com o valor oficial da API -- cobre o caso de o
- * usuário ter mudado o tema em outro dispositivo/sessão desde a
- * última vez que este navegador salvou algo em localStorage.
+ * primeiro paint (evita FOUC). Aqui, sobrescrevemos com o valor do
+ * snapshot -- cobre o caso de o usuário ter mudado o tema em outro
+ * dispositivo/sessão desde a última vez que este navegador salvou
+ * algo em localStorage.
  *
- * Se o valor da API for igual ao que já está aplicado, isso é
+ * IMPORTANTE: desde a introdução de userCache.js, qualquer save de
+ * configurações bem-sucedido (ver settings.js) já atualiza este
+ * mesmo snapshot via atualizarDadosUsuarioCache(). Isso garante que
+ * o `tema` lido aqui nunca fica "atrás" de uma mudança que o usuário
+ * acabou de salvar na aba Preferências -- se ficar, o bug está na
+ * gravação (settings.js não chamou atualizarDadosUsuarioCache), não
+ * aqui.
+ *
+ * Se o valor do snapshot for igual ao que já está aplicado, isso é
  * essencialmente um no-op visual (sem flash).
  */
 function preencherTema(configuracoes) {

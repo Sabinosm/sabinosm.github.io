@@ -10,6 +10,7 @@
 
 import { exibirMensagem } from '../../../shared/feedback.js';
 import {URL_BASE_API} from '../../../sharedConfig/urlConfig.js';
+import { atualizarDesignCache, atualizarPreferenciasCache } from '../../../sharedConfig/userCache.js';
 
 const THEME_STORAGE_KEY = 'bion-theme';
 const CONFIGURACAO_API_URL = URL_BASE_API +'/configuracoes/';
@@ -330,6 +331,26 @@ btnSave.addEventListener('click', async () => {
     state.initialTheme = state.pendingTheme;
     state.pendingTheme = null;
     localStorage.setItem(THEME_STORAGE_KEY, state.initialTheme);
+  }
+
+  // Reflete o que acabou de ser confirmado pela API também no
+  // snapshot de sessionStorage (bion-dados-usuario), que
+  // initHomePage.js relê em toda navegação de página e
+  // preencherPainelPerfil.js trata como fonte de verdade.
+  //
+  // Sem isso, o valor salvo aqui fica correto no backend e em
+  // localStorage (no caso do tema), mas a PRÓXIMA página lê o
+  // snapshot velho do login via sessionStorage e "desfaz" a mudança
+  // visualmente -- foi exatamente o bug observado com o tema antes
+  // deste módulo existir. Usamos o mesmo payload já montado para a
+  // API (montarConfiguracoesParaApi) para não duplicar a lógica de
+  // mapeamento id-do-campo -> formato da API.
+  const configuracoesAtualizadas = montarConfiguracoesParaApi(payload);
+  if (configuracoesAtualizadas.design) {
+    atualizarDesignCache(configuracoesAtualizadas.design);
+  }
+  if (configuracoesAtualizadas.preferencias) {
+    atualizarPreferenciasCache(configuracoesAtualizadas.preferencias);
   }
 
   saveBar.classList.remove('save-bar--visible');

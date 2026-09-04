@@ -2,17 +2,17 @@ import { preencherPainelPerfil } from "./preencherPerfil.js";
 import { iniciarMonitoramentoSessao } from "../auth/watchSession.js";
 import { modalConfiguracoesPronto } from "./settingsLoader.js";
 import { iniciarMetricasGerenciamento } from "./admin/adminHomePage/adminHomePage.js";
+import { lerDadosUsuarioCache } from "../../sharedConfig/userCache.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const bruto = sessionStorage.getItem("bion-dados-usuario");
-  if (!bruto) {
-    // sessionStorage vazio = chegou aqui sem passar pelo afterLogin
-    // (ex: digitou a URL direto). Mais seguro mandar pro login.
+  const dados = lerDadosUsuarioCache();
+  if (!dados) {
+    // Cache vazio/corrompido = chegou aqui sem passar pelo afterLogin
+    // (ex: digitou a URL direto) ou a aba anterior foi fechada.
+    // Mais seguro mandar pro login.
     window.location.href = "../../auth/login.html";
     return;
   }
-
-  const dados = JSON.parse(bruto);
 
   // O modal de Configurações agora é injetado dinamicamente por
   // settingsLoader.js (fetch de um partial compartilhado, ver

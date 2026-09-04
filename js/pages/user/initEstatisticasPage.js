@@ -2,15 +2,14 @@ import { preencherPainelPerfil } from "./preencherPerfil.js";
 import { iniciarMonitoramentoSessao } from "../auth/watchSession.js";
 import { modalConfiguracoesPronto } from "./settingsLoader.js";
 import { iniciarPaginaEstatisticas } from "./admin/adminEstatisticas/adminEstatisticas.js";
+import { lerDadosUsuarioCache } from "../../sharedConfig/userCache.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const bruto = sessionStorage.getItem("bion-dados-usuario");
-  if (!bruto) {
+  const dados = lerDadosUsuarioCache();
+  if (!dados) {
     window.location.href = "../../auth/login.html";
     return;
   }
-
-  const dados = JSON.parse(bruto);
 
   await modalConfiguracoesPronto;
   preencherPainelPerfil(dados);
