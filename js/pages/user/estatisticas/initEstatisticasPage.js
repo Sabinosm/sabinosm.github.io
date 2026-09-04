@@ -1,7 +1,7 @@
 import { preencherPainelPerfil } from "../../../sharedConfig/preencherPerfil.js";
 import { iniciarMonitoramentoSessao } from "../../auth/watchSession.js";
 import { modalConfiguracoesPronto } from "../../../sharedConfig/settingsLoader.js";
-import { iniciarPaginaEstatisticas } from "../adminEstatisticas/adminEstatisticas.js";
+import { iniciarPaginaEstatisticas } from "../admin/adminEstatisticas/adminEstatisticas.js";
 import { lerDadosUsuarioCache } from "../../../sharedConfig/userCache.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
