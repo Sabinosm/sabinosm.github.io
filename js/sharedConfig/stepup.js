@@ -42,7 +42,7 @@
 //   quando chamado.
 
 import { startAuthentication } from "https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.js";
-import { URL_BASE_API, FRONT_ORIGIN } from "../../sharedConfig/urlConfig.js";
+import { URL_BASE_API, FRONT_ORIGIN } from "./urlConfig.js";
 
 // Origin exata do frontend em produção -- usada para travar tanto o
 // postMessage recebido do popup quanto o window.open, evitando que

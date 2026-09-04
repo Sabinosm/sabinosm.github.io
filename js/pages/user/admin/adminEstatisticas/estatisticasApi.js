@@ -1,4 +1,4 @@
-import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
+import { URL_BASE_API } from "../../../sharedConfig/urlConfig.js";
 
 /**
  * Chama uma rota de estatísticas e devolve só o `data` do envelope

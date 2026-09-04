@@ -1,8 +1,8 @@
 import { preencherPainelPerfil } from "./preencherPerfil.js";
-import { iniciarMonitoramentoSessao } from "../auth/watchSession.js";
+import { iniciarMonitoramentoSessao } from "../pages/auth/watchSession.js";
 import { modalConfiguracoesPronto } from "./settingsLoader.js";
-import { iniciarMetricasGerenciamento } from "./admin/adminHomePage/adminHomePage.js";
-import { lerDadosUsuarioCache } from "../../sharedConfig/userCache.js";
+import { iniciarMetricasGerenciamento } from "../pages/user/admin/adminHomePage/adminHomePage.js";
+import { lerDadosUsuarioCache } from "./userCache.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   const dados = lerDadosUsuarioCache();

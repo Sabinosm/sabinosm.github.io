@@ -1,4 +1,4 @@
-import { animarOdometro, animarSetaTendencia } from "../../estatisticasAnimacoes.js";
+import { animarOdometro, animarSetaTendencia } from "../estatisticas/estatisticasAnimacoes.js";
 import { buscarEstatistica } from "./estatisticasApi.js";
 
 /**
