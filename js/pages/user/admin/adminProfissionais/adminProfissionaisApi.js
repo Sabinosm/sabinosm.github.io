@@ -38,7 +38,7 @@
 // necessário duplicar a função, só o payload muda dependendo do
 // formulário usado (ver adminProfissionaisModal.js).
 
-import { URL_BASE_API } from "../../../../urlConfig.js";
+import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../stepup.js"
 
 const BASE_URL = `${URL_BASE_API}/usuarios`;

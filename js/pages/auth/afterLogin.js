@@ -16,9 +16,8 @@
 import { confirmarSegundoFator, SemAutenticadorDisponivelError, LimiteTentativasExcedidoError } from "./webauthn.js";
 import { exibirMensagem } from "../../shared/feedback.js";
 import { consultarStatusSessao } from "./sessionStatus.js";
-import { URL_BASE_API } from "../../urlConfig.js";
-
-const CHAVE_SESSION_STORAGE = "bion-dados-usuario";
+import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
+import { definirDadosUsuarioCache } from "../../sharedConfig/userCache.js";
 
 // Destino por tipo_usuario -- centralizado aqui porque é o único lugar
 // que decide navegação inicial pós-login. watchSession.js (rodando
@@ -88,8 +87,9 @@ async function tratarPosLogin() {
 
 /**
  * Busca /me (agora que a sessão está completa), guarda o payload
- * inteiro em sessionStorage -- para as homes lerem sem precisar
- * refazer o fetch -- e redireciona conforme tipo_usuario.
+ * inteiro no cache de sessão via userCache.js (definirDadosUsuarioCache)
+ * -- para as homes lerem sem precisar refazer o fetch -- e redireciona
+ * conforme tipo_usuario.
  *
  * usuario.to_dict() não expõe token/sessão nenhuma, só dados de
  * perfil; o cookie httpOnly continua sendo a única credencial real,
@@ -128,7 +128,7 @@ async function irParaHomeDoUsuario() {
     return;
   }
 
-  sessionStorage.setItem(CHAVE_SESSION_STORAGE, JSON.stringify(payload));
+  definirDadosUsuarioCache(payload);
   window.location.href = destino;
 }
 

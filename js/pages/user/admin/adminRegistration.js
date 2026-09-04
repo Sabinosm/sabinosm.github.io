@@ -15,7 +15,7 @@
 
 import { exibirMensagem } from "../../../shared/feedback.js";
 import { validarFormularioAdmin, ligarValidacaoEmTempoReal } from "./adminValidation.js";
-import { URL_BASE_API } from "../../../urlConfig.js";
+import { URL_BASE_API } from "../../../sharedConfig/urlConfig.js";
 
 const CHAVE_SESSION_EMPRESA = 'bion_cadastro_empresa';
 // Mesmo TTL usado em enterpriseRegistration.js -- dados mais velhos

@@ -61,7 +61,7 @@
 // sobreposição visual), e só os fetches finais (já com token em mãos)
 // rodam de fato em paralelo. Ver buscarDetalheCompleto abaixo.
 
-import { URL_BASE_API } from "../../../../urlurlConfig.js";
+import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../stepup.js";
 
 const BASE_URL = `${URL_BASE_API}/pacientes`;

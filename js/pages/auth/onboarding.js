@@ -10,7 +10,7 @@
 // por senha. Ao definir a senha com sucesso, o backend já libera a
 // sessão completa.
 import { exibirMensagem } from "../../shared/feedback.js";
-import { URL_BASE_API } from "../../urlConfig.js";
+import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 
 const formSenha = document.getElementById("form-senha");
 

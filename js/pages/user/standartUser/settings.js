@@ -9,7 +9,7 @@
 // ============================================
 
 import { exibirMensagem } from '../../../shared/feedback.js';
-import {URL_BASE_API} from '../../../urlConfig.js';
+import {URL_BASE_API} from '../../../sharedConfig/urlConfig.js';
 
 const THEME_STORAGE_KEY = 'bion-theme';
 const CONFIGURACAO_API_URL = URL_BASE_API +'/configuracoes/';

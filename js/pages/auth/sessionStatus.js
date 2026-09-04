@@ -10,7 +10,7 @@
 //   - watchSession.js (detecta expiração durante o uso da página)
 
 // Ajuste este caminho conforme a estrutura real do projeto.
-import { URL_BASE_API } from "../../urlConfig.js";
+import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 
 /**
  * Consulta /auth/status e devolve um resultado normalizado.

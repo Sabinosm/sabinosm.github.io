@@ -1,4 +1,4 @@
-import { URL_BASE_API } from "../../../../urlConfig.js";
+import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 
 /**
  * Busca as estatísticas gerais da instituição (contagens de

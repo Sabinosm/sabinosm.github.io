@@ -23,7 +23,7 @@
 
 import { preencherPainelEmpresa } from './preencherEmpresa.js';
 import { ligarValidacaoEmTempoReal, validarFormularioEdicaoEmpresa, limparErros } from './empresaEditValidation.js';
-import { URL_BASE_API } from '../../urlConfig.js';
+import { URL_BASE_API } from '../../sharedConfig/urlConfig.js';
 // ALTERADO (múltiplos admins por empresa): edição de empresa passou a
 // ser restrita ao super admin no backend -- reaproveita o mesmo
 // helper de sessão já usado na tela de Profissionais, em vez de

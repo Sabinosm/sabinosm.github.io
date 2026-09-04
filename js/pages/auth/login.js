@@ -8,7 +8,7 @@
 // Mensagens de feedback: /js/shared/feedback.js
 
 import { exibirMensagem } from "../../shared/feedback.js";
-import { URL_BASE_API } from "../../urlConfig.js";
+import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 
 
 document.getElementById("login-form").addEventListener("submit", async (event) => {
