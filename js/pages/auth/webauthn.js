@@ -13,7 +13,7 @@
 // (reinicia as tentativas) ou por Google (que não exige 2FA).
 
 import { startAuthentication } from "https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.js";
-import { URL_BASE_API } from "../../config.js";
+import { URL_BASE_API } from "../../urlConfig.js";
 
 /**
  * Erro lançado quando o navegador não conseguiu sequer tentar o

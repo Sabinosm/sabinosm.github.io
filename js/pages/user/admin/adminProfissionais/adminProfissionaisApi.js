@@ -24,7 +24,7 @@
 // A API roda num host/porta diferente do servidor que serve os
 // arquivos estáticos (ex: Flask em :5000, front em :5500 via Live
 // Server) -- por isso o endereço vem pronto (host + prefixo) de
-// URL_BASE_API em config.js, e aqui só completamos com o path do
+// URL_BASE_API em urlConfig.js, e aqui só completamos com o path do
 // blueprint. Importante: URL_BASE_API já inclui o prefixo /v1/api,
 // então aqui só concatenamos o restante do caminho (/usuarios...),
 // sem repetir /v1/api de novo.
@@ -38,7 +38,7 @@
 // necessário duplicar a função, só o payload muda dependendo do
 // formulário usado (ver adminProfissionaisModal.js).
 
-import { URL_BASE_API } from "../../../../config.js";
+import { URL_BASE_API } from "../../../../urlConfig.js";
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../stepup.js"
 
 const BASE_URL = `${URL_BASE_API}/usuarios`;

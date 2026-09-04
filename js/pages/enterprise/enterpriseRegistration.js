@@ -22,7 +22,7 @@ const TTL_SESSION_EMPRESA_MS = 30 * 60 * 1000; // 30 minutos
 
 import { exibirMensagem } from "../../shared/feedback.js";
 import { validarFormularioEmpresa, ligarValidacaoEmTempoReal } from "./enterpriseValidation.js";
-import { URL_BASE_API } from "../../config.js";
+import { URL_BASE_API } from "../../urlConfig.js";
 
 // ── máscaras ─────────────────────────────────
 document.getElementById('cnpj').addEventListener('input', function (e) {

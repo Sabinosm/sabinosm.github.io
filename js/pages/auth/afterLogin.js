@@ -16,7 +16,7 @@
 import { confirmarSegundoFator, SemAutenticadorDisponivelError, LimiteTentativasExcedidoError } from "./webauthn.js";
 import { exibirMensagem } from "../../shared/feedback.js";
 import { consultarStatusSessao } from "./sessionStatus.js";
-import { URL_BASE_API } from "../../config.js";
+import { URL_BASE_API } from "../../urlConfig.js";
 
 const CHAVE_SESSION_STORAGE = "bion-dados-usuario";
 

@@ -1,4 +1,4 @@
-import { URL_BASE_API } from "../../../../config.js";
+import { URL_BASE_API } from "../../../../urlConfig.js";
 
 /**
  * Busca as estatísticas gerais da instituição (contagens de
