@@ -193,7 +193,7 @@ function abrirFormularioConvite(modo) {
  * tentativa, mas não faz sentido oferecer botões que sempre falham.
  *
  * @param {object} item - item vindo da listagem (Usuario.to_dict_few:
- *   uuid, nome_completo, email, tipo_usuario, status, is_admin)
+ *   uuid, nome_completo, email, funcao_clinica, status, is_admin)
  */
 export async function abrirModalProfissional(item) {
   limparFormulario();
@@ -253,11 +253,14 @@ function preencherFormularioComDetalhe(dados) {
   // então dados.cpf não deve vir preenchido; deixa em branco (o campo
   // já é opcional em modo edição).
 
-  if (dados.tipo_usuario === 'medico' || dados.tipo_usuario === 'enfermeiro') {
-    campoTipo.value = dados.tipo_usuario;
+  // ALTERADO (assertivo, sem alias): tipo_usuario saiu de
+  // Usuario.to_dict() -- funcao_clinica assume o papel de indicar
+  // se o alvo é médico/enfermeiro (independente de também ser admin).
+  if (dados.funcao_clinica === 'medico' || dados.funcao_clinica === 'enfermeiro') {
+    campoTipo.value = dados.funcao_clinica;
     atualizarBlocosCondicionais();
     const atributos = dados.atributos_profissionais || {};
-    if (dados.tipo_usuario === 'medico') {
+    if (dados.funcao_clinica === 'medico') {
       document.getElementById('pf-crm').value = atributos['numero-crm'] ?? '';
       document.getElementById('pf-uf-crm').value = atributos['uf-crm'] ?? '';
       document.getElementById('pf-rqe').value = atributos['rqe'] ?? '';
@@ -300,13 +303,17 @@ function configurarBotaoStatus(item) {
   btnToggleStatus.onclick = async () => {
     btnToggleStatus.disabled = true;
     try {
+      let resultado;
       if (vaiDesativar) {
-        await desativarProfissional(item.uuid);
-        exibirMensagem('Usuário desativado.', 'sucesso');
+        resultado = await desativarProfissional(item.uuid);
       } else {
-        await ativarProfissional(item.uuid);
-        exibirMensagem('Usuário ativado.', 'sucesso');
+        resultado = await ativarProfissional(item.uuid);
       }
+      // ADICIONADO: ativar/desativarProfissional retornam undefined
+      // quando o usuário cancela a confirmação de step-up -- não é
+      // sucesso nem erro, só desistência.
+      if (resultado === undefined) return;
+      exibirMensagem(vaiDesativar ? 'Usuário desativado.' : 'Usuário ativado.', 'sucesso');
       await recarregarLista();
       setTimeout(fecharModal, 900);
     } catch (erro) {
@@ -350,7 +357,13 @@ async function aoSubmeter(e) {
 
   try {
     if (editando) {
-      await atualizarProfissional(uuidEmEdicao, payload);
+      const resultado = await atualizarProfissional(uuidEmEdicao, payload);
+      // ADICIONADO: atualizarProfissional pode retornar undefined
+      // quando o payload mexe em campo sensível (eh_admin/tipo_papel)
+      // e o usuário cancela a confirmação de step-up -- nesse caso não
+      // é sucesso nem erro, só desistência; não fecha o modal nem
+      // mostra mensagem de sucesso falsa.
+      if (resultado === undefined) return;
       exibirMensagem('Profissional atualizado.', 'sucesso');
     } else {
       await criarProfissional(payload);
@@ -369,9 +382,17 @@ async function aoSubmeter(e) {
 /**
  * Monta o payload de criação de admin -- reaproveita os campos comuns
  * do formulário (nome, cpf, login, telefone, email) e fixa
- * tipo_usuario: "admin", sem CRM/COREN/especialidade e sem senha (o
- * schema do backend proíbe senha no cadastro de admin -- ver
- * schema_usuario.py, valida_campos_por_profissao).
+ * eh_admin: true, sem CRM/COREN/especialidade e sem senha (o schema
+ * do backend proíbe senha no cadastro de admin -- ver schema_usuario.py,
+ * valida_campos_por_profissao).
+ *
+ * ALTERADO (assertivo, sem alias): tipo_usuario: 'admin' saiu -- o
+ * backend agora espera eh_admin (bool) no payload de criação/edição
+ * (ver controller.py, checagem de "eh_admin" in dados para step-up).
+ * Sem função clínica aqui: um admin criado por este fluxo não é
+ * médico nem enfermeiro (quem quiser um médico-admin precisa marcar
+ * a função clínica também, o que este formulário simplificado de
+ * convite de admin não oferece).
  *
  * Reaproveita as mesmas funções de validação de campo individuais de
  * adminProfissionaisValidacoes.js (nome, cpf, login, telefone, email)
@@ -382,13 +403,13 @@ function montarPayloadAdmin() {
   const campos = lerCamposFormulario();
   // validarFormularioProfissional já cobre nome/cpf/login/telefone/email
   // com as mesmas regras -- passamos tipo vazio pra ela não exigir
-  // CRM/COREN, e sobrescrevemos tipo_usuario depois.
+  // CRM/COREN, e sobrescrevemos eh_admin depois.
   const { payload, erros } = validarFormularioProfissional(
     { ...campos, tipo: '' },
     false, // editando=false: campos obrigatórios de cadastro completo
   );
   delete erros['pf-tipo']; // não se aplica -- tipo é fixo, campo está escondido
-  payload.tipo_usuario = 'admin';
+  payload.eh_admin = true;
   return { payload, erros };
 }
 

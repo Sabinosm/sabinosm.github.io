@@ -12,7 +12,11 @@
 //
 // Modelo de dados que a API devolve (Usuario.to_dict_few(), usado na
 // listagem GET /):
-//   { uuid, nome_completo, email, tipo_usuario, status, is_admin }
+//   { uuid, nome_completo, email, funcao_clinica, status, is_admin }
+// ALTERADO (assertivo, sem alias): tipo_usuario saiu de to_dict_few()
+// -- is_admin (bool) e funcao_clinica ('medico' | 'enfermeiro' | null)
+// entram no lugar, e são ortogonais (um médico-admin tem is_admin=True
+// e funcao_clinica='medico' ao mesmo tempo).
 // Campos sensíveis (cpf, atributos_profissionais/CRM-COREN) só vêm no
 // detalhe (GET /<uuid>, Usuario.to_dict() completo), buscado em
 // adminProfissionaisModal.js quando o admin abre a edição.
@@ -311,13 +315,14 @@ function criarCardProfissional(p) {
   nome.textContent = p.nome_completo;
   const meta = document.createElement('p');
   meta.className = 'consult-meta';
-  // ADICIONADO: rótulo "Administrador" -- p.tipo_usuario já vem como
-  // "admin" nesse caso (Usuario.tipo_usuario property), então só
-  // precisa de um label amigável a mais no mapa abaixo.
-  const tipoLabel = p.tipo_usuario === 'medico' ? 'Médico'
-    : p.tipo_usuario === 'enfermeiro' ? 'Enfermeiro'
-    : p.tipo_usuario === 'admin' ? 'Administrador'
-    : (p.tipo_usuario || '—');
+  // ALTERADO: is_admin e funcao_clinica são ortogonais -- um
+  // médico-admin tem os dois ao mesmo tempo. Prioriza o rótulo
+  // "Administrador" quando is_admin é true (é o que mais importa
+  // saber de cara nesta lista de gestão), senão usa a função clínica.
+  const tipoLabel = p.is_admin ? 'Administrador'
+    : p.funcao_clinica === 'medico' ? 'Médico'
+    : p.funcao_clinica === 'enfermeiro' ? 'Enfermeiro'
+    : (p.funcao_clinica || '—');
   meta.textContent = `${tipoLabel} · ${p.email}`;
   main.append(nome, meta);
 

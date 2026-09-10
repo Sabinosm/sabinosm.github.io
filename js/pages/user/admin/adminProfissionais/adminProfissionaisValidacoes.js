@@ -225,10 +225,14 @@ export function validarFormularioProfissional(campos, editando) {
     erros['pf-email-confirma'] = 'Confirme o e-mail.';
   }
 
-  // ---- tipo_usuario + campos condicionais ----
-  // (cadastro de admin é outro fluxo -- aqui só medico/enfermeiro)
+  // ---- tipo_papel + campos condicionais ----
+  // ALTERADO (assertivo, sem alias): tipo_usuario saiu do schema do
+  // backend -- CadastroUsuarioSchema/AtualizacaoUsuarioSchema agora
+  // esperam 'tipo_papel' (Literal["medico","enfermeiro"] | None),
+  // ortogonal a 'eh_admin'. Cadastro de admin é outro fluxo (não
+  // manda tipo_papel por este caminho) -- aqui só medico/enfermeiro.
   if (campos.tipo) {
-    payload.tipo_usuario = campos.tipo;
+    payload.tipo_papel = campos.tipo;
   } else if (!editando) {
     erros['pf-tipo'] = 'Selecione o tipo de profissional.';
   }

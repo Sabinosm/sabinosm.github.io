@@ -33,10 +33,16 @@
 // continua servindo para médico/enfermeiro. Para criar um admin, o
 // backend exige que o solicitante seja o super admin (checagem no
 // service, não aqui) -- do lado do front, isso só muda o payload
-// (tipo_usuario: "admin", sem CRM/COREN, sem senha). Não é uma rota
-// nova, é a MESMA POST / -- então criarProfissional já serve; não é
+// (eh_admin: true, sem CRM/COREN, sem senha). Não é uma rota nova, é
+// a MESMA POST / -- então criarProfissional já serve; não é
 // necessário duplicar a função, só o payload muda dependendo do
 // formulário usado (ver adminProfissionaisModal.js).
+//
+// ALTERADO (assertivo, sem alias): tipo_usuario saiu do payload em
+// todas as rotas abaixo -- eh_admin (bool) é o campo que sinaliza
+// criação/edição de admin; função clínica é um campo separado
+// (funcao_clinica ou tipo_papel, ver controller.py) e ortogonal a
+// eh_admin.
 
 import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../../../sharedConfig/stepup.js"
@@ -131,7 +137,7 @@ export function buscarProfissional(uuid) {
  * POST / — cria um novo usuário (médico, enfermeiro ou admin).
  *
  * ALTERADO (múltiplos admins por empresa): o backend exige que só o
- * super admin envie payload com tipo_usuario: "admin" -- se um admin
+ * super admin envie payload com eh_admin: true -- se um admin
  * comum tentar, a API responde 400/403 com uma mensagem de negócio,
  * que sobe como ApiError igual qualquer outro erro de validação (o
  * front não precisa de tratamento especial para esse caso, só exibir
@@ -147,14 +153,30 @@ export function criarProfissional(payload) {
 /** PUT /<uuid> — atualiza parcialmente um profissional existente.
  *
  * ALTERADO (múltiplos admins por empresa): o backend bloqueia:
- *   - qualquer troca de/para tipo_usuario "admin" (promoção/rebaixamento
+ *   - qualquer troca de/para eh_admin: true (promoção/rebaixamento
  *     não existem via edição, só via criação);
  *   - edição de um usuário que já é admin, se o solicitante não for o
  *     super admin.
  * Ambos os casos sobem como ApiError com a mensagem de negócio do
  * backend -- nenhum tratamento especial necessário aqui.
+ *
+ * ADICIONADO: step-up condicional. O backend (controller.py,
+ * atualizar()) exige X-Stepup-Token com a ação "alterar_papel_usuario"
+ * sempre que o payload contém 'eh_admin' ou 'tipo_papel' -- campos
+ * triviais (telefone, email etc.) continuam sem exigir isso. Sem essa
+ * checagem aqui, qualquer edição que mexa em admin/papel clínico
+ * bateria 403 no backend sem o front nunca ter pedido a confirmação.
  */
 export function atualizarProfissional(uuid, payload) {
+  const mexeEmCampoSensivel = 'eh_admin' in payload || 'tipo_papel' in payload;
+
+  if (mexeEmCampoSensivel) {
+    return solicitarComStepUp(`/${uuid}`, 'alterar_papel_usuario', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
   return requisitar(`/${uuid}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
@@ -170,26 +192,39 @@ export function atualizarProfissional(uuid, payload) {
  * adminProfissionaisModal.js (podeGerenciarAlvo).
  */
 export async function ativarProfissional(uuid) {
-  return solicitarComStepUp(`/${uuid}/ativar`, "ativar_profissional");
+  return solicitarComStepUp(`/${uuid}/ativar`, "ativar_profissional", { method: "POST" });
 }
 
 /** POST /<uuid>/desativar — mesma observação de ativarProfissional. */
 export async function desativarProfissional(uuid) {
-  return solicitarComStepUp(`/${uuid}/desativar`, "desativar_profissional");
+  return solicitarComStepUp(`/${uuid}/desativar`, "desativar_profissional", { method: "POST" });
 }
 
-async function solicitarComStepUp(path, acao) {
+/**
+ * Pede confirmação de step-up (pedirConfirmacao) e refaz a requisição
+ * original com o token no header X-Stepup-Token.
+ *
+ * ALTERADO: generalizado para aceitar qualquer método/corpo, não só
+ * POST sem body -- atualizarProfissional (PUT com payload) passou a
+ * reaproveitar esta função em vez de duplicar a lógica de step-up.
+ *
+ * CORRIGIDO: erro de confirmação usava exibirMensagem, que não é
+ * importado neste arquivo (é uma função de UI do modal) -- este
+ * módulo é só a camada de API, então o erro sobe como ApiError, e
+ * quem chama (adminProfissionaisModal.js) já trata isso no catch,
+ * igual a qualquer outra falha de requisição.
+ */
+async function solicitarComStepUp(path, acao, options = {}) {
   let token;
   try {
     token = await pedirConfirmacao(acao);
   } catch (erro) {
     if (erro instanceof ConfirmacaoCanceladaError) return; // usuário desistiu
-    exibirMensagem(erro.message, "erro");
-    return;
+    throw new ApiError(erro.message || 'Não foi possível confirmar sua identidade.', 0);
   }
 
   return requisitar(path, {
-    method: "POST",
-    headers: { "X-Stepup-Token": token },
+    ...options,
+    headers: { ...headersPadrao(), ...(options.headers || {}), "X-Stepup-Token": token },
   });
 }
