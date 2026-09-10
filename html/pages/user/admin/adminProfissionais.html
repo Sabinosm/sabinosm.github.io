@@ -1,109 +1,317 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>B-íon AI — Criar administrador</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Profissionais</title>
 <script src="../../../../js/sharedConfig/themeLoader.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="../../../../css/pages/user/admin/registration.css"/>
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminProfissionais.css">
+<link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
 </head>
 <body>
 
-<canvas id="c"></canvas>
+<div class="app">
 
-<div class="card">
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">B-íon</div>
 
-  <div class="logo">
-    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="14" cy="14" r="2.3" fill="#fff"/>
-      <ellipse cx="14" cy="14" rx="11" ry="4.8" stroke="#fff" stroke-width=".8" opacity=".3" transform="rotate(-35 14 14)"/>
-      <ellipse cx="14" cy="14" rx="11" ry="4.8" stroke="#fff" stroke-width=".8" opacity=".3" transform="rotate(85 14 14)"/>
-      <circle cx="25" cy="14" r="1.4" fill="#fff" opacity=".6"/>
-      <circle cx="6"  cy="11" r="1.4" fill="#fff" opacity=".6"/>
-    </svg>
-    <span class="logo-text">B-íon AI</span>
-  </div>
-
-  <!-- Passo 2 de 2 -- ver nota em empresaRegistration.html sobre por
-       que isso não é um toggle de JS: são páginas distintas. -->
-  <div class="page-steps" aria-hidden="true">
-    <span class="page-step done"><span class="num">1</span> Empresa</span>
-    <span class="step-connector"></span>
-    <span class="page-step active"><span class="num">2</span> Administrador</span>
-  </div>
-
-  <h1>Criar administrador</h1>
-  <p class="sub">Empresa cadastrada — agora configure a conta gestora</p>
-
-  <form id="form-admin" method="post" action="#" novalidate>
-
-    <div class="section-label">Dados pessoais</div>
-
-    <div class="field">
-      <label for="nome_completo">Nome completo</label>
-      <input type="text" id="nome_completo" name="nome_completo" placeholder="Nome e sobrenome" autocomplete="name" maxlength="60" required/>
-      <div class="error-msg" id="err-nome_completo"></div>
+    <div class="nav-group nav-group--work">
+      <a href="adminHomePage.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="3" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="12" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="3" y="16" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Gerenciamento</span>
+      </a>
+      <a href="adminPacientes.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Pacientes</span>
+      </a>
+      <a href="adminProfissionais.html" class="nav-item nav-item--active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke -width="1.8">
+            <circle cx="9" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.5 20c0-3.5 2.8-6 6.5-6s6.5 2.5 6.5 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 4.5c1.6.4 2.8 1.9 2.8 3.5S17.6 11.1 16 11.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 14.3c1.9.7 3.2 2.6 3.2 4.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Profissionais</span>
+      </a>
+      <a href="../../enterprise/adminEmpresa.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 21V6l8-3 8 3v15" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21v-6h6v6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 10h.01M12 10h.01M15 10h.01M9 14h.01M15 14h.01" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Empresa</span>
+      </a>
+     <a href="adminEstatisticas.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 20V10M11 20V4M18 20v-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Estatísticas</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 4h9a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8l4-4z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 4v4H5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 13.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Auditoria</span>
+      </a>
     </div>
 
-    <div class="row-2">
-      <div class="field">
-        <label for="cpf">CPF</label>
-        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" required/>
-        <div class="error-msg" id="err-cpf"></div>
+    <!-- espaçador empurra o grupo de sistema para o rodapé -->
+    <div class="nav-spacer"></div>
+ 
+    <div class="nav-group nav-group--system">
+      <button type="button" class="nav-item nav-item--profile" id="open-settings">
+        <span class="nav-avatar" id="nav-avatar-iniciais"></span>
+        <span class="nav-label-group">
+          <span class="nav-label" id="nav-nome-usuario"></span>
+          <span class="nav-sublabel">· Perfil</span>
+        </span>
+        <span class="nav-profile-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1>Profissionais</h1>
+        <p class="main-subtitle">Equipe médica da instituição</p>
       </div>
-      <div class="field">
-        <label for="telefone">Telefone <span style="opacity:.6">(opcional)</span></label>
-        <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" autocomplete="tel"/>
-        <div class="error-msg" id="err-telefone"></div>
+      <button class="btn-primary" id="btn-convidar-profissional">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Convidar profissional
+      </button>
+    </header>
+
+    <section class="section">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="busca-profissional" placeholder="Buscar por nome, CRM ou especialidade">
+          </div>
+          <button class="btn-filter" id="btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Filtros
+          </button>
+        </div>
+
+        <!-- Painel de filtros — campos reais a definir depois -->
+        <div class="filter-panel" id="filter-panel">
+          <div class="filter-field">
+            <label for="filtro-especialidade">Especialidade</label>
+            <select id="filtro-especialidade">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="filtro-status">Status</label>
+            <select id="filtro-status">
+              <option value="">Todos</option>
+              <option value="ativo">Ativo</option>
+              <option value="pendente">Convite pendente</option>
+            </select>
+          </div>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="btn-limpar-filtros" type="button">Limpar</button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div class="section-label">Acesso</div>
-
-    <div class="field">
-      <label for="email">E-mail</label>
-      <input type="email" id="email" name="email" placeholder="nome@empresa.com" autocomplete="email" maxlength="50" required/>
-      <div class="error-msg" id="err-email"></div>
-    </div>
-
-    <div class="field">
-      <label for="user_login">Usuário de login</label>
-      <input type="text" id="user_login" name="user_login" placeholder="usuario.login" autocomplete="username" minlength="3" maxlength="20" required/>
-      <div class="hint">Usado para acessar o painel, pode ser diferente do e-mail</div>
-      <div class="error-msg" id="err-user_login"></div>
-    </div>
-
-    <div class="row-2">
-      <div class="field">
-        <label for="senha">Senha</label>
-        <input type="password" id="senha" name="senha" placeholder="Mínimo 12 caracteres" autocomplete="new-password" minlength="12" maxlength="100" required/>
-        <div class="error-msg" id="err-senha"></div>
+      <div class="card-list" id="lista-profissionais">
+        <!-- Preenchido dinamicamente por profissionais.js -->
       </div>
-      <div class="field">
-        <label for="confirmar_senha">Confirmar senha</label>
-        <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Repita a senha" autocomplete="new-password" minlength="12" maxlength="100" required/>
-        <div class="error-msg" id="err-confirmar_senha"></div>
+
+      <div class="pagination" id="paginacao">
+        <!-- Preenchido dinamicamente por profissionais.js -->
       </div>
-    </div>
 
-    <!-- ALTERADO (assertivo, sem alias): tipo_usuario saiu do model
-         Usuario -- este hidden field não é lido por adminRegistration.js
-         (que monta o payload via JS com is_admin: true), mas foi
-         atualizado para não deixar um campo morto referenciando um
-         contrato de API que não existe mais. -->
-    <input type="hidden" name="is_admin" value="true"/>
+    </section>
 
-    <button type="submit" class="btn-primary">CRIAR ADMINISTRADOR</button>
-  </form>
-
-  <div id="mensagemFeedback" role="status" aria-live="polite"></div>
-
-  <p class="footer">Já tem uma conta? <a href="../../auth/login.html">Entrar</a></p>
+  </main>
 </div>
 
-<script type="module" src="../../../../js/shared/particles.js"></script>
-<script type="module" src="../../../../js/shared/feedback.js"></script>
-<script type="module" src="../../../../js/pages/user/admin/adminRegistration.js"></script>
+<!-- ===== MODAL DE CADASTRAR / EDITAR PROFISSIONAL ===== -->
+<div class="settings-overlay" id="prof-modal-overlay">
+  <div class="prof-modal">
+
+    <form id="form-profissional">
+      <div class="prof-modal-header">
+        <h2 class="panel-title" id="prof-modal-title">Convidar profissional</h2>
+        <button type="button" class="settings-close" id="prof-modal-close" aria-label="Fechar" style="position: static;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="prof-modal-body">
+
+        <p class="field-hint" id="prof-modal-edit-hint" hidden>
+          Deixe um campo em branco para manter o valor atual. Só o que for preenchido é alterado.
+        </p>
+
+        <div id="mensagemFeedback" class="prof-form-feedback" role="alert" aria-live="polite"></div>
+
+        <div class="field-group">
+          <label class="field-label" for="pf-nome">Nome completo</label>
+          <input class="field-input" type="text" id="pf-nome" autocomplete="name">
+          <p class="field-error" id="pf-nome-error"></p>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pf-cpf">CPF</label>
+            <input class="field-input" type="text" id="pf-cpf" placeholder="000.000.000-00" inputmode="numeric">
+            <p class="field-error" id="pf-cpf-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pf-login">Usuário de login</label>
+            <input class="field-input" type="text" id="pf-login" autocomplete="username">
+            <p class="field-error" id="pf-login-error"></p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="pf-telefone">Telefone <span class="field-optional">(opcional)</span></label>
+          <input class="field-input" type="tel" id="pf-telefone" placeholder="(11) 91234-5678">
+          <p class="field-error" id="pf-telefone-error"></p>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pf-email">E-mail</label>
+            <input class="field-input" type="email" id="pf-email" autocomplete="off">
+            <p class="field-error" id="pf-email-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pf-email-confirma">Confirme o e-mail</label>
+            <input class="field-input" type="email" id="pf-email-confirma" autocomplete="off" onpaste="return false">
+            <p class="field-error" id="pf-email-confirma-error"></p>
+          </div>
+        </div>
+
+        <div class="panel-divider"></div>
+
+        <div class="field-group">
+          <label class="field-label" for="pf-tipo">Tipo de profissional</label>
+          <select class="field-input" id="pf-tipo">
+            <option value="">Selecione</option>
+            <option value="medico">Médico</option>
+            <option value="enfermeiro">Enfermeiro</option>
+          </select>
+          <p class="field-error" id="pf-tipo-error"></p>
+        </div>
+
+        <!-- Visível apenas quando tipo_usuario = medico -->
+        <div id="bloco-medico" class="prof-conditional-block" hidden>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="pf-crm">Número do CRM</label>
+              <input class="field-input" type="text" id="pf-crm">
+              <p class="field-error" id="pf-crm-error"></p>
+            </div>
+            <div class="field-group field-group--sm">
+              <label class="field-label" for="pf-uf-crm">UF</label>
+              <input class="field-input" type="text" id="pf-uf-crm" maxlength="2" placeholder="SP">
+              <p class="field-error" id="pf-uf-crm-error"></p>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pf-rqe">RQE <span class="field-optional">(opcional)</span></label>
+            <input class="field-input" type="text" id="pf-rqe">
+          </div>
+        </div>
+
+        <!-- Visível apenas quando tipo_usuario = enfermeiro -->
+        <div id="bloco-enfermeiro" class="prof-conditional-block" hidden>
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="pf-coren">Número do COREN</label>
+              <input class="field-input" type="text" id="pf-coren">
+              <p class="field-error" id="pf-coren-error"></p>
+            </div>
+            <div class="field-group field-group--sm">
+              <label class="field-label" for="pf-uf-coren">UF</label>
+              <input class="field-input" type="text" id="pf-uf-coren" maxlength="2" placeholder="SP">
+              <p class="field-error" id="pf-uf-coren-error"></p>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pf-especialidade">Especialidade</label>
+            <input class="field-input" type="text" id="pf-especialidade">
+            <p class="field-error" id="pf-especialidade-error"></p>
+          </div>
+        </div>
+
+      </div>
+
+      <p class="field-hint prof-modal-footer-hint">
+        Este e-mail será usado pelo profissional para entrar com a Conta Google. A senha de acesso é
+        definida por ele mesmo, num fluxo próprio de ativação — o cadastro não pede senha aqui. Confira
+        o e-mail com atenção: um endereço incorreto envia o convite de acesso para a pessoa errada, e a
+        responsabilidade por isso é de quem está cadastrando.
+      </p>
+
+      <div class="prof-modal-footer">
+        <button type="button" class="btn-danger" id="prof-modal-toggle-status" hidden></button>
+        <div class="prof-modal-footer-right">
+          <button type="button" class="btn-ghost" id="prof-modal-cancel">Cancelar</button>
+          <button type="submit" class="btn-primary" id="prof-modal-save">Enviar convite</button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
+<script type="module" src="../../../../js/sharedConfig/settingsLoader.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminProfissionais/adminProfissionaisLista.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminProfissionais/adminProfissionaisModal.js"></script>
+<script type="module" src="../../../../js/sharedConfig/initHomePage.js"></script>
 </body>
 </html>
