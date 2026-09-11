@@ -12,7 +12,7 @@
 // esgotarem, o caminho é voltar para o login e reautenticar por senha
 // (reinicia as tentativas) ou por Google (que não exige 2FA).
 
-import { startAuthentication } from "https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.js";
+import { startAuthentication, startRegistration } from "https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 
 /**
@@ -164,4 +164,131 @@ export async function confirmarSegundoFator() {
   }
 
   return confirmResp.json();
+}
+
+/**
+ * Erro do fluxo de CADASTRO de um novo dispositivo WebAuthn (rotas
+ * /webauthn/registrar/iniciar e /webauthn/registrar/confirmar) --
+ * distinto dos erros de `confirmarSegundoFator()` acima, que tratam
+ * do fluxo de autenticação de uma credencial já existente.
+ */
+export class ErroRegistroDispositivo extends Error {
+  constructor(mensagem) {
+    super(mensagem);
+    this.name = "ErroRegistroDispositivo";
+  }
+}
+
+/**
+ * Cadastra um novo dispositivo (credencial WebAuthn) para o usuário
+ * já logado. Diferente de `confirmarSegundoFator()`, pressupõe sessão
+ * COMPLETA (sem mfa_pendente) -- só faz sentido adicionar um segundo
+ * fator para quem já está autenticado.
+ *
+ * @param {string} apelido Nome de exibição escolhido pelo usuário
+ *   para este dispositivo (ex.: "Notebook do trabalho").
+ * @param {string} tipo Um de "mobile" | "usb" | "desktop" -- usado só
+ *   para escolher o ícone em preencherPerfil.js.
+ * @returns {Promise<{webauthn: {credenciais: object[]}}>} Lista
+ *   atualizada de credenciais do usuário, já no formato de /me.
+ * @throws {ErroRegistroDispositivo} Se o backend recusar o desafio,
+ *   o autenticador falhar/for cancelado, ou a confirmação falhar.
+ */
+export async function registrarNovoDispositivo(apelido, tipo) {
+  const iniciarResp = await fetch(`${URL_BASE_API}/webauthn/registrar/iniciar`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  if (!iniciarResp.ok) {
+    const erroDados = await iniciarResp.json().catch(() => ({}));
+    throw new ErroRegistroDispositivo(
+      erroDados.erro || "Não foi possível iniciar o cadastro do dispositivo."
+    );
+  }
+
+  const options = await iniciarResp.json();
+
+  let credencial;
+  try {
+    credencial = await startRegistration({ optionsJSON: options });
+  } catch (erro) {
+    throw new ErroRegistroDispositivo(
+      erro?.message || "Não foi possível concluir o cadastro no autenticador."
+    );
+  }
+
+  const confirmResp = await fetch(`${URL_BASE_API}/webauthn/registrar/confirmar`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ apelido, tipo, credencial }),
+  });
+
+  if (!confirmResp.ok) {
+    const erroDados = await confirmResp.json().catch(() => ({}));
+    throw new ErroRegistroDispositivo(
+      erroDados.erro || "Falha ao confirmar o cadastro do dispositivo."
+    );
+  }
+
+  return confirmResp.json();
+}
+
+/**
+ * Erro do fluxo de REMOÇÃO de um dispositivo WebAuthn (rota
+ * DELETE /webauthn/credenciais/<id_credencial>).
+ *
+ * `codigo` carrega o campo `erro` bruto devolvido pelo backend
+ * ("credencial_nao_encontrada", "ultima_credencial_nao_pode_ser_removida")
+ * para quem chama poder decidir a mensagem/UI sem precisar fazer
+ * string-matching em cima de `.message`.
+ */
+export class ErroRemocaoDispositivo extends Error {
+  constructor(mensagem, codigo) {
+    super(mensagem);
+    this.name = "ErroRemocaoDispositivo";
+    this.codigo = codigo;
+  }
+}
+
+/**
+ * Remove um dispositivo (credencial WebAuthn) do usuário já logado.
+ *
+ * Não pede reautenticação nem confirmação extra aqui -- isso é
+ * responsabilidade de quem chama (ver preencherPerfil.js, que confirma
+ * com o usuário antes de disparar isto). O backend recusa (409) se
+ * esta for a última credencial do usuário, já que o WebAuthn é
+ * obrigatório como 2FA no sistema; ver `ErroRemocaoDispositivo.codigo`
+ * para distinguir esse caso de um erro genérico.
+ *
+ * @param {number|string} idCredencial `id_credencial` da linha em
+ *   CredencialWebAuthn (não o `credential_id` do autenticador).
+ * @returns {Promise<{webauthn: {credenciais: object[]}}>} Lista
+ *   atualizada de credenciais do usuário, já no formato de /me.
+ * @throws {ErroRemocaoDispositivo}
+ */
+export async function removerDispositivoWebAuthn(idCredencial) {
+  const resp = await fetch(`${URL_BASE_API}/webauthn/credenciais/${idCredencial}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+
+  if (!resp.ok) {
+    const erroDados = await resp.json().catch(() => ({}));
+    const codigo = erroDados.erro;
+
+    const mensagens = {
+      ultima_credencial_nao_pode_ser_removida:
+        "Este é seu único dispositivo cadastrado. Cadastre outro antes de remover este.",
+      credencial_nao_encontrada: "Dispositivo não encontrado.",
+    };
+
+    throw new ErroRemocaoDispositivo(
+      mensagens[codigo] || "Não foi possível remover o dispositivo.",
+      codigo
+    );
+  }
+
+  return resp.json();
 }

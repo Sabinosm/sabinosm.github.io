@@ -28,6 +28,9 @@ const ICONES_DISPOSITIVO = {
 // conhecer -- evita quebrar a lista inteira por causa de um item.
 const ICONE_GENERICO = ICONES_DISPOSITIVO.desktop;
 
+import { registrarNovoDispositivo, ErroRegistroDispositivo, removerDispositivoWebAuthn, ErroRemocaoDispositivo } from './webauthn.js';
+import { atualizarCredenciaisWebauthnCache } from './userCache.js';
+
 const THEME_STORAGE_KEY = 'bion-theme';
 
 /**
@@ -156,12 +159,69 @@ function preencherDispositivos(webauthn) {
     vazio.className = 'field-hint';
     vazio.textContent = 'Nenhum dispositivo cadastrado ainda.';
     lista.appendChild(vazio);
-    return;
+  } else {
+    credenciais.forEach(cred => {
+      lista.appendChild(criarDeviceItem(cred));
+    });
   }
 
-  credenciais.forEach(cred => {
-    lista.appendChild(criarDeviceItem(cred));
-  });
+  configurarBotaoAdicionarDispositivo();
+}
+
+/**
+ * Liga o listener do botão "+ Adicionar novo dispositivo".
+ *
+ * `preencherDispositivos` roda toda vez que o payload de perfil é
+ * (re)aplicado -- inclusive depois de um cadastro bem-sucedido, pra
+ * re-renderizar a lista. `dataset.listenerAtivo` evita empilhar um
+ * novo listener a cada uma dessas chamadas (o que faria o clique
+ * disparar o fluxo de cadastro múltiplas vezes).
+ */
+function configurarBotaoAdicionarDispositivo() {
+  const botao = document.getElementById('btn-add-device');
+  if (!botao || botao.dataset.listenerAtivo) return;
+  botao.dataset.listenerAtivo = 'true';
+
+  botao.addEventListener('click', () => tratarCliqueAdicionarDispositivo(botao));
+}
+
+/**
+ * Pede o apelido do dispositivo, dispara o fluxo de registro
+ * WebAuthn e, em caso de sucesso, sincroniza tanto a UI (lista de
+ * dispositivos) quanto o snapshot em sessionStorage (userCache.js) --
+ * do contrário o dispositivo apareceria só até a próxima navegação
+ * de página, que releria o /me antigo do cache.
+ *
+ * TODO: substituir o window.prompt por um campo de texto real no
+ * modal (e talvez um seletor de "tipo" de dispositivo) quando houver
+ * tempo para desenhar essa UI -- por ora é o mínimo pra fechar o
+ * fluxo ponta a ponta.
+ */
+async function tratarCliqueAdicionarDispositivo(botao) {
+  const apelido = window.prompt(
+    'Como quer chamar este dispositivo? (ex: "Notebook do trabalho")'
+  );
+  if (!apelido || !apelido.trim()) return;
+
+  const textoOriginal = botao.textContent;
+  botao.disabled = true;
+  botao.textContent = 'Aguardando confirmação...';
+
+  try {
+    const { webauthn } = await registrarNovoDispositivo(apelido.trim(), 'desktop');
+    atualizarCredenciaisWebauthnCache(webauthn.credenciais);
+    preencherDispositivos(webauthn);
+  } catch (erro) {
+    console.error('Falha ao cadastrar dispositivo WebAuthn', erro);
+    window.alert(
+      erro instanceof ErroRegistroDispositivo
+        ? erro.message
+        : 'Não foi possível cadastrar o dispositivo.'
+    );
+  } finally {
+    botao.disabled = false;
+    botao.textContent = textoOriginal;
+  }
 }
 
 function criarDeviceItem(cred) {
@@ -190,15 +250,45 @@ function criarDeviceItem(cred) {
   const remover = document.createElement('button');
   remover.className = 'btn-ghost btn-ghost--sm';
   remover.textContent = 'Remover';
-  remover.addEventListener('click', () => removerDispositivo(cred.id_credencial, item));
+  remover.addEventListener('click', () => removerDispositivo(cred, item, remover));
 
   item.append(icone, info, remover);
   return item;
 }
 
-function removerDispositivo(idCredencial, elementoItem) {
-  // TODO: chamar o endpoint de remoção de credencial WebAuthn aqui
-  // (ação imediata, sem passar pela save-bar -- ver comentário em
-  // settings.js sobre a aba Segurança).
-  console.log('Remover credencial', idCredencial);
+/**
+ * Remove um dispositivo: confirma com o usuário, chama o backend
+ * (removerDispositivoWebAuthn), e em caso de sucesso sincroniza tanto
+ * a UI (re-renderiza a lista com preencherDispositivos) quanto o
+ * snapshot em sessionStorage (atualizarCredenciaisWebauthnCache) --
+ * mesmo cuidado já tomado em tratarCliqueAdicionarDispositivo, pra não
+ * "voltar" o dispositivo removido na próxima navegação de página.
+ *
+ * Ação imediata, sem passar pela save-bar -- mesmo padrão já adotado
+ * pro cadastro (ver comentário em settings.js sobre a aba Segurança).
+ */
+async function removerDispositivo(cred, elementoItem, botaoRemover) {
+  const confirmou = window.confirm(
+    `Remover "${cred.apelido}"? Você precisará cadastrar este dispositivo de novo para voltar a usá-lo no login.`
+  );
+  if (!confirmou) return;
+
+  const textoOriginal = botaoRemover.textContent;
+  botaoRemover.disabled = true;
+  botaoRemover.textContent = 'Removendo...';
+
+  try {
+    const { webauthn } = await removerDispositivoWebAuthn(cred.id_credencial);
+    atualizarCredenciaisWebauthnCache(webauthn.credenciais);
+    preencherDispositivos(webauthn);
+  } catch (erro) {
+    console.error('Falha ao remover dispositivo WebAuthn', erro);
+    window.alert(
+      erro instanceof ErroRemocaoDispositivo
+        ? erro.message
+        : 'Não foi possível remover o dispositivo.'
+    );
+    botaoRemover.disabled = false;
+    botaoRemover.textContent = textoOriginal;
+  }
 }
