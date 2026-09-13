@@ -150,6 +150,59 @@ export function ligarValidacaoEmTempoReal() {
   }
 }
 
+// ── aplicar erros vindos do backend nos campos correspondentes ──
+// Mesmo mecanismo já usado em adminValidation.js/enterpriseValidation.js:
+// o backend (_formatar_erros_pydantic) devolve "campo: msg; campo2: msg2",
+// um segmento por erro de field_validator.
+//
+// Diferente daqueles dois, aqui os ids do DOM têm prefixo ('empresa-nome-
+// fantasia', não 'nome_fantasia'), então precisa de uma tabela de
+// tradução -- assume que o nome do campo no schema de edição de
+// empresa é igual ao usado no cadastro (nome_fantasia, cnes, cep,
+// bairro, numero, complemento). Ajustar aqui se o backend usar outro
+// nome.
+//
+// Limitação igual à dos outros arquivos: erros de model_validator
+// (cross-field, sem campo específico) não têm como ser mapeados e
+// caem no residual retornado.
+const CAMPOS_BACKEND_PARA_ID = {
+  nome_fantasia: 'empresa-nome-fantasia',
+  cnes: 'empresa-cnes',
+  cep: 'empresa-cep',
+  bairro: 'empresa-bairro',
+  numero: 'empresa-numero',
+  complemento: 'empresa-complemento',
+};
+
+export function aplicarErrosBackend(mensagem) {
+  if (!mensagem) return '';
+
+  const partesRestantes = [];
+
+  mensagem.split(';').forEach((parte) => {
+    const trecho = parte.trim();
+    if (!trecho) return;
+
+    const idx = trecho.indexOf(':');
+    if (idx === -1) {
+      partesRestantes.push(trecho);
+      return;
+    }
+
+    const campo = trecho.slice(0, idx).trim();
+    const msg = trecho.slice(idx + 1).trim();
+    const id = CAMPOS_BACKEND_PARA_ID[campo];
+
+    if (id && document.getElementById(id)) {
+      setError(id, msg);
+    } else {
+      partesRestantes.push(trecho);
+    }
+  });
+
+  return partesRestantes.join('; ');
+}
+
 export function validarFormularioEdicaoEmpresa() {
   const nomeFantasiaOk = validarCampoPorRegra('empresa-nome-fantasia');
   const cnesOk = validarCampoPorRegra('empresa-cnes');

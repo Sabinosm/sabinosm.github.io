@@ -366,6 +366,50 @@ export function ligarValidacaoEmTempoReal() {
   });
 }
 
+// ── aplicar erros vindos do backend nos campos correspondentes ──
+// O backend (_formatar_erros_pydantic) devolve mensagens no formato
+// "campo: msg; campo2: msg2" -- um segmento por erro de field_validator.
+// Aqui a gente faz o parse e chama setError no campo certo, em vez de
+// deixar tudo cair numa string só no #mensagemFeedback.
+//
+// Limitação conhecida: erros de model_validator (regra cruzada, ex:
+// "Médicos precisam preencher CRM e UF") chegam com campo "(corpo)"
+// -- não há como saber automaticamente em qual input pintar, então
+// esses seguem para a mensagem geral (valor de retorno desta função).
+const CAMPOS_FORMULARIO_ADMIN = [
+  'nome_completo', 'cpf', 'telefone', 'email', 'user_login', 'senha',
+  'confirmar_senha', 'numero_crm', 'uf_crm', 'numero_coren', 'uf_coren',
+  'especialidade',
+];
+
+export function aplicarErrosBackend(mensagem) {
+  if (!mensagem) return '';
+
+  const partesRestantes = [];
+
+  mensagem.split(';').forEach((parte) => {
+    const trecho = parte.trim();
+    if (!trecho) return;
+
+    const idx = trecho.indexOf(':');
+    if (idx === -1) {
+      partesRestantes.push(trecho);
+      return;
+    }
+
+    const campo = trecho.slice(0, idx).trim();
+    const msg = trecho.slice(idx + 1).trim();
+
+    if (CAMPOS_FORMULARIO_ADMIN.includes(campo) && document.getElementById(campo)) {
+      setError(campo, msg);
+    } else {
+      partesRestantes.push(trecho);
+    }
+  });
+
+  return partesRestantes.join('; ');
+}
+
 // ── validação completa do formulário (portão antes da API) ───
 // Retorna true somente se TODOS os campos passarem. Sempre exibe/
 // atualiza as mensagens de erro em vermelho correspondentes.
@@ -415,3 +459,4 @@ export {
   setError,
   clearError,
 };
+// aplicarErrosBackend já é exportada com 'export function' acima.

@@ -18,6 +18,7 @@ import {
   validarFormularioAdmin,
   ligarValidacaoEmTempoReal,
   getTipoPapelSelecionado,
+  aplicarErrosBackend,
   clearError,
 } from "./adminValidation.js";
 import { URL_BASE_API } from "../../../sharedConfig/urlConfig.js";
@@ -194,7 +195,12 @@ document.getElementById('form-admin').addEventListener('submit', async function 
       // json_error retorna { message, ... } com o motivo (ex: CNPJ
       // duplicado, e-mail já usado etc.)
       const mensagem = corpo?.message || 'Não foi possível concluir o cadastro.';
-      exibirMensagem(mensagem, 'erro');
+      // Marca em vermelho os campos que o backend apontou (formato
+      // "campo: msg; campo2: msg2" -- ver _formatar_erros_pydantic no
+      // service). O que sobra (erros de model_validator, sem campo
+      // mapeável) vai para a mensagem geral.
+      const restante = aplicarErrosBackend(mensagem);
+      exibirMensagem(restante || 'Corrija os campos destacados.', 'erro');
       return;
     }
 

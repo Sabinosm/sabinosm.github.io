@@ -156,6 +156,65 @@ export function validarEspecialidade(valor) {
   return null;
 }
 
+// ── tradução de erro do backend para o formato de erros local ───
+// O backend (_formatar_erros_pydantic) devolve "campo: msg; campo2: msg2",
+// com o NOME DO CAMPO NO SCHEMA (nome_completo, cpf, user_login, etc.),
+// que não bate direto com as chaves usadas aqui (pf-nome, pf-cpf,
+// pf-login...). Esta tabela faz a tradução.
+//
+// Diferente de adminValidation.js/enterpriseValidation.js, este módulo
+// não manipula o DOM (não tem setError aqui) -- ele só devolve
+// {payload, erros}, igual validarFormularioProfissional, para quem
+// chama decidir como aplicar. mapearErrosBackendProfissional segue o
+// mesmo contrato: devolve `erros` no formato pronto para mesclar com o
+// que a validação local já produz, e `residual` com o que sobrar (ex:
+// erros de model_validator, sem campo específico -- CRM/UF faltando
+// aparecem cada um em seu próprio campo, mas a mensagem-mãe "Médicos
+// precisam preencher..." não tem como ser atribuída a um único input).
+const CAMPOS_BACKEND_PARA_CHAVE = {
+  nome_completo: 'pf-nome',
+  cpf: 'pf-cpf',
+  user_login: 'pf-login',
+  telefone: 'pf-telefone',
+  email: 'pf-email',
+  tipo_papel: 'pf-tipo',
+  numero_crm: 'pf-crm',
+  uf_crm: 'pf-uf-crm',
+  rqe: 'pf-rqe',
+  numero_coren: 'pf-coren',
+  uf_coren: 'pf-uf-coren',
+  especialidade: 'pf-especialidade',
+};
+
+export function mapearErrosBackendProfissional(mensagem) {
+  const erros = {};
+  const partesRestantes = [];
+  if (!mensagem) return { erros, residual: '' };
+
+  mensagem.split(';').forEach((parte) => {
+    const trecho = parte.trim();
+    if (!trecho) return;
+
+    const idx = trecho.indexOf(':');
+    if (idx === -1) {
+      partesRestantes.push(trecho);
+      return;
+    }
+
+    const campo = trecho.slice(0, idx).trim();
+    const msg = trecho.slice(idx + 1).trim();
+    const chave = CAMPOS_BACKEND_PARA_CHAVE[campo];
+
+    if (chave) {
+      erros[chave] = msg;
+    } else {
+      partesRestantes.push(trecho);
+    }
+  });
+
+  return { erros, residual: partesRestantes.join('; ') };
+}
+
 /**
  * Valida o formulário completo de cadastro/edição de profissional.
  *

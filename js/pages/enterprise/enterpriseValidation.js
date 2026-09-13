@@ -196,6 +196,43 @@ function validarPlano() {
   return !!marcado;
 }
 
+// ── aplicar erros vindos do backend nos campos correspondentes ──
+// Mesmo mecanismo do adminValidation.js -- ver comentário lá para o
+// racional completo e a limitação com erros de model_validator
+// (campo "(corpo)", sem input correspondente).
+const CAMPOS_FORMULARIO_EMPRESA = [
+  'cnpj', 'cnes', 'nome_fantasia', 'razao_social', 'cep', 'bairro',
+  'numero', 'complemento',
+];
+
+export function aplicarErrosBackend(mensagem) {
+  if (!mensagem) return '';
+
+  const partesRestantes = [];
+
+  mensagem.split(';').forEach((parte) => {
+    const trecho = parte.trim();
+    if (!trecho) return;
+
+    const idx = trecho.indexOf(':');
+    if (idx === -1) {
+      partesRestantes.push(trecho);
+      return;
+    }
+
+    const campo = trecho.slice(0, idx).trim();
+    const msg = trecho.slice(idx + 1).trim();
+
+    if (CAMPOS_FORMULARIO_EMPRESA.includes(campo) && document.getElementById(campo)) {
+      setError(campo, msg);
+    } else {
+      partesRestantes.push(trecho);
+    }
+  });
+
+  return partesRestantes.join('; ');
+}
+
 // ── Validação em tempo real (opcional) ───────────────────────
 // Liga listeners de 'input'/'blur' para validar enquanto o usuário
 // digita, sem esperar o submit. Chamar uma vez, ao carregar a página.
@@ -269,3 +306,4 @@ export {
   setError,
   clearError,
 };
+// aplicarErrosBackend já é exportada com 'export function' acima.

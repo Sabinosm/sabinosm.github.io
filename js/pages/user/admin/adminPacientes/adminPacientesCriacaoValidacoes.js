@@ -111,6 +111,54 @@ export function validarSexoBiologico(valor) {
   return null;
 }
 
+// ── tradução de erro do backend para o formato de erros local ───
+// Mesmo mecanismo de adminProfissionaisValidacoes.js -- ver comentário
+// lá para o racional completo.
+//
+// Cobre só os campos que já têm validação/chave de erro própria neste
+// módulo (nome, cpf, telefone, sexo, nascimento). Os campos opcionais
+// do formulário completo (email, cep, logradouro, contato de
+// emergência, rg, tipo_sanguineo, data_primeiro_atendimento, bairro)
+// entram no payload mas não têm um 'pac-*' correspondente hoje -- um
+// erro do backend sobre eles cai no residual, mostrado como mensagem
+// geral, até que esses campos ganhem validação/exibição própria aqui.
+const CAMPOS_BACKEND_PARA_CHAVE = {
+  nome_completo: 'pac-nome',
+  cpf: 'pac-cpf',
+  telefone: 'pac-telefone',
+  sexo_biologico: 'pac-sexo',
+  data_nascimento: 'pac-nascimento',
+};
+
+export function mapearErrosBackendPaciente(mensagem) {
+  const erros = {};
+  const partesRestantes = [];
+  if (!mensagem) return { erros, residual: '' };
+
+  mensagem.split(';').forEach((parte) => {
+    const trecho = parte.trim();
+    if (!trecho) return;
+
+    const idx = trecho.indexOf(':');
+    if (idx === -1) {
+      partesRestantes.push(trecho);
+      return;
+    }
+
+    const campo = trecho.slice(0, idx).trim();
+    const msg = trecho.slice(idx + 1).trim();
+    const chave = CAMPOS_BACKEND_PARA_CHAVE[campo];
+
+    if (chave) {
+      erros[chave] = msg;
+    } else {
+      partesRestantes.push(trecho);
+    }
+  });
+
+  return { erros, residual: partesRestantes.join('; ') };
+}
+
 /**
  * Valida o passo "Essencial" do formulário de criação de paciente.
  *
