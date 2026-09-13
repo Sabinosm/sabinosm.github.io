@@ -283,6 +283,11 @@ h1 {
   color: var(--muted2);
 }
 
+/* ── Campos condicionais (função clínica) ──── */
+.conditional-fields {
+  margin-top: 10px;
+}
+
 /* ── Primary btn ──────────────────────────── */
 .btn-primary {
   width: 100%;

@@ -14,7 +14,12 @@
 // Mensagens de feedback: /js/shared/feedback.js
 
 import { exibirMensagem } from "../../../shared/feedback.js";
-import { validarFormularioAdmin, ligarValidacaoEmTempoReal } from "./adminValidation.js";
+import {
+  validarFormularioAdmin,
+  ligarValidacaoEmTempoReal,
+  getTipoPapelSelecionado,
+  clearError,
+} from "./adminValidation.js";
 import { URL_BASE_API } from "../../../sharedConfig/urlConfig.js";
 
 const CHAVE_SESSION_EMPRESA = 'bion_cadastro_empresa';
@@ -87,6 +92,44 @@ document.getElementById('telefone').addEventListener('input', function (e) {
 // ── validação em tempo real (formato, tamanho, caracteres) ───
 ligarValidacaoEmTempoReal();
 
+// ── função clínica: toggle dos campos de CRM/COREN ────────────
+// Espelha a regra cruzada de schema_usuario.py: só o bloco do
+// tipo_papel selecionado deve ter valor/ser enviado -- o backend
+// rejeita payload com campo de médico presente e tipo_papel=null (ou
+// vice-versa). Por isso, ao trocar de opção, o bloco que sai de cena
+// tem seus inputs limpos e os erros visuais removidos.
+const CAMPOS_POR_BLOCO = {
+  'campos-medico': ['numero_crm', 'uf_crm', 'rqe'],
+  'campos-enfermeiro': ['numero_coren', 'uf_coren', 'especialidade'],
+};
+
+function limparBloco(blocoId) {
+  CAMPOS_POR_BLOCO[blocoId].forEach((id) => {
+    document.getElementById(id).value = '';
+    clearError(id);
+  });
+}
+
+function atualizarCamposFuncaoClinica() {
+  const tipo = getTipoPapelSelecionado(); // 'medico' | 'enfermeiro' | null
+
+  const blocoMedico = document.getElementById('campos-medico');
+  const blocoEnfermeiro = document.getElementById('campos-enfermeiro');
+
+  blocoMedico.hidden = tipo !== 'medico';
+  blocoEnfermeiro.hidden = tipo !== 'enfermeiro';
+
+  if (tipo !== 'medico') limparBloco('campos-medico');
+  if (tipo !== 'enfermeiro') limparBloco('campos-enfermeiro');
+}
+
+document.querySelectorAll('input[name="tipo_papel"]').forEach((radio) => {
+  radio.addEventListener('change', atualizarCamposFuncaoClinica);
+});
+// Estado inicial (garante consistência caso o navegador restaure um
+// radio diferente do 'checked' do HTML ao recarregar a página).
+atualizarCamposFuncaoClinica();
+
 // ── envio ────────────────────────────────────
 document.getElementById('form-admin').addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -107,6 +150,13 @@ document.getElementById('form-admin').addEventListener('submit', async function 
   // fundador (super admin), criado junto com a empresa via
   // Empresa.cadastrar_com_admin, que seta is_super_admin=True à
   // parte; aqui só precisamos marcar is_admin=True.
+  //
+  // tipo_papel: o fundador também pode ter função clínica (é
+  // ortogonal a is_admin -- ver schema_usuario.py). 'senha' continua
+  // sendo enviada mesmo com tipo_papel setado: a proibição de senha
+  // para médico/enfermeiro no schema tem exceção para is_admin=True.
+  const tipoPapel = getTipoPapelSelecionado();
+
   const dadosAdmin = {
     nome_completo: document.getElementById('nome_completo').value.trim(),
     cpf: document.getElementById('cpf').value,
@@ -114,8 +164,19 @@ document.getElementById('form-admin').addEventListener('submit', async function 
     telefone: document.getElementById('telefone').value || null,
     user_login: document.getElementById('user_login').value.trim(),
     is_admin: true,
+    tipo_papel: tipoPapel,
     senha: document.getElementById('senha').value,
   };
+
+  if (tipoPapel === 'medico') {
+    dadosAdmin.numero_crm = document.getElementById('numero_crm').value.trim();
+    dadosAdmin.uf_crm = document.getElementById('uf_crm').value.trim().toUpperCase();
+    dadosAdmin.rqe = document.getElementById('rqe').value.trim() || null;
+  } else if (tipoPapel === 'enfermeiro') {
+    dadosAdmin.numero_coren = document.getElementById('numero_coren').value.trim();
+    dadosAdmin.uf_coren = document.getElementById('uf_coren').value.trim().toUpperCase();
+    dadosAdmin.especialidade = document.getElementById('especialidade').value.trim();
+  }
 
   const botao = this.querySelector('.btn-primary');
   botao.disabled = true;

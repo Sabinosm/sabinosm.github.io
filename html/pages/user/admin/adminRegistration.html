@@ -87,8 +87,78 @@
       </div>
     </div>
 
-    <!-- tipo_usuario é fixo como "administrador" no primeiro cadastro, não é escolhido pelo usuário -->
-    <input type="hidden" name="tipo_usuario" value="administrador"/>
+    <div class="section-label">Função clínica <span style="opacity:.6">(opcional)</span></div>
+
+    <div class="plan-options" id="funcao-clinica-options">
+      <div class="plan-option">
+        <input type="radio" id="funcao-nenhuma" name="tipo_papel" value="" checked/>
+        <label for="funcao-nenhuma">
+          <div class="plan-name">Nenhuma</div>
+          <div class="plan-desc">Só administra</div>
+        </label>
+      </div>
+      <div class="plan-option">
+        <input type="radio" id="funcao-medico" name="tipo_papel" value="medico"/>
+        <label for="funcao-medico">
+          <div class="plan-name">Médico</div>
+          <div class="plan-desc">Também atende</div>
+        </label>
+      </div>
+      <div class="plan-option">
+        <input type="radio" id="funcao-enfermeiro" name="tipo_papel" value="enfermeiro"/>
+        <label for="funcao-enfermeiro">
+          <div class="plan-name">Enfermeiro</div>
+          <div class="plan-desc">Também atende</div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Campos condicionais -- escondidos via [hidden] e só exibidos
+         (e só validados/enviados) quando o papel correspondente está
+         selecionado. adminRegistration.js limpa valor+erro ao trocar
+         de opção, para nunca mandar campo "indevido" pro backend
+         (ver model_validator em schema_usuario.py). -->
+    <div class="conditional-fields" id="campos-medico" hidden>
+      <div class="row-2">
+        <div class="field">
+          <label for="numero_crm">CRM</label>
+          <input type="text" id="numero_crm" name="numero_crm" placeholder="000000" inputmode="numeric" maxlength="10"/>
+          <div class="error-msg" id="err-numero_crm"></div>
+        </div>
+        <div class="field">
+          <label for="uf_crm">UF do CRM</label>
+          <input type="text" id="uf_crm" name="uf_crm" placeholder="SP" maxlength="2"/>
+          <div class="error-msg" id="err-uf_crm"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="rqe">RQE <span style="opacity:.6">(opcional)</span></label>
+        <input type="text" id="rqe" name="rqe" placeholder="00000" inputmode="numeric" maxlength="10"/>
+      </div>
+    </div>
+
+    <div class="conditional-fields" id="campos-enfermeiro" hidden>
+      <div class="row-2">
+        <div class="field">
+          <label for="numero_coren">COREN</label>
+          <input type="text" id="numero_coren" name="numero_coren" placeholder="000000" inputmode="numeric" maxlength="10"/>
+          <div class="error-msg" id="err-numero_coren"></div>
+        </div>
+        <div class="field">
+          <label for="uf_coren">UF do COREN</label>
+          <input type="text" id="uf_coren" name="uf_coren" placeholder="SP" maxlength="2"/>
+          <div class="error-msg" id="err-uf_coren"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="especialidade">Especialidade</label>
+        <input type="text" id="especialidade" name="especialidade" placeholder="Ex: Enfermagem obstétrica" maxlength="100"/>
+        <div class="error-msg" id="err-especialidade"></div>
+      </div>
+    </div>
+
+    <!-- tipo_usuario saiu do model (ver schema_usuario.py) -- este admin
+         é sempre is_admin=true, setado direto no payload JS, não aqui. -->
 
     <button type="submit" class="btn-primary">CRIAR ADMINISTRADOR</button>
   </form>

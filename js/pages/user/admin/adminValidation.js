@@ -84,6 +84,17 @@ function isValidLogin(login) {
   return /^[A-Za-z0-9._-]+$/.test(login);
 }
 
+function isValidUF(uf) {
+  // mesma regra de schema_usuario.py (REGEX_UF): 2 letras, maiúsculas
+  // ou não -- normalização de caixa é feita no backend.
+  return /^[A-Za-z]{2}$/.test(uf.trim());
+}
+
+function isValidNumeroRegistro(numero) {
+  // schema_usuario.py: só dígitos (CRM ou COREN)
+  return /^\d+$/.test(numero.trim());
+}
+
 // ── validação por campo (usadas no submit e em tempo real) ──
 function validateNomeField() {
   const nome = document.getElementById('nome_completo').value.trim();
@@ -201,6 +212,90 @@ function validateSenhaField() {
   return true;
 }
 
+// ── função clínica (médico/enfermeiro/nenhuma) ────────────────
+// Espelha a regra cruzada de schema_usuario.py (valida_campos_por_profissao):
+// cada tipo_papel exige seu próprio conjunto de campos, e nenhum dos
+// dois conjuntos deve ser preenchido quando tipo_papel é null.
+function getTipoPapelSelecionado() {
+  const marcado = document.querySelector('input[name="tipo_papel"]:checked');
+  return marcado && marcado.value ? marcado.value : null; // '' -> null
+}
+
+function validateCrmField() {
+  const numero = document.getElementById('numero_crm').value.trim();
+  const uf = document.getElementById('uf_crm').value.trim();
+  let ok = true;
+
+  if (numero.length === 0) {
+    setError('numero_crm', 'Informe o CRM');
+    ok = false;
+  } else if (!isValidNumeroRegistro(numero)) {
+    setError('numero_crm', 'CRM deve conter apenas números');
+    ok = false;
+  } else {
+    clearError('numero_crm');
+  }
+
+  if (uf.length === 0) {
+    setError('uf_crm', 'Informe a UF');
+    ok = false;
+  } else if (!isValidUF(uf)) {
+    setError('uf_crm', 'UF deve ter 2 letras');
+    ok = false;
+  } else {
+    clearError('uf_crm');
+  }
+
+  return ok;
+}
+
+function validateCorenField() {
+  const numero = document.getElementById('numero_coren').value.trim();
+  const uf = document.getElementById('uf_coren').value.trim();
+  const especialidade = document.getElementById('especialidade').value.trim();
+  let ok = true;
+
+  if (numero.length === 0) {
+    setError('numero_coren', 'Informe o COREN');
+    ok = false;
+  } else if (!isValidNumeroRegistro(numero)) {
+    setError('numero_coren', 'COREN deve conter apenas números');
+    ok = false;
+  } else {
+    clearError('numero_coren');
+  }
+
+  if (uf.length === 0) {
+    setError('uf_coren', 'Informe a UF');
+    ok = false;
+  } else if (!isValidUF(uf)) {
+    setError('uf_coren', 'UF deve ter 2 letras');
+    ok = false;
+  } else {
+    clearError('uf_coren');
+  }
+
+  if (especialidade.length < 2) {
+    setError('especialidade', 'Informe a especialidade');
+    ok = false;
+  } else {
+    clearError('especialidade');
+  }
+
+  return ok;
+}
+
+// Valida somente o bloco correspondente ao tipo_papel selecionado.
+// 'Nenhuma' não tem campos próprios para validar -- os campos do
+// bloco escondido já são limpos no toggle (ver adminRegistration.js),
+// então não há o que checar aqui.
+function validateFuncaoClinica() {
+  const tipo = getTipoPapelSelecionado();
+  if (tipo === 'medico') return validateCrmField();
+  if (tipo === 'enfermeiro') return validateCorenField();
+  return true;
+}
+
 // ── conferência de senha em tempo real ──────
 function checkPasswordsMatch() {
   const senha = document.getElementById('senha').value;
@@ -252,6 +347,23 @@ export function ligarValidacaoEmTempoReal() {
   });
 
   document.getElementById('confirmar_senha').addEventListener('input', checkPasswordsMatch);
+
+  // Campos de CRM/COREN só existem escondidos no DOM (não removidos),
+  // então os listeners podem ser ligados de cara -- eles simplesmente
+  // não disparam nada relevante enquanto 'Nenhuma' estiver selecionado
+  // (o submit é o portão real; isso aqui só evita incomodar o usuário
+  // a cada tecla antes de já haver erro visível).
+  ['numero_crm', 'uf_crm'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', function () {
+      if (this.closest('.field').classList.contains('has-error')) validateCrmField();
+    });
+  });
+
+  ['numero_coren', 'uf_coren', 'especialidade'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', function () {
+      if (this.closest('.field').classList.contains('has-error')) validateCorenField();
+    });
+  });
 }
 
 // ── validação completa do formulário (portão antes da API) ───
@@ -264,6 +376,7 @@ export function validarFormularioAdmin() {
   const emailOk = validateEmailField();
   const loginOk = validateLoginField();
   const senhaOk = validateSenhaField();
+  const funcaoClinicaOk = validateFuncaoClinica();
 
   const confirmar = document.getElementById('confirmar_senha').value;
   if (confirmar.length === 0) {
@@ -274,7 +387,8 @@ export function validarFormularioAdmin() {
   const confirmarOk = !document.getElementById('confirmar_senha')
     .closest('.field').classList.contains('has-error');
 
-  return nomeOk && cpfOk && telefoneOk && emailOk && loginOk && senhaOk && confirmarOk;
+  return nomeOk && cpfOk && telefoneOk && emailOk && loginOk && senhaOk &&
+    funcaoClinicaOk && confirmarOk;
 }
 
 // Exporta também as validações individuais, caso seja necessário
@@ -285,12 +399,18 @@ export {
   isValidNome,
   isValidTelefone,
   isValidLogin,
+  isValidUF,
+  isValidNumeroRegistro,
   validateNomeField,
   validateCpfField,
   validateTelefoneField,
   validateEmailField,
   validateLoginField,
   validateSenhaField,
+  getTipoPapelSelecionado,
+  validateCrmField,
+  validateCorenField,
+  validateFuncaoClinica,
   checkPasswordsMatch,
   setError,
   clearError,
