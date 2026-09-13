@@ -103,17 +103,17 @@ document.getElementById('form-admin').addEventListener('submit', async function 
   }
 
   // ALTERADO (assertivo, sem alias): tipo_usuario saiu do model
-  // Usuario -- eh_admin (bool) entra no lugar. Este é o admin
+  // Usuario -- is_admin (bool) entra no lugar. Este é o admin
   // fundador (super admin), criado junto com a empresa via
   // Empresa.cadastrar_com_admin, que seta is_super_admin=True à
-  // parte; aqui só precisamos marcar eh_admin=True.
+  // parte; aqui só precisamos marcar is_admin=True.
   const dadosAdmin = {
     nome_completo: document.getElementById('nome_completo').value.trim(),
     cpf: document.getElementById('cpf').value,
     email: document.getElementById('email').value.trim(),
     telefone: document.getElementById('telefone').value || null,
     user_login: document.getElementById('user_login').value.trim(),
-    eh_admin: true,
+    is_admin: true,
     senha: document.getElementById('senha').value,
   };
 

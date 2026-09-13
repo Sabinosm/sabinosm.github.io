@@ -359,7 +359,7 @@ async function aoSubmeter(e) {
     if (editando) {
       const resultado = await atualizarProfissional(uuidEmEdicao, payload);
       // ADICIONADO: atualizarProfissional pode retornar undefined
-      // quando o payload mexe em campo sensível (eh_admin/tipo_papel)
+      // quando o payload mexe em campo sensível (is_admin/tipo_papel)
       // e o usuário cancela a confirmação de step-up -- nesse caso não
       // é sucesso nem erro, só desistência; não fecha o modal nem
       // mostra mensagem de sucesso falsa.
@@ -382,13 +382,13 @@ async function aoSubmeter(e) {
 /**
  * Monta o payload de criação de admin -- reaproveita os campos comuns
  * do formulário (nome, cpf, login, telefone, email) e fixa
- * eh_admin: true, sem CRM/COREN/especialidade e sem senha (o schema
+ * is_admin: true, sem CRM/COREN/especialidade e sem senha (o schema
  * do backend proíbe senha no cadastro de admin -- ver schema_usuario.py,
  * valida_campos_por_profissao).
  *
  * ALTERADO (assertivo, sem alias): tipo_usuario: 'admin' saiu -- o
- * backend agora espera eh_admin (bool) no payload de criação/edição
- * (ver controller.py, checagem de "eh_admin" in dados para step-up).
+ * backend agora espera is_admin (bool) no payload de criação/edição
+ * (ver controller.py, checagem de "is_admin" in dados para step-up).
  * Sem função clínica aqui: um admin criado por este fluxo não é
  * médico nem enfermeiro (quem quiser um médico-admin precisa marcar
  * a função clínica também, o que este formulário simplificado de
@@ -403,13 +403,13 @@ function montarPayloadAdmin() {
   const campos = lerCamposFormulario();
   // validarFormularioProfissional já cobre nome/cpf/login/telefone/email
   // com as mesmas regras -- passamos tipo vazio pra ela não exigir
-  // CRM/COREN, e sobrescrevemos eh_admin depois.
+  // CRM/COREN, e sobrescrevemos is_admin depois.
   const { payload, erros } = validarFormularioProfissional(
     { ...campos, tipo: '' },
     false, // editando=false: campos obrigatórios de cadastro completo
   );
   delete erros['pf-tipo']; // não se aplica -- tipo é fixo, campo está escondido
-  payload.eh_admin = true;
+  payload.is_admin = true;
   return { payload, erros };
 }
 

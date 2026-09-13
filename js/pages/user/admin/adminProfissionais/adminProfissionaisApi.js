@@ -33,16 +33,16 @@
 // continua servindo para médico/enfermeiro. Para criar um admin, o
 // backend exige que o solicitante seja o super admin (checagem no
 // service, não aqui) -- do lado do front, isso só muda o payload
-// (eh_admin: true, sem CRM/COREN, sem senha). Não é uma rota nova, é
+// (is_admin: true, sem CRM/COREN, sem senha). Não é uma rota nova, é
 // a MESMA POST / -- então criarProfissional já serve; não é
 // necessário duplicar a função, só o payload muda dependendo do
 // formulário usado (ver adminProfissionaisModal.js).
 //
 // ALTERADO (assertivo, sem alias): tipo_usuario saiu do payload em
-// todas as rotas abaixo -- eh_admin (bool) é o campo que sinaliza
+// todas as rotas abaixo -- is_admin (bool) é o campo que sinaliza
 // criação/edição de admin; função clínica é um campo separado
 // (funcao_clinica ou tipo_papel, ver controller.py) e ortogonal a
-// eh_admin.
+// is_admin.
 
 import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../../../sharedConfig/stepup.js"
@@ -137,7 +137,7 @@ export function buscarProfissional(uuid) {
  * POST / — cria um novo usuário (médico, enfermeiro ou admin).
  *
  * ALTERADO (múltiplos admins por empresa): o backend exige que só o
- * super admin envie payload com eh_admin: true -- se um admin
+ * super admin envie payload com is_admin: true -- se um admin
  * comum tentar, a API responde 400/403 com uma mensagem de negócio,
  * que sobe como ApiError igual qualquer outro erro de validação (o
  * front não precisa de tratamento especial para esse caso, só exibir
@@ -153,7 +153,7 @@ export function criarProfissional(payload) {
 /** PUT /<uuid> — atualiza parcialmente um profissional existente.
  *
  * ALTERADO (múltiplos admins por empresa): o backend bloqueia:
- *   - qualquer troca de/para eh_admin: true (promoção/rebaixamento
+ *   - qualquer troca de/para is_admin: true (promoção/rebaixamento
  *     não existem via edição, só via criação);
  *   - edição de um usuário que já é admin, se o solicitante não for o
  *     super admin.
@@ -162,13 +162,13 @@ export function criarProfissional(payload) {
  *
  * ADICIONADO: step-up condicional. O backend (controller.py,
  * atualizar()) exige X-Stepup-Token com a ação "alterar_papel_usuario"
- * sempre que o payload contém 'eh_admin' ou 'tipo_papel' -- campos
+ * sempre que o payload contém 'is_admin' ou 'tipo_papel' -- campos
  * triviais (telefone, email etc.) continuam sem exigir isso. Sem essa
  * checagem aqui, qualquer edição que mexa em admin/papel clínico
  * bateria 403 no backend sem o front nunca ter pedido a confirmação.
  */
 export function atualizarProfissional(uuid, payload) {
-  const mexeEmCampoSensivel = 'eh_admin' in payload || 'tipo_papel' in payload;
+  const mexeEmCampoSensivel = 'is_admin' in payload || 'tipo_papel' in payload;
 
   if (mexeEmCampoSensivel) {
     return solicitarComStepUp(`/${uuid}`, 'alterar_papel_usuario', {

@@ -229,7 +229,7 @@ export function validarFormularioProfissional(campos, editando) {
   // ALTERADO (assertivo, sem alias): tipo_usuario saiu do schema do
   // backend -- CadastroUsuarioSchema/AtualizacaoUsuarioSchema agora
   // esperam 'tipo_papel' (Literal["medico","enfermeiro"] | None),
-  // ortogonal a 'eh_admin'. Cadastro de admin é outro fluxo (não
+  // ortogonal a 'is_admin'. Cadastro de admin é outro fluxo (não
   // manda tipo_papel por este caminho) -- aqui só medico/enfermeiro.
   if (campos.tipo) {
     payload.tipo_papel = campos.tipo;
