@@ -113,7 +113,7 @@ document.getElementById('form-admin').addEventListener('submit', async function 
     email: document.getElementById('email').value.trim(),
     telefone: document.getElementById('telefone').value || null,
     user_login: document.getElementById('user_login').value.trim(),
-    is_admin: true,
+    eh_admin: true,
     senha: document.getElementById('senha').value,
   };
 
