@@ -26,7 +26,7 @@
 
   <section id="passo-senha">
     <h1>Defina sua senha</h1>
-    <p class="sub">Último passo para acessar sua conta</p>
+    <p class="sub">Primeiro passo para acessar sua conta</p>
     <form id="form-senha" method="post" action="#">
       <div class="field">
         <label for="senha">Nova senha</label>
@@ -36,12 +36,70 @@
     </form>
   </section>
 
+  <!-- ALTERADO (2FA sempre obrigatório -- ver onboarding.py):
+       segundo e último passo. Escolha entre WebAuthn ou TOTP -- pelo
+       menos um é obrigatório para concluir o cadastro. Hidden por
+       padrão; onboarding.js mostra depois que o passo de senha
+       terminar (ou direto, se a senha já estava definida --
+       cadastro idempotente feito por admin, por exemplo). -->
+  <section id="passo-2fa" hidden>
+    <h1>Proteja sua conta</h1>
+    <p class="sub">
+      Escolha pelo menos um método de confirmação em duas etapas para
+      continuar. Você pode configurar o outro depois, nas configurações
+      da conta.
+    </p>
+
+    <!-- Escolha inicial: dois cartões clicáveis -->
+    <div id="escolha-2fa-opcoes">
+      <button class="btn-2fa-opcao" type="button" id="btn-escolher-webauthn">
+        <strong>Chave de segurança (WebAuthn)</strong>
+        <span class="sub">Passkey, chave física USB, ou biometria do dispositivo (Windows Hello, Touch ID).</span>
+      </button>
+      <button class="btn-2fa-opcao" type="button" id="btn-escolher-totp">
+        <strong>Aplicativo autenticador (TOTP)</strong>
+        <span class="sub">Google Authenticator, Microsoft Authenticator ou similar — só precisa do celular, sem Bluetooth.</span>
+      </button>
+    </div>
+
+    <!-- Painel WebAuthn: sem campos, só um botão que dispara
+         navigator.credentials via webauthn.js -->
+    <div id="painel-2fa-webauthn" hidden>
+      <p class="sub">
+        Clique no botão abaixo e siga as instruções do navegador para
+        cadastrar sua chave de segurança.
+      </p>
+      <button class="btn-primary" type="button" id="btn-cadastrar-webauthn">Cadastrar chave de segurança</button>
+      <button class="btn-ghost" type="button" id="btn-voltar-escolha-webauthn">Escolher outro método</button>
+    </div>
+
+    <!-- Painel TOTP: QR code + confirmação por código -->
+    <div id="painel-2fa-totp" hidden>
+      <p class="sub">
+        Escaneie o QR code no seu aplicativo autenticador, ou digite o
+        código abaixo manualmente.
+      </p>
+      <div id="totp-qrcode-container"></div>
+      <p class="sub" id="totp-secret-texto"></p>
+
+      <form id="form-totp-confirmar">
+        <div class="field">
+          <label for="totp-codigo">Código gerado pelo aplicativo</label>
+          <input type="text" id="totp-codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" required />
+        </div>
+        <button class="btn-primary" type="submit">Confirmar</button>
+      </form>
+      <button class="btn-ghost" type="button" id="btn-voltar-escolha-totp">Escolher outro método</button>
+    </div>
+  </section>
+
   <div id="mensagemFeedback" role="status" aria-live="polite"></div>
 
 </div>
 
 <script type="module" src="/../../../js/shared/particles.js"></script>
 <script type="module" src="/../../../js/shared/feedback.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script type="module" src="/../../../js/pages/auth/onboarding.js"></script>
 </body>
 </html>

@@ -1,18 +1,40 @@
 // onboarding.js
 //
 // Fluxo de primeiro acesso, chamado quando a sessão está em estado
-// `onboarding_pendente` (usuário ainda sem senha definida -- pode ter
-// vindo tanto de login por senha quanto de login via Google).
+// `onboarding_pendente` (usuário ainda sem senha definida e/ou sem
+// 2FA escolhido -- pode ter vindo tanto de login por senha quanto de
+// login via Google).
 //
-// Único passo: definir senha. O cadastro de WebAuthn não faz mais
-// parte do onboarding -- fica disponível depois, nas configurações da
-// conta, para quem quiser usá-lo como segundo fator em logins futuros
-// por senha. Ao definir a senha com sucesso, o backend já libera a
-// sessão completa.
+// ALTERADO (2FA sempre obrigatório -- ver mfa.py/login.py/oauth.py/
+// onboarding.py no backend): volta a ter DOIS passos, não um só:
+//   1) definir senha (/definir-senha);
+//   2) escolher e confirmar WebAuthn OU TOTP (/webauthn/registrar/*
+//      ou /totp/registrar/*, reaproveitados de webauthn.js/totp.js),
+//      depois concluir via /2fa/status + /concluir.
+// Login sem 2FA algum deixou de existir no sistema -- se o onboarding
+// liberasse a sessão sem nenhum fator cadastrado, o usuário nunca
+// mais conseguiria logar de novo.
+
 import { exibirMensagem } from "../../shared/feedback.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
+import { registrarNovoDispositivo, ErroRegistroDispositivo } from "./webauthn.js";
+import { iniciarCadastroTOTP, confirmarCadastroTOTP, ErroCadastroTOTP } from "./totp.js";
 
+const passoSenha = document.getElementById("passo-senha");
+const passoTwoFa = document.getElementById("passo-2fa");
 const formSenha = document.getElementById("form-senha");
+
+const escolha2faOpcoes = document.getElementById("escolha-2fa-opcoes");
+const painelWebauthn = document.getElementById("painel-2fa-webauthn");
+const painelTotp = document.getElementById("painel-2fa-totp");
+const btnEscolherWebauthn = document.getElementById("btn-escolher-webauthn");
+const btnEscolherTotp = document.getElementById("btn-escolher-totp");
+const btnCadastrarWebauthn = document.getElementById("btn-cadastrar-webauthn");
+const btnVoltarEscolhaWebauthn = document.getElementById("btn-voltar-escolha-webauthn");
+const btnVoltarEscolhaTotp = document.getElementById("btn-voltar-escolha-totp");
+const formTotpConfirmar = document.getElementById("form-totp-confirmar");
+
+const DESTINO_APOS_CONCLUIR = "../../../html/pages/user/standartUser/medicHomePage.html";
 
 // A URL (?senha_definida=) é só um hint de UX vindo do afterLogin.js,
 // não a fonte de verdade -- o usuário pode editá-la livremente. Quem
@@ -46,9 +68,8 @@ async function sincronizarPasso() {
 
     if (dados.senha_definida) {
       // Idempotência do backend: usuário já tem senha (ex.:
-      // cadastrado por admin), então /definir-senha já conclui o
-      // onboarding sem pedir senha nova. Envia direto.
-      await concluirOnboarding();
+      // cadastrado por admin) -- pula direto para o passo de 2FA.
+      await irParaPasso2fa();
     }
   } catch (erro) {
     console.error("Erro ao verificar etapa do onboarding:", erro);
@@ -56,28 +77,34 @@ async function sincronizarPasso() {
   }
 }
 
+// ============================================
+// Passo 1: senha
+// ============================================
+
 formSenha.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const formData = new FormData(formSenha);
   const senha = formData.get("senha");
+  const botaoSubmit = formSenha.querySelector("button[type=submit]");
 
+  botaoSubmit.disabled = true;
   try {
-    await concluirOnboarding(senha);
-    exibirMensagem("Cadastro concluído! Redirecionando...", "sucesso");
-    window.location.href = "../../../html/pages/user/standartUser/medicHomePage.html";
+    await definirSenha(senha);
+    await irParaPasso2fa();
   } catch (erro) {
     console.error("Falha ao definir senha:", erro);
     exibirMensagem(erro.message || "Não foi possível definir a senha.", "erro");
+    botaoSubmit.disabled = false;
   }
 });
 
 /**
- * Envia a nova senha (se houver) para /onboarding/definir-senha, que
- * já conclui o onboarding e libera a sessão completa.
- * Lança erro com a mensagem do backend em caso de senha inválida.
+ * Envia a nova senha para /onboarding/definir-senha -- ALTERADO: não
+ * conclui mais o onboarding sozinha, só avança para o passo de 2FA
+ * (ver onboarding.py, docstring do módulo).
  */
-async function concluirOnboarding(senha) {
+async function definirSenha(senha) {
   const resp = await fetch(`${URL_BASE_API}/auth/onboarding/definir-senha`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -93,4 +120,153 @@ async function concluirOnboarding(senha) {
   }
 
   return dados;
+}
+
+// ============================================
+// Passo 2: escolha de método 2FA
+// ============================================
+
+async function irParaPasso2fa() {
+  passoSenha.hidden = true;
+  passoTwoFa.hidden = false;
+  mostrarEscolha2fa();
+}
+
+function mostrarEscolha2fa() {
+  escolha2faOpcoes.hidden = false;
+  painelWebauthn.hidden = true;
+  painelTotp.hidden = true;
+}
+
+btnEscolherWebauthn.addEventListener("click", () => {
+  escolha2faOpcoes.hidden = true;
+  painelWebauthn.hidden = false;
+});
+
+btnEscolherTotp.addEventListener("click", () => {
+  escolha2faOpcoes.hidden = true;
+  iniciarFluxoTotp();
+});
+
+btnVoltarEscolhaWebauthn.addEventListener("click", mostrarEscolha2fa);
+btnVoltarEscolhaTotp.addEventListener("click", mostrarEscolha2fa);
+
+// ---- Sub-fluxo WebAuthn ----
+
+btnCadastrarWebauthn.addEventListener("click", async () => {
+  const apelidoPadrao = "Meu dispositivo";
+  btnCadastrarWebauthn.disabled = true;
+  btnCadastrarWebauthn.textContent = "Aguardando confirmação...";
+
+  try {
+    // Reaproveita registrarNovoDispositivo de webauthn.js -- a rota
+    // no backend (/webauthn/registrar/iniciar e /confirmar) já aceita
+    // tanto sessão completa quanto onboarding_pendente (ver
+    // session.py::requer_login_ou_onboarding_pendente).
+    await registrarNovoDispositivo(apelidoPadrao, "desktop");
+    await concluirOnboarding();
+  } catch (erro) {
+    console.error("Falha ao cadastrar WebAuthn no onboarding:", erro);
+    exibirMensagem(
+      erro instanceof ErroRegistroDispositivo ? erro.message : "Não foi possível cadastrar a chave de segurança.",
+      "erro"
+    );
+    btnCadastrarWebauthn.disabled = false;
+    btnCadastrarWebauthn.textContent = "Cadastrar chave de segurança";
+  }
+});
+
+// ---- Sub-fluxo TOTP ----
+
+async function iniciarFluxoTotp() {
+  const qrContainer = document.getElementById("totp-qrcode-container");
+  const secretTexto = document.getElementById("totp-secret-texto");
+  const inputCodigo = document.getElementById("totp-codigo");
+
+  qrContainer.innerHTML = "";
+  secretTexto.textContent = "";
+  inputCodigo.value = "";
+  painelTotp.hidden = false;
+
+  let dados;
+  try {
+    dados = await iniciarCadastroTOTP();
+  } catch (erro) {
+    console.error("Falha ao iniciar cadastro TOTP no onboarding:", erro);
+    exibirMensagem(
+      erro instanceof ErroCadastroTOTP ? erro.message : "Não foi possível gerar o código de configuração.",
+      "erro"
+    );
+    mostrarEscolha2fa();
+    return;
+  }
+
+  renderizarQrCode(qrContainer, dados.otpauth_uri);
+  secretTexto.textContent = `Ou digite manualmente: ${dados.secret_texto}`;
+  inputCodigo.focus();
+}
+
+function renderizarQrCode(container, otpauthUri) {
+  if (typeof window.QRCode === "undefined") {
+    console.warn("Lib QRCode não carregada -- cadastro TOTP seguirá só com o secret em texto.");
+    return;
+  }
+  new window.QRCode(container, {
+    text: otpauthUri,
+    width: 180,
+    height: 180,
+  });
+}
+
+formTotpConfirmar.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const inputCodigo = document.getElementById("totp-codigo");
+  const codigo = inputCodigo.value.trim();
+  if (!codigo) return;
+
+  const botaoSubmit = formTotpConfirmar.querySelector("button[type=submit]");
+  botaoSubmit.disabled = true;
+
+  try {
+    await confirmarCadastroTOTP(codigo);
+    await concluirOnboarding();
+  } catch (erro) {
+    console.error("Falha ao confirmar TOTP no onboarding:", erro);
+    exibirMensagem(
+      erro instanceof ErroCadastroTOTP ? erro.message : "Não foi possível confirmar o código.",
+      "erro"
+    );
+    botaoSubmit.disabled = false;
+    inputCodigo.value = "";
+    inputCodigo.focus();
+  }
+});
+
+// ============================================
+// Conclusão -- chamado depois que WebAuthn OU TOTP foi confirmado
+// ============================================
+
+/**
+ * Chama /onboarding/concluir, que confirma que senha + pelo menos um
+ * método de 2FA já estão prontos e libera a sessão completa -- mesmo
+ * papel que a antiga /definir-senha cumpria sozinha antes desta
+ * mudança (ver onboarding.py).
+ */
+async function concluirOnboarding() {
+  const resp = await fetch(`${URL_BASE_API}/auth/onboarding/concluir`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  const dados = await resp.json();
+
+  if (!resp.ok) {
+    // Não deveria ocorrer numa navegação normal (o frontend só chama
+    // isto depois de confirmar um método) -- mas se ocorrer (ex:
+    // corrida entre abas), mostra o erro em vez de mascarar.
+    throw new Error(dados.erro || "Não foi possível concluir o cadastro.");
+  }
+
+  exibirMensagem("Cadastro concluído! Redirecionando...", "sucesso");
+  window.location.href = DESTINO_APOS_CONCLUIR;
 }

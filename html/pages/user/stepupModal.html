@@ -42,6 +42,24 @@
       </button>
     </div>
 
+    <!-- Método TOTP (código do app autenticador) -- só aparece depois
+         que o WebAuthn esgota tentativas (ver stepUp.js) e o usuário
+         tem TOTP cadastrado. -->
+    <div class="stepup-painel" id="stepup-painel-totp" hidden>
+      <p class="stepup-hint">
+        Não foi possível confirmar pela chave de segurança. Digite o
+        código do seu aplicativo autenticador.
+      </p>
+      <form id="stepup-form-totp">
+        <div class="field-group">
+          <label class="field-label" for="stepup-totp-codigo">Código do autenticador</label>
+          <input class="field-input" type="text" id="stepup-totp-codigo" inputmode="numeric"
+                 autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
+        </div>
+        <button class="btn-primary" type="submit">Confirmar</button>
+      </form>
+    </div>
+
     <!-- Método fallback: senha + Google -->
     <div class="stepup-painel" id="stepup-painel-senha" hidden>
       <form id="stepup-form-senha">

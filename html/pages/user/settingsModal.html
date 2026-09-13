@@ -74,13 +74,80 @@
       <section class="settings-panel" id="panel-seguranca">
 
         <h2 class="panel-title">Autenticação em duas etapas</h2>
-        <p class="panel-subtitle">Obrigatória via chave de acesso (WebAuthn) — passkey, chave de segurança física ou biometria do dispositivo.</p>
+        <p class="panel-subtitle" id="seguranca-2fa-status">
+          Chave de acesso (WebAuthn) e aplicativo autenticador (TOTP) —
+          cadastre pelo menos um destes para ativar a confirmação em
+          duas etapas.
+        </p>
 
         <div class="device-list" id="device-list">
           <!-- Preenchido dinamicamente por preencherPainelPerfil.js a partir de webauthn.credenciais -->
         </div>
 
         <button class="btn-secondary" id="btn-add-device" style="margin-top: 4px;">+ Adicionar novo dispositivo</button>
+
+        <!-- ALTERADO: aviso de "redundância" removido -- não existe
+             mais o conceito de 2FA se tornar obrigatório condicional
+             a ter 2+ fatores (ver mfa.py). 2FA já é sempre obrigatório
+             para todo usuário desde o onboarding. Este aviso agora só
+             explica a trava de remoção (não pode remover o único
+             fator restante) -- mostrado por preencherPerfil.js quando
+             o usuário tem exatamente 1 fator no total (1 WebAuthn XOR
+             TOTP confirmado). -->
+        <p class="field-hint" id="aviso-unico-fator" hidden></p>
+
+        <div class="panel-divider"></div>
+
+        <h2 class="panel-title">Aplicativo autenticador (TOTP)</h2>
+        <p class="panel-subtitle">
+          Google Authenticator, Microsoft Authenticator ou similar — não
+          depende de Bluetooth nem de porta USB, só do celular que você
+          já carrega.
+        </p>
+
+        <!-- Estado "sem TOTP cadastrado" -- preencherPerfil.js alterna
+             entre este bloco e #totp-configurado conforme o payload de
+             /me. -->
+        <div id="totp-nao-configurado">
+          <button class="btn-secondary" id="btn-configurar-totp">+ Configurar aplicativo autenticador</button>
+        </div>
+
+        <!-- Estado "TOTP já configurado" -->
+        <div id="totp-configurado" hidden>
+          <div class="device-item">
+            <div class="device-icon" id="totp-configurado-icone"></div>
+            <div class="device-info">
+              <p class="device-name">Aplicativo autenticador</p>
+              <p class="device-meta" id="totp-configurado-meta"></p>
+            </div>
+            <button class="btn-ghost btn-ghost--sm" id="btn-remover-totp">Remover</button>
+          </div>
+        </div>
+
+        <!-- Fluxo de cadastro: QR code + confirmação por código. Hidden
+             até o usuário clicar em "Configurar aplicativo autenticador"
+             -- ver preencherPerfil.js, iniciarFluxoCadastroTOTP(). -->
+        <div id="totp-cadastro-painel" hidden>
+          <p class="field-hint">
+            Escaneie o QR code no seu aplicativo autenticador, ou digite
+            o código abaixo manualmente.
+          </p>
+          <div id="totp-qrcode-container"></div>
+          <p class="field-hint" id="totp-secret-texto"></p>
+
+          <form id="totp-form-confirmar">
+            <div class="field-group">
+              <label class="field-label" for="totp-codigo-confirmacao">Código gerado pelo aplicativo</label>
+              <input class="field-input" type="text" id="totp-codigo-confirmacao" inputmode="numeric"
+                     autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
+            </div>
+            <div class="stepup-actions">
+              <button class="btn-ghost" type="button" id="btn-cancelar-cadastro-totp">Cancelar</button>
+              <button class="btn-primary" type="submit">Confirmar</button>
+            </div>
+          </form>
+          <p class="field-hint field-hint--erro" id="totp-cadastro-erro"></p>
+        </div>
 
         <div class="panel-divider"></div>
 

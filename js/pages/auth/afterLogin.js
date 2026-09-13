@@ -6,14 +6,26 @@
 // oauth.py não manda o estado da sessão na URL -- ele fica no cookie
 // httpOnly. Por isso, o primeiro passo aqui é sempre consultar
 // /auth/status (via sessionStatus.js) para saber o que fazer em seguida:
-//   - "mfa_pendente"       -> pedir confirmação WebAuthn (só ocorre
-//                              vindo de login por senha; login via
-//                              Google nunca cai neste estado)
+//   - "mfa_pendente"       -> pedir confirmação. ALTERADO (2FA sempre
+//                              obrigatório -- ver mfa.py/login.py/
+//                              oauth.py no backend): agora ocorre
+//                              também vindo de login por Google, não
+//                              só por senha. É uma cadeia WebAuthn ->
+//                              TOTP -> BLOQUEIO (sem fallback nenhum)
+//                              -- ver tratarMfaPendente/
+//                              tentarProximoMetodoTOTP/mostrarBloqueio.
+//                              Cada método só é tentado se o usuário
+//                              tiver a credencial correspondente. Se
+//                              nenhum dos dois resolver, não sobra
+//                              caminho de login algum -- nem por
+//                              senha, nem por Google -- só recuperação
+//                              via administrador.
 //   - "onboarding_pendente" -> mandar para a página de onboarding
 //   - "completa"           -> sessão já pronta, ir para o dashboard
 //   - qualquer outra coisa / erro -> volta para o login
 
 import { confirmarSegundoFator, SemAutenticadorDisponivelError, LimiteTentativasExcedidoError } from "./webauthn.js";
+import { iniciarSegundoFatorTOTP, confirmarSegundoFatorTOTP, TotpNaoCadastradoError, LimiteTentativasTotpExcedidoError, CodigoTotpInvalidoError } from "./totp.js";
 import { exibirMensagem } from "../../shared/feedback.js";
 import { consultarStatusSessao } from "./sessionStatus.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
@@ -153,29 +165,16 @@ async function tratarMfaPendente() {
     exibirMensagem("Login realizado com sucesso!", "sucesso");
     await irParaHomeDoUsuario();
   } catch (erro) {
-    console.error("Falha na confirmação de identidade:", erro);
+    console.error("Falha na confirmação via WebAuthn:", erro);
 
-    if (erro instanceof LimiteTentativasExcedidoError) {
-      // Sem mais tentativas nesta sessão -- não há fallback aqui, o
-      // caminho é voltar ao login e reautenticar (por senha, o que
-      // reinicia o contador, ou por Google, que não exige 2FA).
-      exibirMensagemVoltarAoLogin(
-        "Limite de tentativas de confirmação atingido. " +
-        "Entre novamente para tentar de novo."
-      );
-      return;
-    }
-
-    if (erro instanceof SemAutenticadorDisponivelError) {
-      // Nenhum autenticador disponível nesta máquina (sem
-      // PIN/biometria configurados, sem Bluetooth para QR code) --
-      // não adianta insistir no mesmo WebAuthn. Orienta o usuário a
-      // voltar ao login e entrar por senha ou por Google.
-      exibirMensagemVoltarAoLogin(
-        "Não encontramos nenhum método de confirmação disponível neste " +
-        "dispositivo (sem PIN ou biometria configurados, e sem Bluetooth " +
-        "para usar o celular). Entre novamente para tentar de outra forma."
-      );
+    // ALTERADO: antes de desistir para o login geral, tenta TOTP como
+    // segundo método -- só nos dois casos em que insistir no mesmo
+    // WebAuthn não adianta (sem autenticador disponível, ou tentativas
+    // esgotadas). Um TentativaFalhouError comum (PIN errado, etc.)
+    // continua oferecendo "tentar novamente" no próprio WebAuthn, sem
+    // pular para TOTP -- ver branch else no final.
+    if (erro instanceof LimiteTentativasExcedidoError || erro instanceof SemAutenticadorDisponivelError) {
+      await tentarProximoMetodoTOTP(erro);
       return;
     }
 
@@ -188,23 +187,151 @@ async function tratarMfaPendente() {
 }
 
 /**
- * Mostra uma mensagem de erro com um link para reiniciar o login,
- * usado quando não há mais nada a fazer nesta tela (limite de
- * tentativas esgotado ou nenhum autenticador disponível).
- *
- * `exibirMensagem` (shared/feedback.js) só aceita texto simples, então
- * o link é montado à parte e anexado ao container de feedback.
+ * Chamado quando o WebAuthn não pode mais ser tentado (sem
+ * autenticador disponível, ou tentativas esgotadas). Verifica se o
+ * usuário tem TOTP cadastrado; se tiver, mostra o painel de código.
+ * Se não tiver, mostra o estado de BLOQUEIO -- ALTERADO: não existe
+ * mais "voltar ao login" como saída, porque login (por senha ou
+ * Google) sempre exige 2FA agora. Sem WebAuthn nem TOTP disponíveis,
+ * não sobra nenhum caminho de entrada.
  */
-function exibirMensagemVoltarAoLogin(mensagem) {
-  exibirMensagem(mensagem, "erro");
+async function tentarProximoMetodoTOTP(erroOriginalWebauthn) {
+  try {
+    await iniciarSegundoFatorTOTP();
+    exibirMensagem(
+      "Não foi possível confirmar pela chave de segurança. Digite o código do seu aplicativo autenticador.",
+      "info"
+    );
+    mostrarPainelCodigoTOTP();
+  } catch (erroTotp) {
+    if (erroTotp instanceof TotpNaoCadastradoError) {
+      // Sem TOTP cadastrado E WebAuthn esgotado/indisponível -- não
+      // há mais nada a tentar. Bloqueio real.
+      mostrarBloqueio();
+      return;
+    }
+    console.error("Falha ao iniciar segundo fator via TOTP:", erroTotp);
+    exibirMensagem(
+      "Não foi possível verificar o método de confirmação por código. Tente recarregar a página.",
+      "erro"
+    );
+    botaoTentarNovamente.hidden = false;
+  }
+}
+
+// ============================================
+// Painel de código TOTP -- reaproveita os elementos já existentes em
+// afterLogin.html (mensagemFeedback, spinner) e injeta um form simples
+// para o código, sem precisar de um modal separado (diferente do
+// step-up, que já tem modal próprio) -- esta é uma página inteira
+// dedicada à confirmação, não um overlay sobre outra tela.
+// ============================================
+
+let painelTotpCriado = false;
+
+function mostrarPainelCodigoTOTP() {
+  const spinner = document.querySelector(".loading-wrap");
+  if (spinner) spinner.hidden = true;
+  botaoTentarNovamente.hidden = true;
+
+  if (painelTotpCriado) {
+    document.getElementById("painel-totp").hidden = false;
+    document.getElementById("totp-codigo").focus();
+    return;
+  }
+
+  const card = document.querySelector(".card");
+  const painel = document.createElement("div");
+  painel.id = "painel-totp";
+  painel.innerHTML = `
+    <form id="form-totp-codigo">
+      <div class="field-group">
+        <label class="field-label" for="totp-codigo">Código do autenticador</label>
+        <input class="field-input" type="text" id="totp-codigo" inputmode="numeric"
+               autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
+      </div>
+      <button class="btn-primary" type="submit">Confirmar</button>
+    </form>
+  `;
+  card.insertBefore(painel, document.getElementById("mensagemFeedback"));
+  painelTotpCriado = true;
+
+  document.getElementById("form-totp-codigo").addEventListener("submit", onSubmitCodigoTOTP);
+  document.getElementById("totp-codigo").focus();
+}
+
+async function onSubmitCodigoTOTP(event) {
+  event.preventDefault();
+  const input = document.getElementById("totp-codigo");
+  const codigo = input.value.trim();
+  if (!codigo) return;
+
+  const botaoSubmit = event.target.querySelector("button[type=submit]");
+  botaoSubmit.disabled = true;
+
+  try {
+    await confirmarSegundoFatorTOTP(codigo);
+    exibirMensagem("Login realizado com sucesso!", "sucesso");
+    await irParaHomeDoUsuario();
+  } catch (erro) {
+    botaoSubmit.disabled = false;
+
+    if (erro instanceof LimiteTentativasTotpExcedidoError) {
+      // FIM DA LINHA de verdade -- ALTERADO: não sobra mais nenhum
+      // método (WebAuthn já tinha esgotado antes de chegar em TOTP).
+      // Sem fallback para Google aqui -- login sempre exige 2FA.
+      document.getElementById("painel-totp").hidden = true;
+      mostrarBloqueio();
+      return;
+    }
+
+    if (erro instanceof CodigoTotpInvalidoError) {
+      exibirMensagem(
+        `${erro.message}${erro.tentativasRestantes != null ? ` (${erro.tentativasRestantes} tentativa(s) restante(s))` : ""}`,
+        "erro"
+      );
+      input.value = "";
+      input.focus();
+      return;
+    }
+
+    console.error("Falha inesperada ao confirmar código TOTP:", erro);
+    exibirMensagem(erro.message || "Não foi possível confirmar o código. Tente novamente.", "erro");
+  }
+}
+
+/**
+ * Mostra o estado de BLOQUEIO -- usado quando WebAuthn e TOTP se
+ * esgotaram (ou não estão disponíveis) e não sobra mais nenhum
+ * caminho de login. ALTERADO: substitui a antiga
+ * exibirMensagemVoltarAoLogin(), que oferecia um link "Voltar para o
+ * login" -- isso fazia sentido quando Google era um fallback sem 2FA,
+ * mas não faz mais (Google também exige 2FA agora, ver oauth.py).
+ * Voltar ao login só repetiria a mesma exigência.
+ *
+ * Não oferece nenhuma ação própria de recuperação -- só orienta
+ * contato com o administrador, que pode resetar as credenciais de
+ * 2FA do usuário.
+ */
+function mostrarBloqueio() {
+  const spinner = document.querySelector(".loading-wrap");
+  if (spinner) spinner.hidden = true;
+  botaoTentarNovamente.hidden = true;
+
+  const painelTotp = document.getElementById("painel-totp");
+  if (painelTotp) painelTotp.hidden = true;
+
+  exibirMensagem(
+    "Não foi possível confirmar sua identidade pelos métodos cadastrados. " +
+    "Por segurança, não é possível continuar agora.",
+    "erro"
+  );
 
   const container = document.getElementById("mensagemFeedback");
   if (!container) return;
 
-  const link = document.createElement("a");
-  link.href = ROTA_LOGIN;
-  link.textContent = "Voltar para o login";
-  link.className = "link-fallback-google";
+  const aviso = document.createElement("p");
+  aviso.textContent = "Entre em contato com o administrador para verificar suas credenciais de segurança.";
   container.appendChild(document.createElement("br"));
-  container.appendChild(link);
+  container.appendChild(aviso);
 }

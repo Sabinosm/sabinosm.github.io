@@ -5,12 +5,18 @@
 // módulo não precisa conhecer navigator.credentials nem o formato das
 // opções — só chama confirmarSegundoFator() e trata o resultado.
 //
-// Login via Google nunca passa por aqui: só entra em mfa_pendente
-// quem loga por senha e já tem WebAuthn cadastrado. Por isso não há
-// mais fallback "pular 2FA via Google" -- se o desafio não puder ser
-// completado nesta máquina (sem autenticador) ou as tentativas se
-// esgotarem, o caminho é voltar para o login e reautenticar por senha
-// (reinicia as tentativas) ou por Google (que não exige 2FA).
+// ALTERADO (2FA sempre obrigatório -- ver mfa.py/login.py/oauth.py no
+// backend): login via Google agora TAMBÉM passa por este módulo --
+// diferente da versão anterior deste comentário, que dizia o
+// contrário. Todo login (por senha ou por Google) exige 2FA sempre;
+// não existe mais nenhum caminho de login sem confirmação.
+//
+// Se o desafio WebAuthn não puder ser completado nesta máquina (sem
+// autenticador) ou as tentativas se esgotarem, o próximo passo é
+// tentar TOTP (ver totp.js) -- não mais "voltar ao login e entrar por
+// Google", que não pede mais 2FA nenhum. Se TOTP também esgotar (ou o
+// usuário não tiver), não sobra mais nenhum método -- ver
+// afterLogin.js, estado de bloqueio.
 
 import { startAuthentication, startRegistration } from "https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
@@ -20,9 +26,9 @@ import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
  * desafio WebAuthn por falta de autenticador disponível -- típico de
  * máquinas Linux sem PIN/biometria configurados e sem Bluetooth (que
  * impede o QR code cross-device com o celular). Quem chama pode usar
- * `erro instanceof SemAutenticadorDisponivelError` para orientar o
- * usuário a voltar ao login e entrar por senha ou por Google em vez
- * de insistir no WebAuthn.
+ * `erro instanceof SemAutenticadorDisponivelError` para tentar TOTP
+ * em seguida (ver totp.js) -- não há mais fallback de login sem 2FA
+ * (nem por senha, nem por Google).
  */
 export class SemAutenticadorDisponivelError extends Error {
   constructor(mensagem, tentativasRestantes) {
@@ -36,9 +42,8 @@ export class SemAutenticadorDisponivelError extends Error {
  * Erro lançado quando o backend recusou gerar um novo desafio porque
  * o limite de tentativas desta sessão (MAX_TENTATIVAS_MFA no backend)
  * já foi atingido -- distingue de uma falha pontual de assinatura,
- * onde ainda sobram tentativas. Quem chama deve voltar para o login:
- * reautenticar por senha reinicia o contador, e por Google não exige
- * 2FA de novo.
+ * onde ainda sobram tentativas. Quem chama deve tentar TOTP em
+ * seguida (ver totp.js) -- não há mais fallback de login sem 2FA.
  */
 export class LimiteTentativasExcedidoError extends Error {
   constructor(mensagem) {

@@ -267,3 +267,125 @@ p.hint {
 .link-fallback-google:hover {
   opacity: 0.85;
 }
+
+/* ── Ghost btn (usado em Cancelar, "Escolher outro método") ──
+   Mesma família visual do btn-secondary de settings.css, mas sem
+   borda -- ação secundária/discreta, nunca a ação principal da tela. */
+.btn-ghost {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  padding: 10px;
+  color: var(--muted2);
+  font-family: 'Inter', sans-serif;
+  font-size: calc(.82rem * var(--font-scale));
+  font-weight: 500;
+  cursor: pointer;
+  transition: color .2s, background .2s;
+  margin-top: 8px;
+}
+.btn-ghost:hover {
+  color: var(--text-strong);
+  background: var(--hover-bg);
+}
+
+/* ── Cartões de escolha de método 2FA (onboarding) ───────────
+   Mesma família visual de .btn-google (borda + hover), mas com
+   conteúdo em duas linhas (título + descrição) em vez de ícone+label
+   numa linha só. */
+.btn-2fa-opcao {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 14px 16px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  margin-bottom: 10px;
+}
+.btn-2fa-opcao:hover {
+  border-color: var(--border-hover);
+  background: var(--hover-bg);
+}
+.btn-2fa-opcao strong {
+  font-size: calc(.88rem * var(--font-scale));
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.btn-2fa-opcao .sub {
+  /* Sobrescreve o .sub genérico (centralizado, margin grande) -- aqui
+     é uma legenda inline dentro do cartão, não o subtítulo da tela. */
+  text-align: left;
+  margin-bottom: 0;
+  font-size: calc(.74rem * var(--font-scale));
+  color: var(--muted2);
+  letter-spacing: normal;
+  line-height: 1.4;
+}
+
+/* ── Container do QR code (onboarding TOTP) ──────────────────
+   O próprio elemento onde a lib QRCode desenha o <canvas>/<img> --
+   só cuida do enquadramento; a lib desenha o conteúdo. */
+#totp-qrcode-container {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--palette-white-pure);
+  border-radius: 7px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#totp-secret-texto {
+  text-align: center;
+  font-size: calc(.74rem * var(--font-scale));
+  color: var(--muted2);
+  word-break: break-all;
+  margin-bottom: 18px;
+}
+
+/* ── field-group / field-input ────────────────────────────────
+   Usados pelo painel de código TOTP injetado dinamicamente em
+   afterLogin.js (#painel-totp) -- equivalentes a .field/.field input
+   acima, só com os nomes de classe que o painel injetado espera
+   (mesmos nomes usados em settings.css, para não exigir duas
+   convenções de nome diferentes entre telas de auth e configurações). */
+.field-group { margin-bottom: 10px; text-align: left; }
+.field-label {
+  display: block;
+  font-size: calc(.76rem * var(--font-scale));
+  color: var(--muted2);
+  margin-bottom: 6px;
+}
+.field-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: calc(.86rem * var(--font-scale));
+  outline: none;
+  transition: border-color .2s, background .2s;
+}
+.field-input::placeholder { color: var(--muted); }
+.field-input:focus {
+  border-color: var(--border-focus);
+  background: var(--input-bg-focus);
+}
+
+#painel-totp {
+  width: 100%;
+  margin-bottom: 4px;
+}

@@ -43,6 +43,7 @@
 
 import { startAuthentication } from "https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.js";
 import { URL_BASE_API, FRONT_ORIGIN } from "./urlConfig.js";
+import { iniciarStepUpTOTP, confirmarStepUpTOTP, TotpNaoCadastradoError, LimiteTentativasTotpExcedidoError, CodigoTotpInvalidoError } from "./totp.js";
 
 // Origin exata do frontend em produção -- usada para travar tanto o
 // postMessage recebido do popup quanto o window.open, evitando que
@@ -87,10 +88,21 @@ export class PopupBloqueadoError extends Error {
  * garantirModalCarregado()) que:
  *  - descreve a ação em texto claro, para o usuário saber o que está
  *    prestes a confirmar;
- *  - usa WebAuthn diretamente se o usuário tiver credencial cadastrada
- *    (sem popup -- é local, via navigator.credentials);
- *  - ou pede a senha atual e abre um popup para o Google, se não
- *    tiver WebAuthn (fallback).
+ *  - usa WebAuthn diretamente se o usuário tiver credencial
+ *    cadastrada (ver step_up.py), sem popup, via
+ *    navigator.credentials;
+ *  - se o WebAuthn falhar (qualquer motivo), tenta TOTP como segundo
+ *    método, se o usuário tiver -- ver tentarProximoMetodoTotp/
+ *    onSubmitTotp;
+ *  - se TOTP também esgotar as tentativas (ou o usuário não tiver
+ *    nenhum dos dois, desde o início), cai no fallback: pede a senha
+ *    atual e abre um popup para o Google. ALTERADO: diferente de uma
+ *    versão anterior deste módulo, o step-up NUNCA fica sem saída --
+ *    esse fallback está sempre disponível como último recurso,
+ *    mesmo para quem tem WebAuthn e/ou TOTP cadastrados mas não
+ *    conseguiu completar nenhum dos dois desta vez (ver docstring de
+ *    step_up.py para o racional dessa diferença em relação ao
+ *    login, onde esgotar os métodos É bloqueio total).
  *
  * CHAMADAS CONCORRENTES: o modal é um único overlay compartilhado no
  * DOM (ver garantirModalCarregado) -- não seria seguro abrir duas
@@ -165,8 +177,11 @@ function abrirModalConfirmacao(acao) {
     const btnCancelar = document.getElementById("stepup-cancelar");
     const painelCarregando = document.getElementById("stepup-painel-carregando");
     const painelWebauthn = document.getElementById("stepup-painel-webauthn");
+    const painelTotp = document.getElementById("stepup-painel-totp");
     const painelSenha = document.getElementById("stepup-painel-senha");
     const formSenha = document.getElementById("stepup-form-senha");
+    const formTotp = document.getElementById("stepup-form-totp");
+    const inputTotp = document.getElementById("stepup-totp-codigo");
     const inputSenha = document.getElementById("stepup-senha");
     const feedback = document.getElementById("stepup-feedback");
     const btnTentarWebauthnNovamente = document.getElementById("stepup-tentar-novamente");
@@ -176,7 +191,7 @@ function abrirModalConfirmacao(acao) {
     let popupPollId = null;
 
     function limparEstadoVisual() {
-      [painelCarregando, painelWebauthn, painelSenha].forEach(p => p.hidden = true);
+      [painelCarregando, painelWebauthn, painelTotp, painelSenha].forEach(p => p.hidden = true);
       feedback.textContent = "";
       feedback.className = "stepup-feedback";
     }
@@ -184,6 +199,12 @@ function abrirModalConfirmacao(acao) {
     function mostrarErro(mensagem) {
       feedback.textContent = mensagem;
       feedback.className = "stepup-feedback erro";
+    }
+
+    function mostrarPainelSenha() {
+      painelSenha.hidden = false;
+      inputSenha.value = "";
+      inputSenha.focus();
     }
 
     function encerrar() {
@@ -195,6 +216,7 @@ function abrirModalConfirmacao(acao) {
       overlay.classList.remove("stepup-overlay--visible");
       document.body.classList.remove("no-scroll");
       formSenha.removeEventListener("submit", onSubmitSenha);
+      formTotp.removeEventListener("submit", onSubmitTotp);
       btnFechar.removeEventListener("click", onCancelar);
       btnCancelar.removeEventListener("click", onCancelar);
       overlay.removeEventListener("click", onClickOverlay);
@@ -250,19 +272,24 @@ function abrirModalConfirmacao(acao) {
         painelWebauthn.hidden = false;
         executarWebauthn(dados);
       } else {
-        painelSenha.hidden = false;
-        inputSenha.value = "";
-        inputSenha.focus();
+        mostrarPainelSenha();
       }
     }
 
     // ---- Caminho WebAuthn: sem popup, local ao navegador ----
+    // ALTERADO: ao falhar (qualquer motivo -- cancelamento, timeout,
+    // sem autenticador, assinatura inválida), não oferece mais só
+    // "tentar de novo" no mesmo WebAuthn -- tenta TOTP como próximo
+    // método. Se o usuário quiser insistir no WebAuthn mesmo assim,
+    // o botão "Tentar novamente" continua disponível no painel
+    // WebAuthn (btnTentarWebauthnNovamente) para esse caso.
     async function executarWebauthn(options) {
       let credencial;
       try {
         credencial = await startAuthentication({ optionsJSON: options });
       } catch (erro) {
-        mostrarErro("Não foi possível confirmar via chave de segurança. Você pode tentar de novo.");
+        mostrarErro("Não foi possível confirmar via chave de segurança.");
+        await tentarProximoMetodoTotp();
         return;
       }
 
@@ -278,6 +305,71 @@ function abrirModalConfirmacao(acao) {
         resolverComToken(dados.token_confirmacao);
       } catch (erro) {
         mostrarErro(erro.message || "Não foi possível confirmar sua identidade.");
+        await tentarProximoMetodoTotp();
+      }
+    }
+
+    // ---- Caminho TOTP: segundo método, só depois do WebAuthn falhar ----
+    async function tentarProximoMetodoTotp() {
+      try {
+        await iniciarStepUpTOTP(acao);
+        painelWebauthn.hidden = true;
+        painelTotp.hidden = false;
+        feedback.textContent = "";
+        feedback.className = "stepup-feedback";
+        inputTotp.value = "";
+        inputTotp.focus();
+      } catch (erroTotp) {
+        if (erroTotp instanceof TotpNaoCadastradoError) {
+          // Usuário não tem TOTP -- ALTERADO: em vez de manter só o
+          // painel WebAuthn (que acabou de falhar), oferece o
+          // fallback senha+Google diretamente. Mesmo racional de
+          // step_up.py: o step-up sempre mantém uma saída disponível.
+          painelWebauthn.hidden = true;
+          mostrarPainelSenha();
+          return;
+        }
+        console.error("stepUp: falha ao iniciar TOTP", erroTotp);
+        mostrarErro("Não foi possível verificar o método de confirmação por código.");
+      }
+    }
+
+    async function onSubmitTotp(e) {
+      e.preventDefault();
+      const codigo = inputTotp.value.trim();
+      if (!codigo) return;
+
+      const botaoSubmit = formTotp.querySelector("button[type=submit]");
+      botaoSubmit.disabled = true;
+
+      try {
+        const token = await confirmarStepUpTOTP(acao, codigo);
+        resolverComToken(token);
+      } catch (erroTotp) {
+        botaoSubmit.disabled = false;
+
+        if (erroTotp instanceof LimiteTentativasTotpExcedidoError) {
+          // ALTERADO: diferente da versão anterior deste módulo, isso
+          // NÃO é mais fim de linha -- cai no fallback senha+Google,
+          // igual a quando o usuário não tem WebAuthn nem TOTP (ver
+          // docstring de step_up.py: o step-up sempre mantém uma
+          // saída, diferente do login).
+          painelTotp.hidden = true;
+          mostrarErro("Não foi possível confirmar pelo aplicativo autenticador.");
+          mostrarPainelSenha();
+          return;
+        }
+
+        if (erroTotp instanceof CodigoTotpInvalidoError) {
+          mostrarErro(
+            `${erroTotp.message}${erroTotp.tentativasRestantes != null ? ` (${erroTotp.tentativasRestantes} tentativa(s) restante(s))` : ""}`
+          );
+          inputTotp.value = "";
+          inputTotp.focus();
+          return;
+        }
+
+        mostrarErro(erroTotp.message || "Não foi possível confirmar o código.");
       }
     }
 
@@ -374,6 +466,7 @@ function abrirModalConfirmacao(acao) {
     }
 
     formSenha.addEventListener("submit", onSubmitSenha);
+    formTotp.addEventListener("submit", onSubmitTotp);
     btnFechar.addEventListener("click", onCancelar);
     btnCancelar.addEventListener("click", onCancelar);
     overlay.addEventListener("click", onClickOverlay);
