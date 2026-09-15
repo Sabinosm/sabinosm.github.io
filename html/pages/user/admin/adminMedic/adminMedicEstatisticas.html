@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Estatísticas</title>
+<script src="../../../../js/sharedConfig/themeLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminEstatisticas.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">B-íon</div>
+
+    <div class="nav-group nav-group--work">
+      <a href="adminHomePage.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="3" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="12" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="3" y="16" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Gerenciamento</span>
+      </a>
+      <a href="adminPacientes.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Pacientes</span>
+      </a>
+      <a href="adminProfissionais.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="9" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.5 20c0-3.5 2.8-6 6.5-6s6.5 2.5 6.5 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 4.5c1.6.4 2.8 1.9 2.8 3.5S17.6 11.1 16 11.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 14.3c1.9.7 3.2 2.6 3.2 4.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Profissionais</span>
+      </a>
+      <a href="../../enterprise/adminEmpresa.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 21V6l8-3 8 3v15" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21v-6h6v6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 10h.01M12 10h.01M15 10h.01M9 14h.01M15 14h.01" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Empresa</span>
+      </a>
+      <a href="adminEstatisticas.html" class="nav-item nav-item--active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 20V10M11 20V4M18 20v-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Estatísticas</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 4h9a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8l4-4z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 4v4H5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 13.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Auditoria</span>
+      </a>
+    </div>
+
+    <div class="nav-spacer"></div>
+
+    <div class="nav-group nav-group--system">
+      <button type="button" class="nav-item nav-item--profile" id="open-settings">
+        <span class="nav-avatar" id="nav-avatar-iniciais"></span>
+        <span class="nav-label-group">
+          <span class="nav-label" id="nav-nome-usuario"></span>
+          <span class="nav-sublabel">· Perfil</span>
+        </span>
+        <span class="nav-profile-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1>Estatísticas</h1>
+        <p class="main-subtitle">Desempenho, epidemiologia e uso do sistema</p>
+      </div>
+    </header>
+
+    <!-- Índices compostos (categoria E) — resumo executivo, sempre no
+         topo. Cards aqui são maiores/destacados; ficam prontos para
+         breakdown expansível quando as rotas E1/E4 forem destravadas. -->
+    <section class="section" aria-labelledby="titulo-resumo-executivo">
+      <h2 class="section-title" id="titulo-resumo-executivo">Resumo executivo</h2>
+      <div class="metrics metrics--destaque" id="grid-resumo-executivo">
+        <!-- populado via JS: iniciarCardsCategoria('resumo-executivo') -->
+      </div>
+    </section>
+
+    <!-- Abas por categoria -->
+    <div class="stat-tabs" role="tablist" aria-label="Categorias de estatísticas">
+      <button type="button" class="stat-tab stat-tab--active" role="tab" aria-selected="true" aria-controls="painel-atendimentos" id="aba-atendimentos" data-categoria="atendimentos">
+        Atendimentos
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-ia" id="aba-ia" data-categoria="ia">
+        Desempenho da IA
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-epidemiologico" id="aba-epidemiologico" data-categoria="epidemiologico">
+        Panorama regional
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-medicamentos" id="aba-medicamentos" data-categoria="medicamentos">
+        Medicamentos e alergias
+      </button>
+      <button type="button" class="stat-tab" role="tab" aria-selected="false" aria-controls="painel-pacientes" id="aba-pacientes" data-categoria="pacientes">
+        Perfil de pacientes
+      </button>
+    </div>
+
+    <!-- Painéis — só o ativo fica visível; carregamento é disparado
+         ao entrar em foco (ver adminEstatisticas.js), nunca todos de
+         uma vez, para não pesar a página. -->
+    <section class="stat-panel stat-panel--active" role="tabpanel" id="painel-atendimentos" aria-labelledby="aba-atendimentos">
+      <div class="metrics" id="grid-atendimentos"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-ia" aria-labelledby="aba-ia" hidden>
+      <div class="metrics" id="grid-ia"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-epidemiologico" aria-labelledby="aba-epidemiologico" hidden>
+      <div class="metrics" id="grid-epidemiologico"></div>
+      <div class="chart-list" id="graficos-epidemiologico"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-medicamentos" aria-labelledby="aba-medicamentos" hidden>
+      <div class="metrics" id="grid-medicamentos"></div>
+      <div class="chart-list" id="graficos-medicamentos"></div>
+    </section>
+
+    <section class="stat-panel" role="tabpanel" id="painel-pacientes" aria-labelledby="aba-pacientes" hidden>
+      <div class="metrics" id="grid-pacientes"></div>
+      <div class="chart-list" id="graficos-pacientes"></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script type="module" src="../../../../js/sharedConfig/settingsLoader.js"></script>
+<script type="module" src="../../../../js/pages/user/estatisticas/initEstatisticasPage.js"></script>
+</body>
+</html>
