@@ -9,7 +9,7 @@ import {
   ErroCadastroTOTP,
 } from '../../pages/auth/totp.js';
 import { atualizarTotpCache } from '../userCache.js';
-import { atualizarAvisoUnicoFator } from './avisos.js';
+import { atualizarAvisoUnicoFator } from './preencherAvisos.js';
 
 /**
  * Alterna entre os estados "não configurado" / "configurado" da seção
