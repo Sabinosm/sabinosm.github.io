@@ -28,8 +28,8 @@ const ICONES_DISPOSITIVO = {
 // conhecer -- evita quebrar a lista inteira por causa de um item.
 const ICONE_GENERICO = ICONES_DISPOSITIVO.desktop;
 
-import { registrarNovoDispositivo, ErroRegistroDispositivo, removerDispositivoWebAuthn, ErroRemocaoDispositivo } from './webauthn.js';
-import { iniciarCadastroTOTP, confirmarCadastroTOTP, removerTOTP, ErroCadastroTOTP } from './totp.js';
+import { registrarNovoDispositivo, ErroRegistroDispositivo, removerDispositivoWebAuthn, ErroRemocaoDispositivo } from '../pages/auth/webauthn.js';
+import { iniciarCadastroTOTP, confirmarCadastroTOTP, removerTOTP, ErroCadastroTOTP } from '../pages/auth/totp.js';
 import { atualizarCredenciaisWebauthnCache, atualizarTotpCache } from './userCache.js';
 
 const THEME_STORAGE_KEY = 'bion-theme';
