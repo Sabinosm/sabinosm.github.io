@@ -64,6 +64,7 @@ export async function consultarStatusSessao() {
         ok: true,
         status: "mfa_pendente",
         metodo: dados.metodo,
+        metodosDisponiveis: dados.metodos_disponiveis || [],   // novo
         tentativasRestantes: dados.tentativas_restantes,
         reautenticarDisponivel: Boolean(dados.reautenticar_disponivel),
       };

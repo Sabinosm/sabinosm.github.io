@@ -30,7 +30,24 @@
   </div>
 
   <button id="btn-tentar-novamente" class="btn-primary" type="button" hidden>Tentar novamente</button>
+    <button id="btn-tentar-novamente" class="btn-primary" type="button" hidden>Tentar novamente</button>
 
+  <!-- Escolha de método -- só aparece quando o usuário tem mais de um
+       método de 2FA disponível (ver /auth/status, metodos_disponiveis).
+       Mesma classe .btn-2fa-opcao usada em onboarding.html. -->
+  <div id="escolha-mfa-metodo" hidden>
+    <p class="sub">Escolha como deseja confirmar sua identidade</p>
+    <button class="btn-2fa-opcao" type="button" id="btn-mfa-escolher-webauthn">
+      <strong>Chave de segurança (WebAuthn)</strong>
+      <span class="sub">Passkey, chave física USB, ou biometria do dispositivo.</span>
+    </button>
+    <button class="btn-2fa-opcao" type="button" id="btn-mfa-escolher-totp">
+      <strong>Aplicativo autenticador (TOTP)</strong>
+      <span class="sub">Código de 6 dígitos do seu app autenticador.</span>
+    </button>
+  </div>
+
+    <div id="mensagemFeedback" role="status" aria-live="polite"></div>
   <div id="mensagemFeedback" role="status" aria-live="polite"></div>
 
 </div>

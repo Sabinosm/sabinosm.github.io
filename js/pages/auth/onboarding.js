@@ -34,7 +34,15 @@ const btnVoltarEscolhaWebauthn = document.getElementById("btn-voltar-escolha-web
 const btnVoltarEscolhaTotp = document.getElementById("btn-voltar-escolha-totp");
 const formTotpConfirmar = document.getElementById("form-totp-confirmar");
 
-const DESTINO_APOS_CONCLUIR = "../../../html/pages/user/standartUser/medicHomePage.html";
+// CORRIGIDO: antes apontava fixo para a home de médico
+// (medicHomePage.html), o que estava certo por acaso enquanto só
+// profissionais clínicos completavam onboarding, mas manda o admin
+// fundador (ou qualquer futuro admin que passe por onboarding) para a
+// home errada -- afterLogin.js::irParaHomeDoUsuario() já centraliza
+// essa decisão (is_admin tem prioridade sobre funcao_clinica, com
+// tratamento de papel desconhecido), então delegamos pra lá em vez de
+// duplicar a lógica aqui.
+const DESTINO_APOS_CONCLUIR = "../../../html/pages/auth/afterLogin.html";
 
 // A URL (?senha_definida=) é só um hint de UX vindo do afterLogin.js,
 // não a fonte de verdade -- o usuário pode editá-la livremente. Quem
