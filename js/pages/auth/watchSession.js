@@ -17,7 +17,7 @@ import { consultarStatusSessao } from "./sessionStatus.js";
 import { exibirMensagem } from "../../shared/feedback.js";
 
 const ROTA_ERRO_401 = "../../../pages/http_error/401.html";
-const INTERVALO_VERIFICACAO_MS = 10 * 60 * 1000; // 10 minutos
+const INTERVALO_VERIFICACAO_MS = 5 * 60 * 1000; // 5 minutos
 
 let intervaloId = null;
 

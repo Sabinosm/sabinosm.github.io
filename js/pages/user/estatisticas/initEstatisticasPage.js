@@ -5,16 +5,16 @@ import { iniciarPaginaEstatisticas } from "../admin/adminEstatisticas/adminEstat
 import { lerDadosUsuarioCache } from "../../../sharedConfig/userCache.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  iniciarMonitoramentoSessao();
   const dados = lerDadosUsuarioCache();
   if (!dados) {
-    window.location.href = "../../../auth/login.html";
+    window.location.href = "../../../pages/http_error/401.html";
     return;
   }
 
   await modalConfiguracoesPronto;
   preencherPainelPerfil(dados);
 
-  iniciarMonitoramentoSessao();
 
   // Cards de estatística não dependem do modal de configurações, só
   // do DOM já montado -- mesmo padrão de iniciarMetricasGerenciamento
