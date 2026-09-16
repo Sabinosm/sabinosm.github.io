@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Empresa</title>
+<script src="../../../../js/sharedConfig/themeLoader.js"></script>
+<link rel="stylesheet" href="../../../css/pages/user/admin/adminHomePage.css">
+<link rel="stylesheet" href="../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../css/pages/enterprise/adminEmpresa.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">B-íon</div>
+
+    <div class="nav-group nav-group--work">
+      <a href="adminHomePage.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="3" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="12" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="3" y="16" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Gerenciamento</span>
+      </a>
+      <a href="adminPacientes.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Pacientes</span>
+      </a>
+      <a href="adminProfissionais.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="9" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.5 20c0-3.5 2.8-6 6.5-6s6.5 2.5 6.5 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 4.5c1.6.4 2.8 1.9 2.8 3.5S17.6 11.1 16 11.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 14.3c1.9.7 3.2 2.6 3.2 4.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Profissionais</span>
+      </a>
+      <a href="adminEmpresa.html" class="nav-item nav-item--active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 21V6l8-3 8 3v15" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21v-6h6v6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 10h.01M12 10h.01M15 10h.01M9 14h.01M15 14h.01" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Empresa</span>
+      </a>
+      <a href="adminEstatisticas.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 20V10M11 20V4M18 20v-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Estatísticas</span>
+      </a>
+      <a href="#" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 4h9a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8l4-4z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 4v4H5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 13.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Auditoria</span>
+      </a>
+    </div>
+
+    <!-- espaçador empurra o grupo de sistema para o rodapé -->
+    <div class="nav-spacer"></div>
+
+    <div class="nav-group nav-group--system">
+      <button type="button" class="nav-item nav-item--profile" id="open-settings">
+        <span class="nav-avatar" id="nav-avatar-iniciais"></span>
+        <span class="nav-label-group">
+          <span class="nav-label" id="nav-nome-usuario"></span>
+          <span class="nav-sublabel">· Perfil</span>
+        </span>
+        <span class="nav-profile-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1>Empresa</h1>
+        <p class="main-subtitle">Dados institucionais e plano contratado</p>
+      </div>
+      
+    </header>
+
+    <section class="section section--centered">
+      <div class="panel-card">
+        <div class="panel-header-row">
+          <div>
+            <h2 class="panel-title">Empresa</h2>
+            <p class="panel-subtitle">CNPJ e razão social são fixos após o cadastro.</p>
+          </div>
+          <button type="button" class="btn-secondary btn-secondary--sm" id="empresa-btn-alterar">Alterar</button>
+        </div>
+
+        <form id="form-empresa-editar">
+
+          <div class="section-label">Dados da empresa</div>
+
+          <div class="row-2">
+            <!-- Fixo: exige alteração de registro (Receita) -- não editável aqui -->
+            <div class="field-group field-group--locked">
+              <label class="field-label">Razão social</label>
+              <div class="field-locked" id="empresa-razao-social"></div>
+            </div>
+
+            <!-- Editável: 1 input só, readonly fora do modo de edição. Ao
+                 entrar em edição o valor atual vira placeholder, não fica
+                 dentro do campo -- ver adminEmpresa.js. -->
+            <div class="field-group field">
+              <label class="field-label" for="empresa-nome-fantasia">Nome fantasia</label>
+              <input class="field-input" type="text" id="empresa-nome-fantasia" data-track readonly>
+              <p class="error-msg" id="err-empresa-nome-fantasia"></p>
+            </div>
+          </div>
+
+          <div class="row-2">
+            <div class="field-group field-group--locked">
+              <label class="field-label">CNPJ</label>
+              <div class="field-locked" id="empresa-cnpj"></div>
+            </div>
+
+            <div class="field-group field">
+              <label class="field-label" for="empresa-cnes">CNES</label>
+              <input class="field-input" type="text" id="empresa-cnes" data-track readonly>
+              <p class="error-msg" id="err-empresa-cnes"></p>
+            </div>
+          </div>
+
+          <div class="section-label">Endereço</div>
+
+          <div class="row-endereco">
+            <div class="field-group field">
+              <label class="field-label" for="empresa-cep">CEP</label>
+              <input class="field-input" type="text" id="empresa-cep" data-track readonly>
+              <div class="field-spinner" aria-hidden="true"></div>
+              <p class="error-msg" id="err-empresa-cep"></p>
+            </div>
+
+            <div class="field-group field">
+              <label class="field-label" for="empresa-bairro">Bairro</label>
+              <input class="field-input" type="text" id="empresa-bairro" data-track readonly>
+              <p class="error-msg" id="err-empresa-bairro"></p>
+            </div>
+
+            <div class="field-group field">
+              <label class="field-label" for="empresa-numero">Número</label>
+              <input class="field-input" type="text" id="empresa-numero" data-track readonly>
+              <p class="error-msg" id="err-empresa-numero"></p>
+            </div>
+
+            <div class="field-group field">
+              <label class="field-label" for="empresa-complemento">Complemento</label>
+              <input class="field-input" type="text" id="empresa-complemento" data-track readonly>
+              <p class="error-msg" id="err-empresa-complemento"></p>
+            </div>
+          </div>
+
+          <!-- Botões de ação -- escondidos até "Alterar" ser clicado -->
+          <div class="form-actions" id="empresa-form-actions" hidden>
+            <button type="button" class="btn-ghost" id="empresa-btn-cancelar">Cancelar</button>
+            <button type="submit" class="btn-primary" id="empresa-btn-salvar">Salvar</button>
+          </div>
+        </form>
+
+        <div class="panel-divider"></div>
+
+        <h2 class="panel-title">Plano</h2>
+        <p class="panel-subtitle">Detalhes do plano contratado.</p>
+
+        <div class="field-group field-group--locked">
+          <label class="field-label">Plano atual</label>
+          <div class="field-locked" id="empresa-plano">
+            <span id="empresa-plano-nome"></span>
+            <span class="field-locked-tag" id="empresa-plano-status"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="../../../js/sharedConfig/settingsLoader.js"></script>
+<script type="module" src="../../../js/pages/enterprise/adminEmpresa.js"></script>
+<script type="module" src="../../../js/sharedConfig/initHomePage.js"></script>
+</body>
+</html>
