@@ -16,7 +16,7 @@ import { consultarStatusSessao } from "./sessionStatus.js";
 // Ajuste conforme a estrutura real do projeto.
 import { exibirMensagem } from "../../shared/feedback.js";
 
-const ROTA_LOGIN = "../../../html/pages/auth/login.html";
+const ROTA_LOGIN = "../../../pages/auth/login.html";
 const INTERVALO_VERIFICACAO_MS = 10 * 60 * 1000; // 10 minutos
 
 let intervaloId = null;
