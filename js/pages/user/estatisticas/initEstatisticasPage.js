@@ -7,7 +7,7 @@ import { lerDadosUsuarioCache } from "../../../sharedConfig/userCache.js";
 document.addEventListener("DOMContentLoaded", async () => {
   const dados = lerDadosUsuarioCache();
   if (!dados) {
-    window.location.href = "../../auth/login.html";
+    window.location.href = "../../../auth/login.html";
     return;
   }
 
