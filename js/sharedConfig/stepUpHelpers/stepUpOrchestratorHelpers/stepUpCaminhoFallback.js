@@ -5,7 +5,7 @@
 // e/ou TOTP mas esgotou os dois chega aqui (ver docstring de
 // step_up.py para o racional).
 
-import { URL_BASE_API, FRONT_ORIGIN } from "../../../urlConfig.js";
+import { URL_BASE_API, FRONT_ORIGIN } from "../../urlConfig.js";
 import { PopupBloqueadoError, mensagemParaErroCallback } from "../stepUpErros.js";
 import { mostrarErro } from "./stepUpUi.js";
 import { resolverComToken } from "./stepUpCicloDeVida.js";

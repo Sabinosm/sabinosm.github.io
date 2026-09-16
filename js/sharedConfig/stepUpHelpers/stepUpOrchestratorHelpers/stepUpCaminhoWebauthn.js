@@ -4,7 +4,7 @@
 // via navigator.credentials, e o desvio para TOTP quando falha.
 
 import { startAuthentication } from "https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@11/dist/bundle/index.js";
-import { URL_BASE_API } from "../../../urlConfig.js";
+import { URL_BASE_API } from "../../urlConfig.js";
 import { iniciarStepUpTOTP, TotpNaoCadastradoError } from "../../../pages/auth/totp.js";
 import { mostrarErro, mostrarPainelSenha } from "./stepUpUi.js";
 import { resolverComToken } from "./stepUpCicloDeVida.js";

@@ -4,7 +4,7 @@
 // caminho correspondente -- e o "tentar novamente" do painel
 // WebAuthn, que reinicia do zero.
 
-import { URL_BASE_API } from "../../../urlConfig.js";
+import { URL_BASE_API } from "../../urlConfig.js";
 import { limparEstadoVisual, mostrarPainelSenha } from "./stepUpUi.js";
 import { encerrar } from "./stepUpCicloDeVida.js";
 import { executarWebauthn } from "./stepUpCaminhoWebAuthn.js";
