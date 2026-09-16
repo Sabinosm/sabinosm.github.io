@@ -32,7 +32,7 @@ export async function consultarStatusSessao() {
     method: "GET",
     credentials: "include",
   });
-
+  console.log(resp);
   if (resp.status === 401) {
     return { ok: false, motivo: "nao_autenticado" };
   }
