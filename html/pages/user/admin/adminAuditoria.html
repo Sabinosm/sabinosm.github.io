@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Auditoria</title>
+<script src="../../../../js/sharedConfig/themeLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminAuditoria.css">
+<link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
+<base target="_blank">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">B-íon</div>
+
+    <div class="nav-group nav-group--work">
+      <a href="adminHomePage.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="3" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="3" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="14" y="12" width="7" height="9" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="3" y="16" width="7" height="5" rx="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Gerenciamento</span>
+      </a>
+      <a href="adminPacientes.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="8" r="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Pacientes</span>
+      </a>
+      <a href="adminProfissionais.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke -width="1.8">
+            <circle cx="9" cy="8" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.5 20c0-3.5 2.8-6 6.5-6s6.5 2.5 6.5 6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 4.5c1.6.4 2.8 1.9 2.8 3.5S17.6 11.1 16 11.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18.5 14.3c1.9.7 3.2 2.6 3.2 4.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Profissionais</span>
+      </a>
+      <a href="adminEmpresa.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 21V6l8-3 8 3v15" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21v-6h6v6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 10h.01M12 10h.01M15 10h.01M9 14h.01M15 14h.01" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Empresa</span>
+      </a>
+     <a href="adminEstatisticas.html" class="nav-item">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 20V10M11 20V4M18 20v-7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Estatísticas</span>
+      </a>
+      <a href="adminAuditoria.html" class="nav-item nav-item--active">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 4h9a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8l4-4z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 4v4H5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 13.5l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="nav-label">Auditoria</span>
+      </a>
+    </div>
+
+    <!-- espaçador empurra o grupo de sistema para o rodapé -->
+    <div class="nav-spacer"></div>
+
+    <div class="nav-group nav-group--system">
+      <button type="button" class="nav-item nav-item--profile" id="open-settings">
+        <span class="nav-avatar" id="nav-avatar-iniciais"></span>
+        <span class="nav-label-group">
+          <span class="nav-label" id="nav-nome-usuario"></span>
+          <span class="nav-sublabel">· Perfil</span>
+        </span>
+        <span class="nav-profile-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 15l6-6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1>Auditoria</h1>
+        <p class="main-subtitle">Trilha de acessos e alterações da equipe</p>
+      </div>
+    </header>
+
+    <!-- ============================================
+         VIEW 1 — RESUMO POR PROFISSIONAL
+         (GET /profissionais/resumo, offset/limit)
+         ============================================ -->
+    <section class="section" id="view-resumo">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="aud-busca" placeholder="Buscar profissional por nome">
+          </div>
+          <button class="btn-filter" id="aud-btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Filtros
+          </button>
+        </div>
+
+        <div class="filter-panel" id="aud-filter-panel">
+          <div class="filter-field">
+            <label for="aud-filtro-funcao">Função clínica</label>
+            <select id="aud-filtro-funcao">
+              <option value="">Todas</option>
+              <option value="medico">Médico</option>
+              <option value="enfermeiro">Enfermeiro</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="aud-filtro-admin">Administrador</label>
+            <select id="aud-filtro-admin">
+              <option value="">Todos</option>
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </div>
+          <div class="filter-field filter-field--grow">
+            <label for="aud-filtro-acao">Ação (ex: editar_paciente)</label>
+            <input type="text" id="aud-filtro-acao" placeholder="Filtrar por ação">
+          </div>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="aud-btn-limpar-filtros" type="button">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-list" id="aud-lista-resumo">
+        <!-- Preenchido dinamicamente por adminAuditoriaResumo.js -->
+      </div>
+
+      <div class="pagination" id="aud-paginacao-resumo">
+        <span class="pagination-info" id="aud-paginacao-info"></span>
+        <div class="pagination-controls" id="aud-paginacao-controles"></div>
+        <div class="pagination-limit">
+          <label for="aud-limite">Itens por página</label>
+          <select id="aud-limite" class="field-input field-input--sm">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================
+         VIEW 2 — DETALHE DO PROFISSIONAL
+         (GET /profissionais/<uuid>/detalhe, cursor por data)
+         ============================================ -->
+    <section class="section" id="view-detalhe" hidden>
+
+      <div class="detalhe-header">
+        <button class="btn-ghost detalhe-btn-voltar" id="aud-btn-voltar" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Voltar
+        </button>
+        <div>
+          <h2 class="detalhe-nome" id="aud-detalhe-nome"></h2>
+          <p class="detalhe-sub">Histórico de acessos e alterações</p>
+        </div>
+      </div>
+
+      <div class="detalhe-filtros">
+        <div class="segmented" role="tablist" aria-label="Tipo de registro" id="aud-filtro-tipo">
+          <button type="button" class="segmented-item segmented-item--active" data-tipo="ambos">Ambos</button>
+          <button type="button" class="segmented-item" data-tipo="acessos">Acessos</button>
+          <button type="button" class="segmented-item" data-tipo="alteracoes">Alterações</button>
+        </div>
+
+        <div class="detalhe-filtros-campos">
+          <input type="date" id="aud-data-inicio" class="field-input field-input--sm" aria-label="Data inicial">
+          <span class="detalhe-filtros-sep">até</span>
+          <input type="date" id="aud-data-fim" class="field-input field-input--sm" aria-label="Data final">
+          <input type="text" id="aud-detalhe-acao" class="field-input field-input--grow" placeholder="Ação (ex: editar_paciente)">
+          <select id="aud-detalhe-operacao-acesso" class="field-input field-input--sm" aria-label="Operação de acesso">
+            <option value="">Operação (acessos): todas</option>
+            <option value="leitura">Leitura</option>
+            <option value="escrita">Escrita</option>
+            <option value="exclusao-logica">Exclusão lógica</option>
+            <option value="exportacao">Exportação</option>
+          </select>
+          <button class="btn-primary btn-primary--sm" id="aud-btn-aplicar-filtros" type="button">Aplicar</button>
+          <button class="btn-ghost" id="aud-btn-limpar-detalhe" type="button">Limpar</button>
+        </div>
+
+        <p class="field-hint">Período máximo de consulta: 7 dias. Sem período definido, mostra os registros mais recentes.</p>
+      </div>
+
+      <div class="aud-feedback" id="aud-detalhe-feedback" role="alert" aria-live="polite"></div>
+
+      <div class="detalhe-blocos">
+        <section class="log-bloco" id="bloco-acessos" aria-label="Acessos">
+          <h3 class="log-bloco-titulo">Acessos</h3>
+          <div class="log-lista" id="aud-lista-acessos"></div>
+          <button class="btn-ghost" id="aud-carregar-acessos" type="button" hidden>Carregar mais</button>
+        </section>
+        <section class="log-bloco" id="bloco-alteracoes" aria-label="Alterações">
+          <h3 class="log-bloco-titulo">Alterações</h3>
+          <div class="log-lista" id="aud-lista-alteracoes"></div>
+          <button class="btn-ghost" id="aud-carregar-alteracoes" type="button" hidden>Carregar mais</button>
+        </section>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
+<script type="module" src="../../../../js/sharedConfig/settingsLoader.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminAuditoria/adminAuditoria.js"></script>
+<script type="module" src="../../../../js/sharedConfig/initHomePage.js"></script>
+</body>
+</html>

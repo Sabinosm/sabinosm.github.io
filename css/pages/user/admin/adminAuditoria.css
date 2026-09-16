@@ -1,0 +1,688 @@
+/* ============================================
+   B-íon — Auditoria
+   Resumo por profissional (cards) + detalhe
+   (blocos de acessos/alterações, cursor por data).
+   Reusa os tokens de themes.css e os padrões de
+   adminHomePage.css / settings.css.
+   ============================================ */
+
+/* NOTA: os blocos genéricos de "página de listagem" abaixo
+   (toolbar/busca, filter-panel, paginação, estado vazio) espelham
+   adminProfissionais.css, que é page-specific e NÃO é carregado
+   aqui. Se outras telas de listagem precisarem deles também, o
+   ideal é extraí-los para um css compartilhado (ex:
+   adminListagem.css) em vez de manter cópias por página. */
+
+/* ===== Centralização do conteúdo (mesma regra de adminProfissionais.css) ===== */
+.main {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* .sidebar é fixa (position: fixed), então .main precisa manter o
+   respiro à esquerda mesmo estando centralizado dentro do espaço
+   restante da tela. */
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
+    margin-right: auto;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ===== Barra de busca + filtros (espelha adminProfissionais.css) ===== */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  padding: 11px 14px 11px 40px;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 3px 3px 8px var(--neu-shadow-dark),
+    inset -3px -3px 8px var(--neu-shadow-light);
+  transition: border-color 0.15s ease;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-filter:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-filter--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--status-bg);
+}
+
+.btn-filter-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* ===== Painel de filtros ===== */
+.filter-panel {
+  display: none;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-top: 10px;
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
+}
+
+.filter-panel--visible {
+  display: flex;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.filter-field--grow {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filter-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.filter-field select,
+.filter-field input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.filter-panel-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ===== Lista / cards do resumo ===== */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.aud-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow:
+    3px 3px 8px var(--neu-shadow-dark),
+    -3px -3px 8px var(--neu-shadow-light);
+}
+
+.aud-card-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aud-card-nome {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.aud-card-evento {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.aud-card-evento-label {
+  font-weight: 600;
+  min-width: 112px;
+}
+
+.aud-card-evento-frase {
+  color: var(--text);
+}
+
+.aud-card-evento-vazio {
+  font-style: italic;
+}
+
+.aud-card-evento-data {
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.aud-loading {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ===== Paginação (espelha adminProfissionais.css) ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pagination-info {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pagination-ellipsis {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 0 4px;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-btn--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--palette-white);
+}
+.page-btn--active:hover {
+  color: var(--palette-white);
+}
+
+.page-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pagination-limit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pagination-limit select {
+  background: var(--bg-elevated);
+}
+
+/* ===== Estado vazio (espelha adminProfissionais.css) ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 6px;
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state-text {
+  font-size: 13px;
+  max-width: 320px;
+}
+
+/* ============================================
+   VIEW DETALHE
+   ============================================ */
+
+.detalhe-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.detalhe-btn-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.detalhe-nome {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.detalhe-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ===== Filtros do detalhe ===== */
+.detalhe-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
+}
+
+.detalhe-filtros .field-hint {
+  margin: 0;
+}
+
+.detalhe-filtros-campos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.detalhe-filtros-sep {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.field-input--sm {
+  width: auto;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.field-input--grow {
+  flex: 1;
+  min-width: 180px;
+}
+
+.btn-primary--sm {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+/* ===== Seletor segmentado (Ambos / Acessos / Alterações) ===== */
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+}
+
+.segmented-item {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.segmented-item:hover:not(.segmented-item--active) {
+  color: var(--text);
+}
+
+.segmented-item--active {
+  background: var(--accent);
+  color: var(--palette-white);
+}
+
+/* ===== Blocos de log ===== */
+.detalhe-blocos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.log-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-bloco-titulo {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+.log-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ===== Item de log ===== */
+.log-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow:
+    3px 3px 8px var(--neu-shadow-dark),
+    -3px -3px 8px var(--neu-shadow-light);
+}
+
+.log-item-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.log-item-frase {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.log-item-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: monospace;
+}
+
+.log-item-data {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.log-item-toggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--accent);
+  cursor: pointer;
+}
+.log-item-toggle:hover {
+  text-decoration: underline;
+}
+
+/* ===== Diff (valor anterior -> novo, justificativa) ===== */
+.log-diff {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-size: 12px;
+}
+
+.log-diff-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.log-diff-label {
+  flex-shrink: 0;
+  min-width: 90px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.log-diff-valor {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+  font-family: monospace;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--text);
+}
+
+.log-diff-valor--removido {
+  color: var(--palette-status-red);
+}
+
+.log-diff-valor--adicionado {
+  color: var(--palette-status-green);
+}
+
+/* ===== Badges (operacao / resultado) ===== */
+.aud-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--status-bg);
+  color: var(--status-fg);
+}
+
+.aud-badge--green {
+  --status-fg: var(--palette-status-green);
+  --status-bg: var(--palette-status-green-bg);
+}
+.aud-badge--yellow {
+  --status-fg: var(--palette-status-yellow);
+  --status-bg: var(--palette-status-yellow-bg);
+}
+.aud-badge--orange {
+  --status-fg: var(--palette-status-orange);
+  --status-bg: var(--palette-status-orange-bg);
+}
+.aud-badge--red {
+  --status-fg: var(--palette-status-red);
+  --status-bg: var(--palette-status-red-bg);
+}
+.aud-badge--blue {
+  --status-fg: var(--palette-status-blue);
+  --status-bg: var(--palette-status-blue-bg);
+}
+.aud-badge--neutral {
+  --status-fg: var(--palette-status-neutral);
+  --status-bg: var(--palette-status-neutral-bg);
+}
+
+/* ===== Feedback (erro de período / falha de API) ===== */
+.aud-feedback {
+  display: none;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.aud-feedback.erro {
+  display: block;
+  background: rgba(224, 98, 91, 0.12);
+  color: var(--danger, #e0625b);
+  border: 1px solid rgba(224, 98, 91, 0.3);
+}
+
+.aud-feedback.sucesso {
+  display: block;
+  background: var(--status-bg);
+  color: var(--status-fg);
+  border: 1px solid var(--border);
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 900px) {
+  .detalhe-blocos {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .main {
+    max-width: 100%;
+    margin-left: 0;
+  }
+  .toolbar-row {
+    flex-wrap: wrap;
+  }
+  .filter-panel-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pagination-limit {
+    justify-content: flex-end;
+  }
+  .detalhe-header {
+    flex-wrap: wrap;
+  }
+  .aud-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .aud-card-evento-data {
+    margin-left: 0;
+    width: 100%;
+  }
+}
