@@ -5,6 +5,8 @@ import { iniciarMetricasGerenciamento } from "../pages/user/admin/adminHomePage/
 import { lerDadosUsuarioCache } from "./userCache.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
+  iniciarMonitoramentoSessao();
+
   const dados = lerDadosUsuarioCache();
   if (!dados) {
     // Cache vazio/corrompido = chegou aqui sem passar pelo afterLogin
@@ -22,7 +24,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   await modalConfiguracoesPronto;
   preencherPainelPerfil(dados);
 
-  iniciarMonitoramentoSessao();
 
   // Métricas da tela de Gerenciamento (cards do topo). Não depende
   // do modal de configurações, só do DOM já estar montado.
