@@ -9,7 +9,8 @@
      Depende de, no documento que injeta este partial:
        - CSS: css/pages/user/settings.css já linkado no <head>
        - JS:  js/pages/user/admin/settings.js carregado DEPOIS deste
-              partial estar no DOM (ver settingsLoader.js)
+              partial estar no DOM (ver settingsLoader.js) -- inclui o
+              cadastro de TOTP (ver #totp-modal-overlay abaixo)
        - Um botão em algum lugar da página com id="open-settings"
          (normalmente o item de perfil na sidebar) para abrir o modal
    ============================================ -->
@@ -124,30 +125,12 @@
           </div>
         </div>
 
-        <!-- Fluxo de cadastro: QR code + confirmação por código. Hidden
-             até o usuário clicar em "Configurar aplicativo autenticador"
-             -- ver preencherPerfil.js, iniciarFluxoCadastroTOTP(). -->
-        <div id="totp-cadastro-painel" hidden>
-          <p class="field-hint">
-            Escaneie o QR code no seu aplicativo autenticador, ou digite
-            o código abaixo manualmente.
-          </p>
-          <div id="totp-qrcode-container"></div>
-          <p class="field-hint" id="totp-secret-texto"></p>
-
-          <form id="totp-form-confirmar">
-            <div class="field-group">
-              <label class="field-label" for="totp-codigo-confirmacao">Código gerado pelo aplicativo</label>
-              <input class="field-input" type="text" id="totp-codigo-confirmacao" inputmode="numeric"
-                     autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
-            </div>
-            <div class="stepup-actions">
-              <button class="btn-ghost" type="button" id="btn-cancelar-cadastro-totp">Cancelar</button>
-              <button class="btn-primary" type="submit">Confirmar</button>
-            </div>
-          </form>
-          <p class="field-hint field-hint--erro" id="totp-cadastro-erro"></p>
-        </div>
+        <!-- ALTERADO: o fluxo de cadastro (QR code + confirmação)
+             saiu daqui e passou a viver em totpModal.html, um modal
+             próprio aberto por cima deste -- ver preencherTotp.js
+             (abrirModalTotp). Só os dois estados "resumo" (configurado
+             / não configurado) continuam neste painel; o botão abaixo
+             abre o modal em vez de revelar um painel inline. -->
 
         <div class="panel-divider"></div>
 
@@ -247,6 +230,71 @@
         <button class="btn-ghost" id="btn-cancel">Cancelar</button>
         <button class="btn-primary" id="btn-save">Salvar alterações</button>
       </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================
+     Modal de Configuração do TOTP -- overlay PRÓPRIO, irmão de
+     #settings-overlay (não filho), para abrir por cima do modal de
+     configurações sem herdar o overflow/grid dele. Ver #totp-modal-css
+     em settings.css e a lógica em settings.js (abrirModalTotp).
+   ============================================ -->
+<div class="totp-modal-overlay" id="totp-modal-overlay">
+  <div class="totp-modal" role="dialog" aria-modal="true" aria-labelledby="totp-modal-titulo">
+
+    <button class="totp-modal-close" id="totp-modal-close" aria-label="Fechar" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <h2 class="totp-modal-titulo" id="totp-modal-titulo">Aplicativo autenticador</h2>
+    <p class="totp-modal-subtitulo">
+      Escaneie o QR code no seu aplicativo autenticador (Google
+      Authenticator, Microsoft Authenticator ou similar), ou digite o
+      código abaixo manualmente.
+    </p>
+
+    <div class="totp-modal-corpo">
+
+      <!-- Estado "carregando": mostrado enquanto /registrar/iniciar
+           não respondeu, ou enquanto a lib QRCode ainda não carregou
+           (ver aguardarLibQrCode em settings.js). -->
+      <div class="totp-modal-carregando" id="totp-modal-carregando">
+        <div class="totp-modal-spinner" aria-hidden="true"></div>
+        <p>Gerando código de configuração...</p>
+      </div>
+
+      <!-- Estado "pronto": QR + secret + form de confirmação. -->
+      <div class="totp-modal-pronto" id="totp-modal-pronto" hidden>
+        <div class="totp-modal-qr-wrap">
+          <div id="totp-qrcode-container" class="totp-modal-qr"></div>
+        </div>
+        <p class="totp-modal-secret" id="totp-secret-texto"></p>
+
+        <form id="totp-form-confirmar" class="totp-modal-form">
+          <div class="field-group">
+            <label class="field-label" for="totp-codigo-confirmacao">Código gerado pelo aplicativo</label>
+            <input class="field-input" type="text" id="totp-codigo-confirmacao" inputmode="numeric"
+                   autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
+          </div>
+          <div class="stepup-actions">
+            <button class="btn-ghost" type="button" id="btn-cancelar-cadastro-totp">Cancelar</button>
+            <button class="btn-primary" type="submit">Confirmar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Estado "erro ao iniciar": /registrar/iniciar falhou (ver
+           iniciarCadastro em settings.js). -->
+      <div class="totp-modal-erro-inicial" id="totp-modal-erro-inicial" hidden>
+        <p id="totp-erro-inicial-texto"></p>
+        <button class="btn-secondary" type="button" id="btn-tentar-novamente-totp">Tentar novamente</button>
+      </div>
+
+      <p class="field-hint field-hint--erro" id="totp-cadastro-erro"></p>
     </div>
 
   </div>

@@ -1,6 +1,14 @@
 //
 // TOTP (aplicativo autenticador): alternância de estados na UI,
 // fluxo de cadastro (QR code + confirmação) e remoção.
+//
+// ALTERADO: o modal de cadastro (QR + confirmação) agora vive dentro
+// do mesmo settingsModal.html/settings.js (ver #totp-modal-overlay lá
+// e a seção "Modal de cadastro de TOTP" em settings.js) -- não é mais
+// um painel inline nem um modal com HTML/loader próprios. Este módulo
+// continua dono da LÓGICA de negócio (chamar as rotas, atualizar
+// cache, refletir no painel resumo), só delegando a abertura/fechamento
+// visual do modal para as funções que settings.js expõe.
 
 import {
   iniciarCadastroTOTP,
@@ -10,6 +18,7 @@ import {
 } from '../../pages/auth/totp.js';
 import { atualizarTotpCache } from '../userCache.js';
 import { atualizarAvisoUnicoFator } from './preencherAvisos.js';
+import { abrirModalTotp, fecharModalTotp, refsFormTotp } from './settings.js';
 
 /**
  * Alterna entre os estados "não configurado" / "configurado" da seção
@@ -39,7 +48,9 @@ function configurarBotaoConfigurarTotp() {
   if (!botao || botao.dataset.listenerAtivo) return;
   botao.dataset.listenerAtivo = 'true';
 
-  botao.addEventListener('click', iniciarFluxoCadastroTOTP);
+  botao.addEventListener('click', () => {
+    abrirModalTotp(iniciarCadastroTOTP, extrairMensagemErroInicial);
+  });
 }
 
 function configurarBotaoRemoverTotp() {
@@ -50,122 +61,19 @@ function configurarBotaoRemoverTotp() {
   botao.addEventListener('click', () => tratarCliqueRemoverTotp(botao));
 }
 
-/**
- * Abre o painel de cadastro TOTP: pede o secret ao backend, renderiza
- * o QR code (via lib `qrcode` carregada globalmente -- ver
- * settingsModal.html/página que injeta este modal) e mostra o texto
- * do secret como alternativa para digitação manual.
- */
-async function iniciarFluxoCadastroTOTP() {
-  const painel = document.getElementById('totp-cadastro-painel');
-  const qrContainer = document.getElementById('totp-qrcode-container');
-  const secretTexto = document.getElementById('totp-secret-texto');
-  const erroEl = document.getElementById('totp-cadastro-erro');
-  const inputCodigo = document.getElementById('totp-codigo-confirmacao');
-
-  erroEl.textContent = '';
-  inputCodigo.value = '';
-  qrContainer.innerHTML = '';
-
-  document.getElementById('totp-nao-configurado').hidden = true;
-  painel.hidden = false;
-
-  let dados;
-  try {
-    dados = await iniciarCadastroTOTP();
-  } catch (erro) {
-    console.error('Falha ao iniciar cadastro TOTP', erro);
-    erroEl.textContent = erro instanceof ErroCadastroTOTP ? erro.message : 'Não foi possível gerar o código de configuração.';
-    painel.hidden = true;
-    document.getElementById('totp-nao-configurado').hidden = false;
-    return;
-  }
-
-  // Não bloqueia o texto do secret nem o foco do input -- o usuário já
-  // pode começar a digitar manualmente enquanto o QR (se demorar)
-  // ainda está sendo esperado.
-  renderizarQrCode(qrContainer, dados.otpauth_uri).catch((erro) => {
-    console.error('Falha inesperada ao renderizar QR code TOTP', erro);
-  });
-  secretTexto.textContent = `Ou digite manualmente: ${dados.secret_texto}`;
-  inputCodigo.focus();
-}
-
-/**
- * Espera a lib `qrcode` (window.QRCode) ficar disponível, até um
- * limite de tempo -- CORRIGIDO: a lib é carregada via <script> de CDN
- * na página host, num caminho completamente separado da cadeia de
- * módulos deste modal (fetch do partial -> inject -> import dinâmico
- * de settings.js -> import de preencherPerfil.js/preencherTotp.js,
- * ver settingsLoader.js). Nada nessa cadeia aguarda o <script> do CDN
- * terminar de carregar, então existe uma janela real em que o usuário
- * já consegue clicar em "Configurar aplicativo autenticador" antes da
- * lib estar pronta -- a checagem antiga (`typeof window.QRCode ===
- * 'undefined'`) rodava nesse instante, achava que a lib nunca ia
- * carregar, e desistia pra sempre (só um warning no console, nada
- * visível pro usuário), mesmo que a lib chegasse meio segundo depois.
- *
- * @param {number} timeoutMs Tempo máximo de espera.
- * @returns {Promise<boolean>} true se a lib ficou disponível a tempo.
- */
-function aguardarLibQrCode(timeoutMs = 4000) {
-  if (typeof window.QRCode !== 'undefined') return Promise.resolve(true);
-
-  return new Promise((resolve) => {
-    const intervaloMs = 100;
-    let decorrido = 0;
-
-    const id = setInterval(() => {
-      if (typeof window.QRCode !== 'undefined') {
-        clearInterval(id);
-        resolve(true);
-        return;
-      }
-      decorrido += intervaloMs;
-      if (decorrido >= timeoutMs) {
-        clearInterval(id);
-        resolve(false);
-      }
-    }, intervaloMs);
-  });
-}
-
-/**
- * Renderiza o QR code a partir da URI otpauth:// usando a lib
- * `qrcode` (window.QRCode) carregada via CDN. Se a lib demorar mas
- * chegar dentro do prazo, o QR aparece normalmente. Só se ela
- * realmente não chegar a tempo é que caímos no fallback -- e nesse
- * caso avisamos na própria tela (não só no console), já que o secret
- * em texto sozinho é fácil de passar despercebido pelo usuário.
- */
-async function renderizarQrCode(container, otpauthUri) {
-  const disponivel = await aguardarLibQrCode();
-
-  if (!disponivel) {
-    console.warn('Lib QRCode não carregou a tempo -- cadastro TOTP seguirá só com o secret em texto.');
-    const erroEl = document.getElementById('totp-cadastro-erro');
-    if (erroEl) {
-      erroEl.textContent = 'Não foi possível carregar o QR code agora -- use o código abaixo para configurar manualmente, ou recarregue a página e tente de novo.';
-    }
-    return;
-  }
-
-  new window.QRCode(container, {
-    text: otpauthUri,
-    width: 180,
-    height: 180,
-  });
+function extrairMensagemErroInicial(erro) {
+  return erro instanceof ErroCadastroTOTP
+    ? erro.message
+    : 'Não foi possível gerar o código de configuração.';
 }
 
 /**
  * Confirma o cadastro TOTP com o código digitado pelo usuário. Em
- * caso de sucesso, sincroniza UI e cache (mesmo padrão de
- * tratarCliqueAdicionarDispositivo para WebAuthn).
+ * caso de sucesso, sincroniza UI e cache, e fecha o modal.
  */
 async function tratarSubmitConfirmarTOTP(event) {
   event.preventDefault();
-  const inputCodigo = document.getElementById('totp-codigo-confirmacao');
-  const erroEl = document.getElementById('totp-cadastro-erro');
+  const { inputCodigo, erroEl } = refsFormTotp();
   const codigo = inputCodigo.value.trim();
   if (!codigo) return;
 
@@ -176,7 +84,7 @@ async function tratarSubmitConfirmarTOTP(event) {
   try {
     const { totp } = await confirmarCadastroTOTP(codigo);
     atualizarTotpCache(totp);
-    document.getElementById('totp-cadastro-painel').hidden = true;
+    fecharModalTotp();
     preencherTotp(totp);
     // Reflete o novo total de fatores no aviso de redundância -- para
     // isso precisamos do estado atual de WebAuthn, já refletido no DOM
@@ -189,11 +97,6 @@ async function tratarSubmitConfirmarTOTP(event) {
   } finally {
     botaoSubmit.disabled = false;
   }
-}
-
-function tratarCancelarCadastroTOTP() {
-  document.getElementById('totp-cadastro-painel').hidden = true;
-  document.getElementById('totp-nao-configurado').hidden = false;
 }
 
 /**
@@ -224,19 +127,14 @@ async function tratarCliqueRemoverTotp(botao) {
   }
 }
 
-// Liga o listener do form de confirmação uma única vez. Chamado direto
-// (sem esperar DOMContentLoaded) porque este módulo só é importado
-// depois que settingsModal.html já foi injetado no DOM (ver
-// settingsLoader.js) -- DOMContentLoaded já pode ter disparado antes
-// deste import rodar.
-//
-// Como o import abaixo vem de preencherPerfil.js (que settingsLoader.js
-// carrega), o timing é o mesmo de antes da divisão.
-ligarListenersFormularioTotp();
+// Liga o listener do form de confirmação uma única vez -- o form em si
+// (#totp-form-confirmar) vive dentro do mesmo settingsModal.html que
+// #settings-overlay, então já está garantido no DOM neste ponto (mesmo
+// raciocínio de settings.js: settingsLoader.js só importa módulos que
+// dependem desse HTML depois de injetá-lo).
+ligarListenerFormularioTotp();
 
-function ligarListenersFormularioTotp() {
-  const form = document.getElementById('totp-form-confirmar');
-  const btnCancelar = document.getElementById('btn-cancelar-cadastro-totp');
+function ligarListenerFormularioTotp() {
+  const { form } = refsFormTotp();
   form?.addEventListener('submit', tratarSubmitConfirmarTOTP);
-  btnCancelar?.addEventListener('click', tratarCancelarCadastroTOTP);
 }
