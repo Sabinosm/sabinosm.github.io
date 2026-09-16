@@ -5,15 +5,6 @@
 // é decidido por abrirModalProfissional receber ou não um item).
 //
 // ALTERADO (múltiplos admins por empresa):
-// - Novo modo de abertura: abrirModalConvite() (chamada pelo botão
-//   "Convidar profissional" em adminProfissionaisLista.js). Antes o
-//   botão abria direto o formulário de médico/enfermeiro; agora, se
-//   quem está logado é o super admin, abrirModalConvite() pergunta
-//   primeiro que tipo de conta convidar (profissional ou admin),
-//   porque o formulário de admin é mais simples (sem CRM/COREN, sem
-//   senha) e porque um admin comum NUNCA deve ver a opção "Administrador"
-//   -- ele não tem permissão para criar admin (o backend bloqueia,
-//   mas nem faz sentido oferecer a opção na UI).
 // - abrirModalProfissional(item) (chamada ao clicar "Gerenciar" num
 //   card da lista) agora recebe itens que podem ser admin
 //   (item.is_admin). Quando o alvo é admin e quem está logado NÃO é
@@ -21,11 +12,18 @@
 //   editáveis, sem botão salvar, sem botão ativar/desativar -- só os
 //   dados visíveis. Isso evita depender só do backend rejeitar (que
 //   ele faz) e dá uma UI coerente com a regra de negócio.
-// - O formulário de admin não usa os campos de CRM/COREN/especialidade
-//   -- monta um payload próprio (ver montarPayloadAdmin) e reaproveita
-//   os campos comuns (nome, cpf, login, telefone, email) do mesmo
-//   formulário, escondendo os blocos condicionais de médico/enfermeiro
-//   e o próprio select de tipo (fixo em "admin" quando vem desse fluxo).
+//
+// ALTERADO (checkbox "É administrador", substitui o seletor em duas
+// etapas): abrirModalConvite() agora abre direto o formulário único
+// de convite. Quem pode convidar admin (super admin) vê um checkbox
+// "É administrador" ao lado do select de tipo de profissional; quem
+// não pode, nunca vê o checkbox. Os dois campos são independentes --
+// dá pra marcar o checkbox E escolher médico/enfermeiro (admin com
+// função clínica, seguindo as mesmas regras de CRM/COREN) ou marcar
+// só o checkbox e deixar o tipo em branco (admin "puro", sem função
+// clínica). O payload de is_admin só é incluído quando o checkbox
+// está marcado; tipo_papel só é incluído quando um tipo foi escolhido
+// -- os dois são ortogonais no backend (ver Usuario.to_dict()).
 
 import {
   criarProfissional,
@@ -52,6 +50,8 @@ const btnFechar = document.getElementById('prof-modal-close');
 const campoTipo = document.getElementById('pf-tipo');
 const blocoMedico = document.getElementById('bloco-medico');
 const blocoEnfermeiro = document.getElementById('bloco-enfermeiro');
+const checkboxAdmin = document.getElementById('pf-is-admin');
+const checkboxAdminGroup = checkboxAdmin?.closest('.field-group');
 
 // uuid do item em edição, ou null em modo de criação
 let uuidEmEdicao = null;
@@ -72,109 +72,36 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================
 
 /**
- * Abre o modal para criar um novo usuário. Se quem está logado é o
- * super admin, pergunta antes que tipo de conta (profissional ou
- * administrador) -- um admin comum vai direto para o formulário de
- * profissional, sem nunca ver a opção de criar admin.
+ * Abre o modal para criar um novo usuário.
+ *
+ * ALTERADO (checkbox "É administrador"): não há mais um seletor em
+ * duas etapas -- o formulário único já mostra o tipo de profissional
+ * (médico/enfermeiro) e, para quem pode convidar admin, um checkbox
+ * "É administrador" ao lado. Um admin comum nunca vê o checkbox (ele
+ * não tem permissão para criar admin -- o backend bloqueia, e nem
+ * faz sentido oferecer a opção na UI), mas continua vendo o select de
+ * tipo normalmente.
  */
 export function abrirModalConvite() {
-  if (!souSuperAdmin()) {
-    abrirFormularioConvite('profissional');
-    return;
-  }
-  perguntarTipoConvite();
-}
-
-/**
- * Pequeno seletor entre "Profissional" e "Administrador", mostrado só
- * para o super admin. Reaproveita o próprio overlay do modal para não
- * introduzir um segundo componente -- um passo simples antes do
- * formulário de fato.
- */
-function perguntarTipoConvite() {
   limparFormulario();
   uuidEmEdicao = null;
   somenteLeitura = false;
-  titulo.textContent = 'Convidar';
-  hintEdicao.hidden = true;
-  esconderFeedback();
-  btnToggleStatus.hidden = true;
+  form.dataset.modoConvite = 'profissional';
 
-  // ADICIONADO: enquanto o tipo de convite (profissional/admin) ainda
-  // não foi escolhido, não existe formulário válido para submeter --
-  // o botão de salvar fica indisponível até abrirFormularioConvite()
-  // rodar (chamada só depois do clique numa das duas opções abaixo).
-  // Texto também resetado aqui -- caso o modal tenha sido usado antes
-  // para editar (texto "Salvar alterações"), não queremos esse texto
-  // vazando por um instante antes do hidden=true surtir efeito.
-  btnSalvar.hidden = true;
-  btnSalvar.textContent = 'Enviar convite';
-
-  form.hidden = true;
-
-  let seletor = document.getElementById('prof-modal-seletor-tipo');
-  if (!seletor) {
-    seletor = document.createElement('div');
-    seletor.id = 'prof-modal-seletor-tipo';
-    seletor.className = 'prof-modal-body';
-    form.parentElement.insertBefore(seletor, form.nextSibling);
-  }
-  seletor.innerHTML = `
-    <p class="field-hint" style="padding: 0 0 16px;">Que tipo de conta você quer convidar?</p>
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      <button type="button" class="btn-ghost" id="prof-escolha-profissional" style="justify-content:flex-start;">
-        Profissional (médico ou enfermeiro)
-      </button>
-      <button type="button" class="btn-ghost" id="prof-escolha-admin" style="justify-content:flex-start;">
-        Administrador
-      </button>
-    </div>
-  `;
-  seletor.hidden = false;
-
-  document.getElementById('prof-escolha-profissional').addEventListener('click', () => {
-    seletor.hidden = true;
-    abrirFormularioConvite('profissional');
-  });
-  document.getElementById('prof-escolha-admin').addEventListener('click', () => {
-    seletor.hidden = true;
-    abrirFormularioConvite('admin');
-  });
-
-  overlay.classList.add('settings-overlay--visible');
-}
-
-/**
- * Abre de fato o formulário de convite, já no modo certo:
- *  - 'profissional': select de tipo (médico/enfermeiro) visível e livre.
- *  - 'admin': select de tipo escondido, fixo em "admin"; blocos de
- *    CRM/COREN nunca aparecem; nenhum campo de senha (o schema do
- *    backend proíbe senha no cadastro de admin -- acesso é definido
- *    depois, via onboarding, igual profissional).
- */
-function abrirFormularioConvite(modo) {
-  limparFormulario();
-  uuidEmEdicao = null;
-  somenteLeitura = false;
-  form.dataset.modoConvite = modo; // lido em aoSubmeter/montarPayload
-
-  titulo.textContent = modo === 'admin' ? 'Convidar administrador' : 'Convidar profissional';
+  titulo.textContent = 'Convidar profissional';
   hintEdicao.hidden = true;
   esconderFeedback();
   btnToggleStatus.hidden = true;
   btnSalvar.textContent = 'Enviar convite';
   definirModoFormulario(false);
 
-  const campoTipoGroup = campoTipo?.closest('.field-group');
-  if (modo === 'admin') {
-    if (campoTipoGroup) campoTipoGroup.hidden = true;
-    blocoMedico.hidden = true;
-    blocoEnfermeiro.hidden = true;
-  } else {
-    if (campoTipoGroup) campoTipoGroup.hidden = false;
-    atualizarBlocosCondicionais();
-  }
+  // O checkbox "É administrador" só aparece para quem tem permissão
+  // de convidar admin (super admin) -- para os demais, o campo fica
+  // oculto e sempre desmarcado, então o payload nunca leva is_admin.
+  if (checkboxAdminGroup) checkboxAdminGroup.hidden = !souSuperAdmin();
+  if (checkboxAdmin) checkboxAdmin.checked = false;
 
+  atualizarBlocosCondicionais();
   form.hidden = false;
   overlay.classList.add('settings-overlay--visible');
 }
@@ -218,14 +145,13 @@ export async function abrirModalProfissional(item) {
   // como editáveis para um admin -- esconde o bloco de tipo e os
   // condicionais nesse caso; para médico/enfermeiro, mantém como já
   // era.
+  // Checkbox "É administrador" só faz sentido no fluxo de criação --
+  // trocar is_admin de um usuário existente é outro fluxo (promoção/
+  // rebaixamento não existe via esta edição, ver atualizarProfissional).
+  if (checkboxAdminGroup) checkboxAdminGroup.hidden = true;
+
   const campoTipoGroup = campoTipo?.closest('.field-group');
-  if (alvoEhAdmin) {
-    if (campoTipoGroup) campoTipoGroup.hidden = true;
-    blocoMedico.hidden = true;
-    blocoEnfermeiro.hidden = true;
-  } else {
-    if (campoTipoGroup) campoTipoGroup.hidden = false;
-  }
+  if (campoTipoGroup) campoTipoGroup.hidden = false;
 
   aplicarTravaSomenteLeitura();
 
@@ -248,10 +174,13 @@ function preencherFormularioComDetalhe(dados) {
   document.getElementById('pf-email-confirma').value = dados.email ?? '';
   document.getElementById('pf-telefone').value = dados.telefone ?? '';
   document.getElementById('pf-login').value = dados.user_login ?? '';
-  // CPF não vem em claro no detalhe salvo se incluir_sensiveis=True
-  // no backend -- o controller atual chama u.to_dict() sem esse flag,
-  // então dados.cpf não deve vir preenchido; deixa em branco (o campo
-  // já é opcional em modo edição).
+  // CORRIGIDO: o backend devolve CPF em claro (aes_decrypt) quando o
+  // detalhe é buscado com incluir_sensiveis=True -- então dados.cpf
+  // agora chega preenchido (string de 11 dígitos, sem máscara) e pode
+  // ser exibido normalmente. Se por algum motivo a rota não incluir
+  // sensíveis (dados.cpf vazio), o campo continua em branco -- é
+  // opcional em modo edição, então isso não trava o formulário.
+  document.getElementById('pf-cpf').value = dados.cpf ?? '';
 
   // ALTERADO (assertivo, sem alias): tipo_usuario saiu de
   // Usuario.to_dict() -- funcao_clinica assume o papel de indicar
@@ -259,15 +188,21 @@ function preencherFormularioComDetalhe(dados) {
   if (dados.funcao_clinica === 'medico' || dados.funcao_clinica === 'enfermeiro') {
     campoTipo.value = dados.funcao_clinica;
     atualizarBlocosCondicionais();
+    // CORRIGIDO: atributos_profissionais vem de PapelClinico.to_dict(),
+    // que usa numero_conselho/uf_conselho/rqe/especialidade -- não
+    // numero-crm/uf-crm/numero-coren/uf-coren (chaves com hífen que
+    // nunca existiram no backend). Era por isso que CRM/RQE/COREN
+    // nunca apareciam ao editar: o front lia uma chave que o backend
+    // jamais mandou.
     const atributos = dados.atributos_profissionais || {};
     if (dados.funcao_clinica === 'medico') {
-      document.getElementById('pf-crm').value = atributos['numero-crm'] ?? '';
-      document.getElementById('pf-uf-crm').value = atributos['uf-crm'] ?? '';
-      document.getElementById('pf-rqe').value = atributos['rqe'] ?? '';
+      document.getElementById('pf-crm').value = atributos.numero_conselho ?? '';
+      document.getElementById('pf-uf-crm').value = atributos.uf_conselho ?? '';
+      document.getElementById('pf-rqe').value = atributos.rqe ?? '';
     } else {
-      document.getElementById('pf-coren').value = atributos['numero-coren'] ?? '';
-      document.getElementById('pf-uf-coren').value = atributos['uf-coren'] ?? '';
-      document.getElementById('pf-especialidade').value = atributos['especialidade'] ?? '';
+      document.getElementById('pf-coren').value = atributos.numero_conselho ?? '';
+      document.getElementById('pf-uf-coren').value = atributos.uf_conselho ?? '';
+      document.getElementById('pf-especialidade').value = atributos.especialidade ?? '';
     }
   }
 }
@@ -334,16 +269,18 @@ async function aoSubmeter(e) {
   if (somenteLeitura) return; // trava defensiva -- não deveria nem estar visível
 
   const editando = Boolean(uuidEmEdicao);
-  const modoConvite = form.dataset.modoConvite; // 'admin' | 'profissional' | ''
 
-  let payload;
-  let erros;
+  const campos = lerCamposFormulario();
+  let { payload, erros } = validarFormularioProfissional(campos, editando);
 
-  if (!editando && modoConvite === 'admin') {
-    ({ payload, erros } = montarPayloadAdmin());
-  } else {
-    const campos = lerCamposFormulario();
-    ({ payload, erros } = validarFormularioProfissional(campos, editando));
+  // Checkbox "É administrador": só existe (visível) no fluxo de
+  // criação para quem pode convidar admin. tipo_papel é opcional
+  // nesse caso -- um admin pode ou não ter função clínica -- então,
+  // se o campo de tipo estiver vazio, não exigimos CRM/COREN (a
+  // própria validarFormularioProfissional só exige esses campos
+  // quando campos.tipo está preenchido).
+  if (!editando && checkboxAdmin && !checkboxAdminGroup?.hidden && checkboxAdmin.checked) {
+    payload.is_admin = true;
   }
 
   limparErrosExibidos();
@@ -377,40 +314,6 @@ async function aoSubmeter(e) {
   } finally {
     btnSalvar.disabled = false;
   }
-}
-
-/**
- * Monta o payload de criação de admin -- reaproveita os campos comuns
- * do formulário (nome, cpf, login, telefone, email) e fixa
- * is_admin: true, sem CRM/COREN/especialidade e sem senha (o schema
- * do backend proíbe senha no cadastro de admin -- ver schema_usuario.py,
- * valida_campos_por_profissao).
- *
- * ALTERADO (assertivo, sem alias): tipo_usuario: 'admin' saiu -- o
- * backend agora espera is_admin (bool) no payload de criação/edição
- * (ver controller.py, checagem de "is_admin" in dados para step-up).
- * Sem função clínica aqui: um admin criado por este fluxo não é
- * médico nem enfermeiro (quem quiser um médico-admin precisa marcar
- * a função clínica também, o que este formulário simplificado de
- * convite de admin não oferece).
- *
- * Reaproveita as mesmas funções de validação de campo individuais de
- * adminProfissionaisValidacoes.js (nome, cpf, login, telefone, email)
- * para não duplicar regra -- só monta o payload de um jeito diferente
- * de validarFormularioProfissional, que é focada em médico/enfermeiro.
- */
-function montarPayloadAdmin() {
-  const campos = lerCamposFormulario();
-  // validarFormularioProfissional já cobre nome/cpf/login/telefone/email
-  // com as mesmas regras -- passamos tipo vazio pra ela não exigir
-  // CRM/COREN, e sobrescrevemos is_admin depois.
-  const { payload, erros } = validarFormularioProfissional(
-    { ...campos, tipo: '' },
-    false, // editando=false: campos obrigatórios de cadastro completo
-  );
-  delete erros['pf-tipo']; // não se aplica -- tipo é fixo, campo está escondido
-  payload.is_admin = true;
-  return { payload, erros };
 }
 
 function lerCamposFormulario() {
@@ -477,6 +380,8 @@ function limparFormulario() {
   form.querySelectorAll('input, select').forEach((el) => { el.disabled = false; });
   const campoTipoGroup = campoTipo?.closest('.field-group');
   if (campoTipoGroup) campoTipoGroup.hidden = false;
+  if (checkboxAdmin) checkboxAdmin.checked = false;
+  if (checkboxAdminGroup) checkboxAdminGroup.hidden = true;
   btnSalvar.hidden = false;
 }
 

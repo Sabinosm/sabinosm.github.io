@@ -68,7 +68,7 @@
         </span>
         <span class="nav-label">Estatísticas</span>
       </a>
-      <a href="adminAuditoria.html" class="nav-item">
+      <a href="#" class="nav-item">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M9 4h9a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8l4-4z" stroke-linecap="round" stroke-linejoin="round"/>
@@ -212,7 +212,7 @@
 
         <div class="field-group">
           <label class="field-label" for="pf-telefone">Telefone <span class="field-optional">(opcional)</span></label>
-          <input class="field-input" type="tel" id="pf-telefone" placeholder="(11) 91234-5678">
+          <input class="field-input" type="tel" id="pf-telefone" placeholder="(00) 00000-0000">
           <p class="field-error" id="pf-telefone-error"></p>
         </div>
 
@@ -232,6 +232,16 @@
         </div>
 
         <div class="panel-divider"></div>
+
+        <div class="field-group">
+          <div class="field-checkbox">
+            <input type="checkbox" id="pf-is-admin">
+            <label for="pf-is-admin">É administrador</label>
+          </div>
+          <p class="field-hint" id="pf-is-admin-hint">
+            Um administrador com função clínica (médico/enfermeiro) segue as mesmas regras de CRM/COREN abaixo, além de ganhar acesso de gerenciamento da empresa.
+          </p>
+        </div>
 
         <div class="field-group">
           <label class="field-label" for="pf-tipo">Tipo de profissional</label>
@@ -256,10 +266,10 @@
               <input class="field-input" type="text" id="pf-uf-crm" maxlength="2" placeholder="SP">
               <p class="field-error" id="pf-uf-crm-error"></p>
             </div>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pf-rqe">RQE <span class="field-optional">(opcional)</span></label>
-            <input class="field-input" type="text" id="pf-rqe">
+            <div class="field-group">
+              <label class="field-label" for="pf-rqe">RQE <span class="field-optional">(opcional)</span></label>
+              <input class="field-input" type="text" id="pf-rqe">
+            </div>
           </div>
         </div>
 
@@ -276,11 +286,11 @@
               <input class="field-input" type="text" id="pf-uf-coren" maxlength="2" placeholder="SP">
               <p class="field-error" id="pf-uf-coren-error"></p>
             </div>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pf-especialidade">Especialidade</label>
-            <input class="field-input" type="text" id="pf-especialidade">
-            <p class="field-error" id="pf-especialidade-error"></p>
+            <div class="field-group">
+              <label class="field-label" for="pf-especialidade">Especialidade</label>
+              <input class="field-input" type="text" id="pf-especialidade">
+              <p class="field-error" id="pf-especialidade-error"></p>
+            </div>
           </div>
         </div>
 

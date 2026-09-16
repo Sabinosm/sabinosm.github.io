@@ -269,7 +269,7 @@
 .prof-modal {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 720px;
   max-height: 85vh;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -471,7 +471,36 @@
   display: none;
 }
 
-/* ===== RESPONSIVO ===== */
+/* ===== Checkbox "É administrador" (criação) =====
+   Junto ao select de tipo de profissional -- ver
+   adminProfissionaisModal.js (checkboxAdmin). */
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.field-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.field-checkbox label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVO =====
+   Modal mais largo (720px) em telas médias/grandes; abaixo de 820px
+   (largura do modal + respiro lateral) ainda cabe cair para 100% de
+   largura da tela, sem exigir o breakpoint mobile completo. */
+@media (max-width: 820px) {
+  .prof-modal { max-width: calc(100vw - 32px); }
+}
+
 @media (max-width: 760px) {
   .main { max-width: 100%; margin-left: 0; }
   .toolbar-row { flex-wrap: wrap; }
