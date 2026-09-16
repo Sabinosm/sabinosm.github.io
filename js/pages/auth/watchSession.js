@@ -17,7 +17,7 @@ import { consultarStatusSessao } from "./sessionStatus.js";
 import { exibirMensagem } from "../../shared/feedback.js";
 
 const ROTA_ERRO_401 = "../../../pages/http_error/401.html";
-const INTERVALO_VERIFICACAO_MS = 1 * 30 * 1000; // 10 minutos
+const INTERVALO_VERIFICACAO_MS = 10 * 60 * 1000; // 10 minutos
 
 let intervaloId = null;
 
@@ -58,7 +58,7 @@ async function verificarSessao() {
     return;
   }
 
-  if (resultado.ok && resultado.status === "a") {
+  if (resultado.ok && resultado.status === "completa") {
     return; // segue tudo normal
   }
 
