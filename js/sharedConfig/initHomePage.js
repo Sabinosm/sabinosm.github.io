@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Cache vazio/corrompido = chegou aqui sem passar pelo afterLogin
     // (ex: digitou a URL direto) ou a aba anterior foi fechada.
     // Mais seguro mandar pro login.
-    window.location.href = "../../auth/login.html";
+    window.location.href = "../auth/login.html";
     return;
   }
 
