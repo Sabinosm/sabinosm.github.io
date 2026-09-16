@@ -27,17 +27,28 @@
 
 
 const PATH = '../../../../html/pages/user/settingsModal.html';
+const QRCODE_LIB_PATH = './vendor/qrcode.min.js'; // ajuste o caminho real
+
 export const modalConfiguracoesPronto = carregarModalConfiguracoes();
 
 /**
- * Promise que resolve quando o modal de Configurações já está no DOM
- * e settings.js já rodou (listeners ligados). Outros módulos (ex:
- * preencherPainelPerfil.js) podem `await modalConfiguracoesPronto`
- * antes de tentar preencher campos do modal, evitando corrida com
- * a injeção assíncrona do HTML.
+ * Garante que window.QRCode existe, carregando a lib sob demanda se
+ * ainda não estiver no documento. Assim o módulo de TOTP deixa de
+ * depender de cada página host lembrar de incluir o <script> da lib
+ * -- essa responsabilidade passa a ser inteiramente do próprio
+ * settingsLoader/settings.js.
  */
+function carregarLibQrCode() {
+  if (typeof window.QRCode !== 'undefined') return Promise.resolve();
 
-
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = QRCODE_LIB_PATH;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Falha ao carregar ${QRCODE_LIB_PATH}`));
+    document.head.appendChild(script);
+  });
+}
 
 async function carregarModalConfiguracoes() {
   let html;
@@ -50,15 +61,17 @@ async function carregarModalConfiguracoes() {
     return;
   }
 
-  // Injeta como último elemento do <body>, igual à posição em que o
-  // overlay ficava quando colado direto no HTML da página.
   document.body.insertAdjacentHTML('beforeend', html);
 
-  // settings.js só é seguro de rodar agora que o HTML está no DOM.
-  // Import dinâmico -- roda o módulo uma única vez (mesmo cache de
-  // import estático), então não há risco de inicializar os listeners
-  // duas vezes mesmo que este loader seja importado por engano em
-  // mais de um lugar.
+  // Carrega a lib QR em paralelo com a importação de settings.js --
+  // não precisa ser sequencial, já que settings.js só usa a lib
+  // depois que o usuário clica em "Configurar" (aguardarLibQrCode
+  // ainda cobre o caso de ela não ter terminado a tempo).
+  const libQrCodePromise = carregarLibQrCode().catch((erro) => {
+    console.error('settingsLoader: não foi possível carregar a lib QRCode', erro);
+  });
+
   await import('../pages/user/standartUser/settings.js');
+  await libQrCodePromise;
 }
 

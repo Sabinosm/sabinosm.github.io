@@ -290,9 +290,9 @@ export function validarFormularioProfissional(campos, editando) {
   // esperam 'tipo_papel' (Literal["medico","enfermeiro"] | None),
   // ortogonal a 'is_admin'. Cadastro de admin é outro fluxo (não
   // manda tipo_papel por este caminho) -- aqui só medico/enfermeiro.
-  if (campos.tipo) {
+  if (campos.tipo && campos.tipo !== 'nenhum') {
     payload.tipo_papel = campos.tipo;
-  } else if (!editando) {
+  } else if (!editando && !campos.tipo) {
     erros['pf-tipo'] = 'Selecione o tipo de profissional.';
   }
 
