@@ -16,7 +16,7 @@ import { consultarStatusSessao } from "./sessionStatus.js";
 // Ajuste conforme a estrutura real do projeto.
 import { exibirMensagem } from "../../shared/feedback.js";
 
-const ROTA_LOGIN = "../../../pages/auth/login.html";
+const ROTA_ERRO_401 = "../../../html/pages/http_error/401.html";
 const INTERVALO_VERIFICACAO_MS = 10 * 60 * 1000; // 10 minutos
 
 let intervaloId = null;
@@ -58,7 +58,7 @@ async function verificarSessao() {
     return;
   }
 
-  if (resultado.ok && resultado.status === "completa") {
+  if (resultado.ok && resultado.status === "a") {
     return; // segue tudo normal
   }
 
@@ -68,6 +68,6 @@ async function verificarSessao() {
   pararMonitoramentoSessao();
   exibirMensagem("Sua sessão expirou. Faça login novamente.", "erro");
   setTimeout(() => {
-    window.location.href = ROTA_LOGIN;
+    window.location.href = ROTA_ERRO_401;
   }, 2000);
 }
