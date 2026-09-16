@@ -81,22 +81,75 @@ async function iniciarFluxoCadastroTOTP() {
     return;
   }
 
-  renderizarQrCode(qrContainer, dados.otpauth_uri);
+  // Não bloqueia o texto do secret nem o foco do input -- o usuário já
+  // pode começar a digitar manualmente enquanto o QR (se demorar)
+  // ainda está sendo esperado.
+  renderizarQrCode(qrContainer, dados.otpauth_uri).catch((erro) => {
+    console.error('Falha inesperada ao renderizar QR code TOTP', erro);
+  });
   secretTexto.textContent = `Ou digite manualmente: ${dados.secret_texto}`;
   inputCodigo.focus();
 }
 
 /**
- * Renderiza o QR code a partir da URI otpauth:// usando a lib
- * `qrcode` (window.QRCode) carregada via CDN. Se a lib não estiver
- * disponível por algum motivo, cai no texto do secret como única via
- * (já mostrado em #totp-secret-texto) -- não quebra o fluxo.
+ * Espera a lib `qrcode` (window.QRCode) ficar disponível, até um
+ * limite de tempo -- CORRIGIDO: a lib é carregada via <script> de CDN
+ * na página host, num caminho completamente separado da cadeia de
+ * módulos deste modal (fetch do partial -> inject -> import dinâmico
+ * de settings.js -> import de preencherPerfil.js/preencherTotp.js,
+ * ver settingsLoader.js). Nada nessa cadeia aguarda o <script> do CDN
+ * terminar de carregar, então existe uma janela real em que o usuário
+ * já consegue clicar em "Configurar aplicativo autenticador" antes da
+ * lib estar pronta -- a checagem antiga (`typeof window.QRCode ===
+ * 'undefined'`) rodava nesse instante, achava que a lib nunca ia
+ * carregar, e desistia pra sempre (só um warning no console, nada
+ * visível pro usuário), mesmo que a lib chegasse meio segundo depois.
+ *
+ * @param {number} timeoutMs Tempo máximo de espera.
+ * @returns {Promise<boolean>} true se a lib ficou disponível a tempo.
  */
-function renderizarQrCode(container, otpauthUri) {
-  if (typeof window.QRCode === 'undefined') {
-    console.warn('Lib QRCode não carregada -- cadastro TOTP seguirá só com o secret em texto.');
+function aguardarLibQrCode(timeoutMs = 4000) {
+  if (typeof window.QRCode !== 'undefined') return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    const intervaloMs = 100;
+    let decorrido = 0;
+
+    const id = setInterval(() => {
+      if (typeof window.QRCode !== 'undefined') {
+        clearInterval(id);
+        resolve(true);
+        return;
+      }
+      decorrido += intervaloMs;
+      if (decorrido >= timeoutMs) {
+        clearInterval(id);
+        resolve(false);
+      }
+    }, intervaloMs);
+  });
+}
+
+/**
+ * Renderiza o QR code a partir da URI otpauth:// usando a lib
+ * `qrcode` (window.QRCode) carregada via CDN. Se a lib demorar mas
+ * chegar dentro do prazo, o QR aparece normalmente. Só se ela
+ * realmente não chegar a tempo é que caímos no fallback -- e nesse
+ * caso avisamos na própria tela (não só no console), já que o secret
+ * em texto sozinho é fácil de passar despercebido pelo usuário.
+ */
+async function renderizarQrCode(container, otpauthUri) {
+  const disponivel = await aguardarLibQrCode();
+
+  if (!disponivel) {
+    console.warn('Lib QRCode não carregou a tempo -- cadastro TOTP seguirá só com o secret em texto.');
+    const erroEl = document.getElementById('totp-cadastro-erro');
+    if (erroEl) {
+      erroEl.textContent = 'Não foi possível carregar o QR code agora -- use o código abaixo para configurar manualmente, ou recarregue a página e tente de novo.';
+    }
     return;
   }
+
   new window.QRCode(container, {
     text: otpauthUri,
     width: 180,

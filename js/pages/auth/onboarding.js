@@ -75,13 +75,47 @@ async function sincronizarPasso() {
     }
 
     if (dados.senha_definida) {
-      // Idempotência do backend: usuário já tem senha (ex.:
-      // cadastrado por admin) -- pula direto para o passo de 2FA.
+      // CORRIGIDO: antes pulava direto para a TELA de 2FA sem checar
+      // se já havia um método confirmado. Isso podia acontecer mesmo
+      // com um TOTP/WebAuthn já funcionando -- por exemplo, se
+      // /onboarding/concluir nunca chegou a rodar numa sessão anterior
+      // (ver onboarding.py) e o backend te devolve aqui de novo. Nesse
+      // caso, entrar na tela de cadastro de TOTP dispara
+      // /totp/registrar/iniciar de novo, que podia (antes de corrigido
+      // no backend) desconfirmar o fator que já existia -- ou, mesmo
+      // corrigido lá, força o usuário a escanear um QR code de novo à
+      // toa. Agora checamos /2fa/status primeiro: se já há um método
+      // confirmado, o único passo que falta é concluir.
+      const tem2fa = await usuarioJaTem2fa();
+      if (tem2fa) {
+        await concluirOnboarding();
+        return;
+      }
       await irParaPasso2fa();
     }
   } catch (erro) {
     console.error("Erro ao verificar etapa do onboarding:", erro);
     exibirMensagem("Não foi possível carregar seu progresso. Recarregue a página.", "erro");
+  }
+}
+
+/**
+ * Consulta /onboarding/2fa/status -- usado em sincronizarPasso() para
+ * não reabrir a tela de cadastro de 2FA quando já existe um método
+ * confirmado (ver comentário em sincronizarPasso).
+ */
+async function usuarioJaTem2fa() {
+  try {
+    const resp = await fetch(`${URL_BASE_API}/auth/onboarding/2fa/status`, {
+      method: "GET",
+      credentials: "include",
+    });
+    if (!resp.ok) return false;
+    const dados = await resp.json();
+    return Boolean(dados.tem_2fa);
+  } catch (erro) {
+    console.error("Erro ao verificar status de 2FA no onboarding:", erro);
+    return false;
   }
 }
 
@@ -209,16 +243,62 @@ async function iniciarFluxoTotp() {
     return;
   }
 
-  renderizarQrCode(qrContainer, dados.otpauth_uri);
+  // Não bloqueia o texto do secret nem o foco do input -- o usuário já
+  // pode começar a digitar manualmente enquanto o QR (se demorar)
+  // ainda está sendo esperado.
+  renderizarQrCode(qrContainer, dados.otpauth_uri).catch((erro) => {
+    console.error("Falha inesperada ao renderizar QR code TOTP no onboarding:", erro);
+  });
   secretTexto.textContent = `Ou digite manualmente: ${dados.secret_texto}`;
   inputCodigo.focus();
 }
 
-function renderizarQrCode(container, otpauthUri) {
-  if (typeof window.QRCode === "undefined") {
-    console.warn("Lib QRCode não carregada -- cadastro TOTP seguirá só com o secret em texto.");
+/**
+ * Espera a lib `qrcode` (window.QRCode) ficar disponível, até um
+ * limite de tempo -- mesma correção aplicada em preencherTotp.js
+ * (Configurações). A janela de corrida aqui é menor porque o
+ * onboarding não passa por fetch+inject de partial nem import
+ * dinâmico de módulo (a lib e este script chegam por caminhos mais
+ * diretos), mas não é zero -- a tag <script> do CDN ainda é
+ * carregada de forma desacoplada do restante do JS da página, então
+ * nada garante ordem entre os dois. Sem isso, a checagem antiga
+ * (`typeof window.QRCode === "undefined"`) podia desistir pra sempre
+ * de um QR que só chegaria alguns milissegundos depois.
+ */
+function aguardarLibQrCode(timeoutMs = 4000) {
+  if (typeof window.QRCode !== "undefined") return Promise.resolve(true);
+
+  return new Promise((resolve) => {
+    const intervaloMs = 100;
+    let decorrido = 0;
+
+    const id = setInterval(() => {
+      if (typeof window.QRCode !== "undefined") {
+        clearInterval(id);
+        resolve(true);
+        return;
+      }
+      decorrido += intervaloMs;
+      if (decorrido >= timeoutMs) {
+        clearInterval(id);
+        resolve(false);
+      }
+    }, intervaloMs);
+  });
+}
+
+async function renderizarQrCode(container, otpauthUri) {
+  const disponivel = await aguardarLibQrCode();
+
+  if (!disponivel) {
+    console.warn("Lib QRCode não carregou a tempo -- cadastro TOTP seguirá só com o secret em texto.");
+    exibirMensagem(
+      "Não foi possível carregar o QR code agora -- use o código exibido para configurar manualmente, ou recarregue a página.",
+      "erro"
+    );
     return;
   }
+
   new window.QRCode(container, {
     text: otpauthUri,
     width: 180,
