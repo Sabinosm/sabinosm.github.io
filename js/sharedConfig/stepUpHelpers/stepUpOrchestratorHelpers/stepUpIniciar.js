@@ -7,7 +7,7 @@
 import { URL_BASE_API } from "../../urlConfig.js";
 import { limparEstadoVisual, mostrarPainelSenha } from "./stepUpUi.js";
 import { encerrar } from "./stepUpCicloDeVida.js";
-import { executarWebauthn } from "./stepUpCaminhoWebAuthn.js";
+import { executarWebauthn } from "./stepUpCaminhoWebauthn.js";
 
 export async function iniciar(ctx) {
   const { refs } = ctx;
