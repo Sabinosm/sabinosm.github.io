@@ -116,7 +116,9 @@ export function listarResumoProfissionais({ nome, funcaoClinica, isAdmin, acao, 
  *     alteracoes: { itens, tem_mais, proximo_cursor } }
  *
  * Item de acesso (LogAcesso.to_dict):
- *   { uuid, recurso_acessado, operacao, data_hora, resultado }
+ *   { uuid, recurso_acessado, operacao, data_hora, resultado,
+ *     motivo_negacao }  -- motivo_negacao só é preenchido quando
+ *   resultado != "sucesso" (null nos demais casos)
  * Item de alteração (LogAlteracao.to_dict):
  *   { uuid, acao, tabela_origem, operacao, campo_alterado,
  *     valor_anterior, valor_novo, justificativa, alterado_em }

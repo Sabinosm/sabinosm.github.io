@@ -266,6 +266,28 @@ function criarItemAcesso(item) {
   data.textContent = formatarDataHora(item.data_hora);
 
   el.append(topo, data);
+
+  // motivo_negacao so vem preenchido quando resultado != "sucesso" --
+  // colapsado por padrao, mesmo padrao do diff de alteracao (pode ser
+  // dado sensivel/detalhado demais pra lista corrida)
+  if (item.motivo_negacao) {
+    const detalhe = document.createElement('div');
+    detalhe.className = 'log-diff';
+    detalhe.hidden = true;
+    detalhe.appendChild(linhaDiff('Motivo', item.motivo_negacao));
+
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'log-item-toggle';
+    toggle.textContent = 'Ver detalhes';
+    toggle.addEventListener('click', () => {
+      detalhe.hidden = !detalhe.hidden;
+      toggle.textContent = detalhe.hidden ? 'Ver detalhes' : 'Ocultar detalhes';
+    });
+
+    el.append(toggle, detalhe);
+  }
+
   return el;
 }
 
