@@ -31,6 +31,9 @@ import {
   ativarProfissional,
   desativarProfissional,
   buscarProfissional,
+  resetarSenhaProfissional,
+  resetar2faProfissional,
+  resetarCompletoProfissional,
   ApiError,
 } from "./adminProfissionaisApi.js";
 import { validarFormularioProfissional } from "./adminProfissionaisValidacoes.js";
@@ -46,7 +49,10 @@ const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
 const btnSalvar = document.getElementById('prof-modal-save');
 const btnCancelar = document.getElementById('prof-modal-cancel');
 const btnFechar = document.getElementById('prof-modal-close');
-
+const blocoAcoesAdmin = document.getElementById('prof-modal-acoes-admin');
+const btnResetarSenha = document.getElementById('prof-modal-resetar-senha');
+const btnResetar2fa = document.getElementById('prof-modal-resetar-2fa');
+const btnResetarCompleto = document.getElementById('prof-modal-resetar-completo');
 const campoTipo = document.getElementById('pf-tipo');
 const blocoMedico = document.getElementById('bloco-medico');
 const blocoEnfermeiro = document.getElementById('bloco-enfermeiro');
@@ -166,6 +172,7 @@ export async function abrirModalProfissional(item) {
   }
 
   configurarBotaoStatus(item);
+  configurarAcoesAdministrativas(item);
 }
 
 function preencherFormularioComDetalhe(dados) {
@@ -256,6 +263,50 @@ function configurarBotaoStatus(item) {
       exibirMensagem(mensagem, 'erro');
     } finally {
       btnToggleStatus.disabled = false;
+    }
+  };
+}
+
+/**
+ * Mostra/esconde e liga os 3 botões de ação administrativa (resetar
+ * senha, resetar 2FA, resetar tudo). Visível só em edição (não em
+ * convite), para quem é admin, e nunca em modo somente-leitura.
+ * O backend ainda decide a permissão real (rotas exigem
+ * g.is_super_admin) -- isso aqui é só a UI.
+ */
+function configurarAcoesAdministrativas(item) {
+  if (!blocoAcoesAdmin) return;
+
+  const podeVer = souAdmin() && !somenteLeitura;
+  blocoAcoesAdmin.hidden = !podeVer;
+  if (!podeVer) return;
+
+  ligarAcaoAdministrativa(btnResetarSenha, () => resetarSenhaProfissional(item.uuid), 'Senha resetada.');
+  ligarAcaoAdministrativa(btnResetar2fa, () => resetar2faProfissional(item.uuid), '2FA resetado.');
+  ligarAcaoAdministrativa(btnResetarCompleto, () => resetarCompletoProfissional(item.uuid), 'Usuário resetado por completo.');
+}
+
+/**
+ * Liga um botão de ação administrativa: desabilita durante a
+ * chamada, trata cancelamento do step-up (resultado === undefined),
+ * mostra sucesso/erro e fecha o modal ao concluir -- mesmo padrão de
+ * configurarBotaoStatus.
+ */
+function ligarAcaoAdministrativa(botao, executar, mensagemSucesso) {
+  if (!botao) return;
+  botao.onclick = async () => {
+    botao.disabled = true;
+    try {
+      const resultado = await executar();
+      if (resultado === undefined) return; // usuário cancelou o step-up
+      exibirMensagem(mensagemSucesso, 'sucesso');
+      await recarregarLista();
+      setTimeout(fecharModal, 900);
+    } catch (erro) {
+      const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível concluir a ação.';
+      exibirMensagem(mensagem, 'erro');
+    } finally {
+      botao.disabled = false;
     }
   };
 }
@@ -377,6 +428,7 @@ function limparFormulario() {
   esconderFeedback();
   blocoMedico.hidden = true;
   blocoEnfermeiro.hidden = true;
+  if (blocoAcoesAdmin) blocoAcoesAdmin.hidden = true;
   form.querySelectorAll('input, select').forEach((el) => { el.disabled = false; });
   const campoTipoGroup = campoTipo?.closest('.field-group');
   if (campoTipoGroup) campoTipoGroup.hidden = false;

@@ -525,3 +525,27 @@
   border-top: 1px solid var(--border);
   padding-top: 16px;
 }
+
+/* ===== Ações administrativas (resetar senha / 2FA / tudo) =====
+   Bloco próprio dentro do modal de edição, visível só para admin
+   (ver adminProfissionaisModal.js). Os 3 botões reusam .btn-ghost e
+   .btn-danger já existentes -- só o wrapper flex é novo. */
+.prof-modal-acoes-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.prof-modal-acoes-botoes .btn-ghost,
+.prof-modal-acoes-botoes .btn-danger {
+  flex: 1 1 auto;
+  min-width: 140px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .prof-modal-acoes-botoes {
+    flex-direction: column;
+  }
+}

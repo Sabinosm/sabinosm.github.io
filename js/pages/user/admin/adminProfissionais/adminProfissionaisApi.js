@@ -228,3 +228,18 @@ async function solicitarComStepUp(path, acao, options = {}) {
     headers: { ...headersPadrao(), ...(options.headers || {}), "X-Stepup-Token": token },
   });
 }
+
+/** POST /<uuid>/resetar-senha — reseta a senha do profissional (ele define uma nova no próximo login). */
+export async function resetarSenhaProfissional(uuid) {
+  return solicitarComStepUp(`/${uuid}/resetar-senha`, "resetar_senha_usuario", { method: "POST" });
+}
+
+/** POST /<uuid>/resetar-2fa — reseta o 2FA (o profissional precisará cadastrar um novo dispositivo). */
+export async function resetar2faProfissional(uuid) {
+  return solicitarComStepUp(`/${uuid}/resetar-2fa`, "resetar_2fa_usuario", { method: "POST" });
+}
+
+/** POST /<uuid>/resetar-completo — reset total (senha + 2FA + status volta a exigir ativação). */
+export async function resetarCompletoProfissional(uuid) {
+  return solicitarComStepUp(`/${uuid}/resetar-completo`, "resetar_completo_usuario", { method: "POST" });
+}
