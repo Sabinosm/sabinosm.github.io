@@ -18,7 +18,7 @@ import {
 } from '../../pages/auth/totp.js';
 import { atualizarTotpCache } from '../userCache.js';
 import { atualizarAvisoUnicoFator } from './preencherAvisos.js';
-import { abrirModalTotp, fecharModalTotp, refsFormTotp } from '../../pages/user/admin/settings.js';
+import { abrirModalTotp, fecharModalTotp, refsFormTotp } from '../settings.js';
 
 /**
  * Alterna entre os estados "não configurado" / "configurado" da seção
