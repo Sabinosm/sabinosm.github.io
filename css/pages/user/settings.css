@@ -274,6 +274,55 @@ body.no-scroll {
   margin-top: 2px;
 }
 
+
+/* ===== Documentos (aba Arquivos) =====
+   Mesmo padrão visual de .device-item/.device-list (aba Segurança). */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  box-shadow:
+    3px 3px 8px var(--neu-shadow-dark),
+    -3px -3px 8px var(--neu-shadow-light);
+}
+
+.file-icon {
+  width: 30px;
+  height: 30px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.file-icon svg { width: 100%; height: 100%; }
+
+.file-info { flex: 1; min-width: 0; }
+
+.file-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.file-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 /* ===== Temas (aba Preferências) ===== */
 .theme-options {
   display: flex;
