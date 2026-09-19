@@ -579,3 +579,97 @@ body.no-scroll {
 @media (max-width: 480px) {
   .totp-modal { max-width: 100%; padding: 28px 20px 24px; }
 }
+
+/* ============================================
+   Modal de Alterar Senha
+   Mesmo padrão do modal de TOTP acima: overlay PRÓPRIO (irmão de
+   .settings-overlay e .totp-modal-overlay no HTML, ver
+   settingsModal.html), abre por cima do modal de configurações.
+   Mesmo z-index do modal TOTP -- os dois nunca abrem ao mesmo tempo.
+   ============================================ */
+
+.senha-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  padding: 24px;
+}
+
+.senha-modal-overlay--visible {
+  display: flex;
+}
+
+.senha-modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 32px 28px 28px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+.senha-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.senha-modal-close:hover {
+  background: var(--sidebar-active-bg);
+  color: var(--text);
+}
+
+.senha-modal-titulo {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  padding-right: 24px; /* não fica embaixo do botão de fechar */
+}
+
+.senha-modal-subtitulo {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.senha-modal-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.senha-modal-form .field-group {
+  max-width: none;
+}
+
+/* Reusa .field-hint--erro (mesma classe do modal TOTP e do erro de
+   confirmação do form de profissional) para a mensagem de erro deste
+   modal -- ver #senha-erro em settingsModal.html. */
+.field-hint--erro {
+  color: var(--color-error, #e5484d);
+}
+.field-hint--erro:empty {
+  display: none;
+}
+
+/* Reusa .stepup-actions (definida em stepUpModal.html/css) para a
+   barra de botões Cancelar/Confirmar -- mesmo espaçamento do modal
+   de step-up, que este modal antecede diretamente no fluxo. */
+
+@media (max-width: 480px) {
+  .senha-modal { max-width: 100%; padding: 28px 20px 24px; }
+}
