@@ -3,7 +3,7 @@
 // seleção de tema, cancelar e salvar.
 // ============================================
 
-import { atualizarDesignCache, atualizarPreferenciasCache } from '../userCache';
+import { atualizarDesignCache, atualizarPreferenciasCache } from '../userCache.js';
 import { exibirFeedbackConfiguracoes, limparFeedbackConfiguracoes, exibirFeedbackSucessoTemporario } from './settingsFeedback.js';
 import { montarConfiguracoesParaApi, salvarConfiguracoesNaApi } from './settingsApi.js';
 
