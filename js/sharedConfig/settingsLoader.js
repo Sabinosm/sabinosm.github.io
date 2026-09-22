@@ -95,6 +95,6 @@ async function carregarModalConfiguracoes() {
   // import estático), então não há risco de inicializar os listeners
   // duas vezes mesmo que este loader seja importado por engano em
   // mais de um lugar.
-  await import('settings.js');
+  await import('../sharedConfig/settings.js');
   await libQrCodePromise;
 }
