@@ -2,7 +2,7 @@
 // Utilitário: validação de força de senha (client-side)
 //
 // Uso:
-//   import { validarSenha } from '../shared/passwordValidation.js';
+//   import { validarSenha } from '../sharedConfig/passwordValidation.js';
 //   const { valida, mensagem } = validarSenha(senha);
 //   if (!valida) mostrarErroSenha(mensagem);
 //

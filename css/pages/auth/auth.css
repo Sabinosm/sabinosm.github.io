@@ -205,7 +205,7 @@ p.hint {
 }
 
 /* ── Toggle de mostrar/ocultar senha (olhinho) ─────────────────
-   Injetado via js/shared/passwordToggle.js -- mesmo bloco usado em
+   Injetado via js/sharedConfig/passwordToggle.js -- mesmo bloco usado em
    registration.css (cadastro de admin), reaproveitado aqui porque o
    onboarding usa a mesma estrutura .field > input. O wrapper entra
    entre o .field e o input, então ".field input" acima continua

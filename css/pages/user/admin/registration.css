@@ -226,7 +226,7 @@ h1 {
 }
 
 /* ── Toggle de mostrar/ocultar senha (olhinho) ─────────────────
-   Injetado via js/shared/passwordToggle.js -- o wrapper substitui o
+   Injetado via js/sharedConfig/passwordToggle.js -- o wrapper substitui o
    input no fluxo do DOM (.field > .senha-toggle-wrap > input), então
    o seletor descendente ".field input" acima continua se aplicando
    normalmente. Só o padding extra é escopado ao wrapper, para não

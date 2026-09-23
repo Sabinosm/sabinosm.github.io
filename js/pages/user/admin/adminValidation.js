@@ -22,7 +22,7 @@
 //   });
 //
 // ALTERADO: validação de força de senha (validateSenhaField) deixou de
-// ter regras próprias e passou a usar ../../../shared/passwordValidation.js
+// ter regras próprias e passou a usar ../../../sharedConfig/passwordValidation.js
 // -- o mesmo validador usado em settingsSenha.js (troca de senha nas
 // configurações), que espelha validar_senha() do backend
 // (src/core/validacoes.py). Antes deste ajuste, este arquivo tinha uma
@@ -30,7 +30,7 @@
 // 128 do backend) -- ver nota em passwordValidation.js sobre o risco
 // de dessincronia entre as cópias client-side e a fonte da verdade.
 
-import { validarSenha } from '../../../shared/passwordValidation.js';
+import { validarSenha } from '../../../sharedConfig/passwordValidation.js';
 
 // ── UI: exibir / limpar erro ─────────────────────────────────
 function setError(fieldId, message) {

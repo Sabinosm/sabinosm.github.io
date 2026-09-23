@@ -2,7 +2,7 @@
 // Utilitário: toggle de "mostrar senha" (olhinho)
 //
 // Uso:
-//   import { ativarTogglesSenha } from '../shared/passwordToggle.js';
+//   import { ativarTogglesSenha } from '../sharedConfig/passwordToggle.js';
 //   ativarTogglesSenha('#senha-nova, #senha-confirmar');
 //
 // Ou passando elementos diretamente:

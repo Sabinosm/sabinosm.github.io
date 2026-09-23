@@ -21,7 +21,7 @@ import {
   aplicarErrosBackend,
   clearError,
 } from "./adminValidation.js";
-import { ativarTogglesSenha } from "../../../shared/passwordToggle.js";
+import { ativarTogglesSenha } from "../../../sharedConfig/passwordToggle.js";
 import { URL_BASE_API } from "../../../sharedConfig/urlConfig.js";
 
 const CHAVE_SESSION_EMPRESA = 'bion_cadastro_empresa';

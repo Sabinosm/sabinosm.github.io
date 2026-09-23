@@ -19,8 +19,8 @@ import { exibirMensagem } from "../../shared/feedback.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 import { registrarNovoDispositivo, ErroRegistroDispositivo } from "./webauthn.js";
 import { iniciarCadastroTOTP, confirmarCadastroTOTP, ErroCadastroTOTP } from "./totp.js";
-import { validarSenha } from "../../shared/passwordValidation.js";
-import { ativarTogglesSenha } from "../../shared/passwordToggle.js";
+import { validarSenha } from "../../sharedConfig/passwordValidation.js";
+import { ativarTogglesSenha } from "../../sharedConfig/passwordToggle.js";
 
 const passoSenha = document.getElementById("passo-senha");
 const passoTwoFa = document.getElementById("passo-2fa");
@@ -158,7 +158,7 @@ formSenha.addEventListener("submit", async (event) => {
   const confirmarSenha = inputConfirmarSenha.value;
 
   // Pré-filtro client-side espelhando validar_senha() do backend (ver
-  // ../../shared/passwordValidation.js) -- só para feedback rápido.
+  // ../../sharedConfig/passwordValidation.js) -- só para feedback rápido.
   // A validação real e definitiva continua sendo do backend (ver
   // catch abaixo, que mostra cru o motivo devolvido por
   // /onboarding/definir-senha quando ele reprovar algo que passou

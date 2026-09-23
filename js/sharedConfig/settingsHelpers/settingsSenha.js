@@ -104,7 +104,7 @@ senhaForm?.addEventListener('submit', async (e) => {
   mostrarErroSenha('');
 
   // Pré-filtro client-side espelhando validar_senha() do backend (ver
-  // ../shared/passwordValidation.js) -- só para feedback rápido. A
+  // ../sharedConfig/passwordValidation.js) -- só para feedback rápido. A
   // validação real e definitiva é sempre revalidada pelo backend (ver
   // validar_senha em schema_usuario.py), e qualquer erro que ele
   // devolver é mostrado cru no modal (bloco try/catch do fetch abaixo).
