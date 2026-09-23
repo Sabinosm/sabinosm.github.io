@@ -9,7 +9,9 @@
 
 import { exibirMensagem } from "../../shared/feedback.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
+import { ativarTogglesSenha } from "../../sharedConfig/passwordToggle.js";
 
+ativarTogglesSenha('#senha');
 
 document.getElementById("login-form").addEventListener("submit", async (event) => {
   event.preventDefault();
