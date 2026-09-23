@@ -8,6 +8,7 @@ import { URL_BASE_API } from "../../urlConfig.js";
 import { limparEstadoVisual, mostrarPainelSenha } from "./stepUpUi.js";
 import { encerrar } from "./stepUpCicloDeVida.js";
 import { executarWebauthn } from "./stepUpCaminhoWebauthn.js";
+import { iniciarPainelTotp } from "./stepUpCaminhoTotp.js";
 
 export async function iniciar(ctx) {
   const { refs } = ctx;
@@ -38,6 +39,8 @@ export async function iniciar(ctx) {
   if (dados.metodo === "webauthn") {
     refs.painelWebauthn.hidden = false;
     executarWebauthn(ctx, dados);
+  } else if (dados.metodo === "totp") {
+    await iniciarPainelTotp(ctx);
   } else {
     mostrarPainelSenha(ctx);
   }

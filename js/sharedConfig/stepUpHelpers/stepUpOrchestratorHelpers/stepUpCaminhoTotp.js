@@ -1,12 +1,50 @@
 // stepUpOrchestratorHelpers/stepUpCaminhoTotp.js
 //
 // Caminho 2 -- TOTP: confirmação pelo aplicativo autenticador,
-// alcançado quando o WebAuthn falha (ver stepUpCaminhoWebAuthn.js)
-// ou quando o backend já indicou que não há credencial WebAuthn.
+// alcançado quando o backend já indica TOTP como método principal
+// (ver stepUpIniciar.js) ou quando o WebAuthn falha (ver
+// stepUpCaminhoWebauthn.js).
 
-import { confirmarStepUpTOTP, LimiteTentativasTotpExcedidoError, CodigoTotpInvalidoError } from "../../../pages/auth/totp.js";
+import { confirmarStepUpTOTP, iniciarStepUpTOTP, LimiteTentativasTotpExcedidoError, CodigoTotpInvalidoError, TotpNaoCadastradoError } from "../../../pages/auth/totp.js";
 import { mostrarErro, mostrarPainelSenha } from "./stepUpUi.js";
 import { resolverComToken } from "./stepUpCicloDeVida.js";
+
+/**
+ * Abre o painel TOTP para `ctx.acao`, chamando /stepup/iniciar do
+ * TOTP para resetar as tentativas desta abertura do modal.
+ *
+ * Usado em dois lugares:
+ *  - stepUpIniciar.js, quando o backend já respondeu
+ *    metodo === "totp" na etapa 1 (TOTP como método principal);
+ *  - stepUpCaminhoWebauthn.js, como segundo método depois que o
+ *    WebAuthn falha (aí `ocultarWebauthn: true`, pra esconder o
+ *    painel que acabou de falhar).
+ *
+ * Se o usuário não tiver TOTP cadastrado (TotpNaoCadastradoError),
+ * cai no fallback de senha -- mesmo racional de sempre manter uma
+ * saída (ver step_up.py).
+ */
+export async function iniciarPainelTotp(ctx, { ocultarWebauthn = false } = {}) {
+  const { painelWebauthn, painelTotp, inputTotp, feedback } = ctx.refs;
+
+  try {
+    await iniciarStepUpTOTP(ctx.acao);
+    if (ocultarWebauthn) painelWebauthn.hidden = true;
+    painelTotp.hidden = false;
+    feedback.textContent = "";
+    feedback.className = "stepup-feedback";
+    inputTotp.value = "";
+    inputTotp.focus();
+  } catch (erroTotp) {
+    if (erroTotp instanceof TotpNaoCadastradoError) {
+      if (ocultarWebauthn) painelWebauthn.hidden = true;
+      mostrarPainelSenha(ctx);
+      return;
+    }
+    console.error("stepUp: falha ao iniciar TOTP", erroTotp);
+    mostrarErro(ctx, "Não foi possível verificar o método de confirmação por código.");
+  }
+}
 
 export async function onSubmitTotp(ctx, e) {
   e.preventDefault();
@@ -24,11 +62,6 @@ export async function onSubmitTotp(ctx, e) {
     botaoSubmit.disabled = false;
 
     if (erroTotp instanceof LimiteTentativasTotpExcedidoError) {
-      // ALTERADO: diferente da versão anterior deste fluxo, isso
-      // NÃO é mais fim de linha -- cai no fallback senha+Google,
-      // igual a quando o usuário não tem WebAuthn nem TOTP (ver
-      // docstring de step_up.py: o step-up sempre mantém uma
-      // saída, diferente do login).
       painelTotp.hidden = true;
       mostrarErro(ctx, "Não foi possível confirmar pelo aplicativo autenticador.");
       mostrarPainelSenha(ctx);
