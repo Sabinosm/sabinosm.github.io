@@ -5,7 +5,7 @@
 // via módulo -- chamadas repetidas a pedirConfirmacao() reusam o
 // mesmo modal já no DOM).
 
-const PARTIAL_PATH = "../../../html/pages/user/stepupModal.html";
+const PARTIAL_PATH = "../../../../html/pages/user/stepupModal.html";
 let modalCarregadoPromise = null;
 
 export function garantirModalCarregado() {
