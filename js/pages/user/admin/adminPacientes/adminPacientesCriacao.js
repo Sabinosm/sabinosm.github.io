@@ -18,7 +18,7 @@
 
 import { ApiError, criarPacientePessoal } from "./adminPacientesApi.js";
 import { validarEssencial } from "./adminPacientesCriacaoValidacoes.js";
-import { souProfissionalDeSaude } from "./adminProfissionaisSessao.js";
+import { souProfissionalDeSaude } from "../adminProfissionais/adminProfissionaisSessao.js";
 import { exibirMensagem } from "/js/shared/feedback.js";
 
 let enviando = false;
