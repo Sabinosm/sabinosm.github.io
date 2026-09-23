@@ -22,6 +22,12 @@
 //     que replica o set `especiais_seguros` do backend -- OU qualquer
 //     char não-alfanumérico, mesma lógica de
 //     `c in especiais_seguros or not c.isalnum()`)
+//
+// Feedback incremental (um erro de cada vez, não uma lista): retorna
+// assim que encontra o primeiro requisito não atendido, na ordem
+// acima. Ao corrigir um, o próximo aparece na validação seguinte --
+// mesmo comportamento que adminValidation.js já tinha antes de migrar
+// para este arquivo compartilhado.
 // ============================================
 
 const SENHA_MIN_CARACTERES = 12;
@@ -39,6 +45,7 @@ function ehAlfanumerico(c) {
 
 /**
  * Valida a força de uma senha, espelhando as regras do backend.
+ * Retorna no primeiro requisito não atendido (feedback incremental).
  * @param {string} senha
  * @returns {{ valida: boolean, mensagem: string }}
  *   mensagem é '' quando valida === true.
@@ -62,23 +69,18 @@ export function validarSenha(senha) {
     };
   }
 
-  const requisitosFaltando = [];
+  const caracteres = [...senha];
 
-  if (![...senha].some((c) => c >= '0' && c <= '9')) {
-    requisitosFaltando.push('número');
-  }
-  if (![...senha].some((c) => c !== c.toLowerCase() && c === c.toUpperCase())) {
-    requisitosFaltando.push('letra maiúscula');
-  }
-  if (![...senha].some((c) => ESPECIAIS_SEGUROS.has(c) || !ehAlfanumerico(c))) {
-    requisitosFaltando.push('caractere especial');
+  if (!caracteres.some((c) => c >= '0' && c <= '9')) {
+    return { valida: false, mensagem: 'A senha precisa conter ao menos 1 número.' };
   }
 
-  if (requisitosFaltando.length > 0) {
-    return {
-      valida: false,
-      mensagem: `A senha precisa conter pelo menos: ${requisitosFaltando.join(', ')}.`,
-    };
+  if (!caracteres.some((c) => c !== c.toLowerCase() && c === c.toUpperCase())) {
+    return { valida: false, mensagem: 'A senha precisa conter ao menos 1 letra maiúscula.' };
+  }
+
+  if (!caracteres.some((c) => ESPECIAIS_SEGUROS.has(c) || !ehAlfanumerico(c))) {
+    return { valida: false, mensagem: 'A senha precisa conter ao menos 1 caractere especial.' };
   }
 
   return { valida: true, mensagem: '' };

@@ -21,6 +21,7 @@ import {
   aplicarErrosBackend,
   clearError,
 } from "./adminValidation.js";
+import { ativarTogglesSenha } from "../../../shared/passwordToggle.js";
 import { URL_BASE_API } from "../../../sharedConfig/urlConfig.js";
 
 const CHAVE_SESSION_EMPRESA = 'bion_cadastro_empresa';
@@ -92,6 +93,9 @@ document.getElementById('telefone').addEventListener('input', function (e) {
 
 // ── validação em tempo real (formato, tamanho, caracteres) ───
 ligarValidacaoEmTempoReal();
+
+// ── mostrar/ocultar senha (olhinho) ───────────────────────────
+ativarTogglesSenha(['#senha', '#confirmar_senha']);
 
 // ── função clínica: toggle dos campos de CRM/COREN ────────────
 // Espelha a regra cruzada de schema_usuario.py: só o bloco do

@@ -20,6 +20,17 @@
 //     if (!validarFormularioAdmin()) return; // bloqueia envio
 //     // ... segue para o fetch normalmente
 //   });
+//
+// ALTERADO: validação de força de senha (validateSenhaField) deixou de
+// ter regras próprias e passou a usar ../../../shared/passwordValidation.js
+// -- o mesmo validador usado em settingsSenha.js (troca de senha nas
+// configurações), que espelha validar_senha() do backend
+// (src/core/validacoes.py). Antes deste ajuste, este arquivo tinha uma
+// terceira cópia divergente das regras (máx. 50 caracteres, contra os
+// 128 do backend) -- ver nota em passwordValidation.js sobre o risco
+// de dessincronia entre as cópias client-side e a fonte da verdade.
+
+import { validarSenha } from '../../../shared/passwordValidation.js';
 
 // ── UI: exibir / limpar erro ─────────────────────────────────
 function setError(fieldId, message) {
@@ -182,30 +193,10 @@ function validateLoginField() {
 
 function validateSenhaField() {
   const senha = document.getElementById('senha').value;
+  const { valida, mensagem } = validarSenha(senha);
 
-  if (senha.length < 12 || senha.length > 50) {
-    setError('senha', 'Deve ter entre 12 e 50 caracteres');
-    return false;
-  }
-  // 1. Valida se tem ao menos 1 letra (maiúscula ou minúscula, incluindo acentuadas)
-  if (!/[a-zA-ZÀ-ÖØ-öø-ÿ]/.test(senha)) {
-    setError('senha', 'Deve conter ao menos 1 letra');
-    return false;
-  }
-
-  // 2. Valida se tem ao menos 1 letra MAIÚSCULA (incluindo acentuadas maiúsculas)
-  if (!/[A-ZÀ-Ö]/.test(senha)) {
-    setError('senha', 'Deve conter ao menos 1 letra maiúscula');
-    return false;
-  }
-  
-  if (!/\d/.test(senha)) {
-    setError('senha', 'Deve conter ao menos 1 número');
-    return false;
-  }
-  const especiais = (senha.match(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9]/g) || []).length;
-  if (especiais < 1) {
-    setError('senha', 'Deve conter ao menos 1 caractere especial');
+  if (!valida) {
+    setError('senha', mensagem);
     return false;
   }
   clearError('senha');

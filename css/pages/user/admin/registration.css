@@ -225,6 +225,36 @@ h1 {
   gap: 10px;
 }
 
+/* ── Toggle de mostrar/ocultar senha (olhinho) ─────────────────
+   Injetado via js/shared/passwordToggle.js -- o wrapper substitui o
+   input no fluxo do DOM (.field > .senha-toggle-wrap > input), então
+   o seletor descendente ".field input" acima continua se aplicando
+   normalmente. Só o padding extra é escopado ao wrapper, para não
+   afetar os outros campos do formulário. */
+.senha-toggle-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.senha-toggle-wrap input {
+  padding-right: 40px;
+}
+.senha-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--muted2);
+  display: flex;
+  align-items: center;
+  transition: color .2s;
+}
+.senha-toggle-btn:hover {
+  color: var(--text-strong);
+}
+
 /* Spinner pequeno para dentro do campo (busca de CEP/CNPJ) */
 .field .field-spinner {
   position: absolute;
