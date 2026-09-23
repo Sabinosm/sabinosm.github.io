@@ -74,6 +74,7 @@ senhaForm?.addEventListener('submit', async (e) => {
   // Validação client-side: só um pré-filtro rápido -- força de senha
   // de verdade (padrões, sequências etc) é sempre revalidada pelo
   // backend (ver validar_senha em schema_usuario.py).
+  
   if (senhaNova.length < SENHA_MIN_CARACTERES) {
     mostrarErroSenha(`A senha precisa ter pelo menos ${SENHA_MIN_CARACTERES} caracteres.`);
     return;
