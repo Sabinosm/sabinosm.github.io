@@ -40,7 +40,7 @@ export async function iniciar(ctx) {
     refs.painelWebauthn.hidden = false;
     executarWebauthn(ctx, dados);
   } else if (dados.metodo === "totp") {
-    await iniciarPainelTotp(ctx);
+    await iniciarPainelTotp(ctx, { jaIniciado: true });
   } else {
     mostrarPainelSenha(ctx);
   }

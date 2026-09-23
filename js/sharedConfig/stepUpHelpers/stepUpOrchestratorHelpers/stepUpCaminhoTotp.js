@@ -23,18 +23,34 @@ import { resolverComToken } from "./stepUpCicloDeVida.js";
  * Se o usuário não tiver TOTP cadastrado (TotpNaoCadastradoError),
  * cai no fallback de senha -- mesmo racional de sempre manter uma
  * saída (ver step_up.py).
+ *
+ * `jaIniciado: true` pula a chamada a /totp/2fa/stepup/iniciar --
+ * usado quando /stepup/iniciar já resetou as tentativas e devolveu
+ * `tentativas_restantes` junto (metodo === "totp" como método
+ * principal, ver stepUpIniciar.js). No caminho de fallback do
+ * WebAuthn (stepUpCaminhoWebauthn.js) o reset ainda não aconteceu,
+ * então esse caminho continua chamando iniciarStepUpTOTP normalmente.
  */
-export async function iniciarPainelTotp(ctx, { ocultarWebauthn = false } = {}) {
+export async function iniciarPainelTotp(ctx, { ocultarWebauthn = false, jaIniciado = false } = {}) {
   const { painelWebauthn, painelTotp, inputTotp, feedback } = ctx.refs;
 
-  try {
-    await iniciarStepUpTOTP(ctx.acao);
+  const mostrarPainel = () => {
     if (ocultarWebauthn) painelWebauthn.hidden = true;
     painelTotp.hidden = false;
     feedback.textContent = "";
     feedback.className = "stepup-feedback";
     inputTotp.value = "";
     inputTotp.focus();
+  };
+
+  if (jaIniciado) {
+    mostrarPainel();
+    return;
+  }
+
+  try {
+    await iniciarStepUpTOTP(ctx.acao);
+    mostrarPainel();
   } catch (erroTotp) {
     if (erroTotp instanceof TotpNaoCadastradoError) {
       if (ocultarWebauthn) painelWebauthn.hidden = true;
