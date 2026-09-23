@@ -30,7 +30,13 @@
     <form id="form-senha" method="post" action="#">
       <div class="field">
         <label for="senha">Nova senha</label>
-        <input type="password" id="senha" name="senha" required autocomplete="new-password" />
+        <input type="password" id="senha" name="senha" placeholder="Mínimo 12 caracteres" required autocomplete="new-password" minlength="12" maxlength="128" />
+        <div class="error-msg" id="err-senha"></div>
+      </div>
+      <div class="field">
+        <label for="confirmar_senha">Confirmar senha</label>
+        <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Repita a senha" required autocomplete="new-password" minlength="12" maxlength="128" />
+        <div class="error-msg" id="err-confirmar_senha"></div>
       </div>
       <button class="btn-primary" type="submit">Continuar</button>
     </form>

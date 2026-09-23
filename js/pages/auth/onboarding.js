@@ -19,10 +19,35 @@ import { exibirMensagem } from "../../shared/feedback.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 import { registrarNovoDispositivo, ErroRegistroDispositivo } from "./webauthn.js";
 import { iniciarCadastroTOTP, confirmarCadastroTOTP, ErroCadastroTOTP } from "./totp.js";
+import { validarSenha } from "../../shared/passwordValidation.js";
+import { ativarTogglesSenha } from "../../shared/passwordToggle.js";
 
 const passoSenha = document.getElementById("passo-senha");
 const passoTwoFa = document.getElementById("passo-2fa");
 const formSenha = document.getElementById("form-senha");
+const inputSenha = document.getElementById("senha");
+const inputConfirmarSenha = document.getElementById("confirmar_senha");
+
+ativarTogglesSenha([inputSenha, inputConfirmarSenha]);
+
+// Mesmo padrão simples de setError/clearError de adminValidation.js
+// (Cadastro de administrador) -- não justifica um módulo de validação
+// dedicado aqui, já que este form só tem os dois campos de senha.
+function setErroCampo(fieldId, mensagem) {
+  const input = document.getElementById(fieldId);
+  const field = input?.closest(".field");
+  const errEl = document.getElementById("err-" + fieldId);
+  field?.classList.add("has-error");
+  if (errEl) errEl.textContent = mensagem;
+}
+
+function limparErroCampo(fieldId) {
+  const input = document.getElementById(fieldId);
+  const field = input?.closest(".field");
+  const errEl = document.getElementById("err-" + fieldId);
+  field?.classList.remove("has-error");
+  if (errEl) errEl.textContent = "";
+}
 
 const escolha2faOpcoes = document.getElementById("escolha-2fa-opcoes");
 const painelWebauthn = document.getElementById("painel-2fa-webauthn");
@@ -126,8 +151,29 @@ async function usuarioJaTem2fa() {
 formSenha.addEventListener("submit", async (event) => {
   event.preventDefault();
 
-  const formData = new FormData(formSenha);
-  const senha = formData.get("senha");
+  limparErroCampo("senha");
+  limparErroCampo("confirmar_senha");
+
+  const senha = inputSenha.value;
+  const confirmarSenha = inputConfirmarSenha.value;
+
+  // Pré-filtro client-side espelhando validar_senha() do backend (ver
+  // ../../shared/passwordValidation.js) -- só para feedback rápido.
+  // A validação real e definitiva continua sendo do backend (ver
+  // catch abaixo, que mostra cru o motivo devolvido por
+  // /onboarding/definir-senha quando ele reprovar algo que passou
+  // aqui).
+  const { valida: senhaValida, mensagem: mensagemSenha } = validarSenha(senha);
+  if (!senhaValida) {
+    setErroCampo("senha", mensagemSenha);
+    return;
+  }
+
+  if (senha !== confirmarSenha) {
+    setErroCampo("confirmar_senha", "As senhas não coincidem.");
+    return;
+  }
+
   const botaoSubmit = formSenha.querySelector("button[type=submit]");
 
   botaoSubmit.disabled = true;

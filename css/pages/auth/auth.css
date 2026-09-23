@@ -182,6 +182,57 @@ p.hint {
   border-color: var(--border-focus);
   background: var(--input-bg-focus);
 }
+.field .error-msg {
+  font-size: calc(.7rem * var(--font-scale));
+  color: #ff6b6b;
+  margin-top: 5px;
+  /* Altura sempre reservada -- visibility/opacity em vez de display,
+     para o botão "Continuar" logo abaixo nunca pular de posição
+     quando o erro aparece/some (mesmo padrão de registration.css). */
+  height: 1.4em;
+  line-height: 1.4em;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.field.has-error input {
+  border-color: #ff6b6b;
+  background: rgba(255,107,107,0.06);
+}
+.field.has-error .error-msg {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* ── Toggle de mostrar/ocultar senha (olhinho) ─────────────────
+   Injetado via js/shared/passwordToggle.js -- mesmo bloco usado em
+   registration.css (cadastro de admin), reaproveitado aqui porque o
+   onboarding usa a mesma estrutura .field > input. O wrapper entra
+   entre o .field e o input, então ".field input" acima continua
+   valendo (seletor descendente, não filho direto). */
+.senha-toggle-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.senha-toggle-wrap input {
+  padding-right: 40px;
+}
+.senha-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--muted2);
+  display: flex;
+  align-items: center;
+  transition: color .2s;
+}
+.senha-toggle-btn:hover {
+  color: var(--text-strong);
+}
 
 /* ── Forgot ───────────────────────────────── */
 .forgot { text-align: right; margin: 4px 0 18px; }
