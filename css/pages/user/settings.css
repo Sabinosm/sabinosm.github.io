@@ -749,3 +749,13 @@ body.no-scroll {
 .senha-toggle-btn:hover {
   color: var(--color-text-primary, #333);
 }
+
+#prof-modal-acoes-admin{
+ margin-left: 1em;
+ margin-right: 1em;
+ text-align: center;
+}
+
+#prof-modal-acoes-admin p{
+ margin-top: 1em;
+}

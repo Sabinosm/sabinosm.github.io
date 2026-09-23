@@ -58,3 +58,7 @@
     justify-content: flex-end;
     margin-top: 16px;
   }
+
+  #stepup-form-totp{
+    margin-top: 1em;
+  }
