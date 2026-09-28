@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Catálogo de Protocolos</title>
+<script src="../../../../js/sharedConfig/themeLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminCatalogos.css">
+<base target="_blank">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1>Catálogo de Protocolos</h1>
+        <p class="main-subtitle">Escores, árvores de triagem e PCDTs disponíveis para a instituição</p>
+      </div>
+    </header>
+
+    <section class="section">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="busca-protocolo" placeholder="Buscar por nome ou sigla">
+          </div>
+          <button class="btn-filter" id="btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Filtros
+          </button>
+        </div>
+
+        <!-- Painel de filtros — espelha os query params reais do back:
+             ?tipo_protocolo=&escopo_populacao=&escopo_uso=&apenas_liberados= -->
+        <div class="filter-panel" id="filter-panel">
+          <div class="filter-field">
+            <label for="filtro-tipo-protocolo">Tipo de protocolo</label>
+            <select id="filtro-tipo-protocolo">
+              <option value="">Todos</option>
+              <option value="escore-ponderado">Escore ponderado</option>
+              <option value="arvore-decisao">Árvore de decisão</option>
+              <option value="regra-categorica">Regra categórica</option>
+              <option value="composicao-modulos">Composição de módulos</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="filtro-escopo-populacao">População</label>
+            <select id="filtro-escopo-populacao">
+              <option value="">Todas</option>
+              <option value="adulto">Adulto</option>
+              <option value="pediatrico">Pediátrico</option>
+              <option value="obstetrico">Obstétrico</option>
+              <option value="neonatal">Neonatal</option>
+              <option value="universal">Universal</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="filtro-escopo-uso">Uso</label>
+            <select id="filtro-escopo-uso">
+              <option value="">Todos</option>
+              <option value="triagem">Triagem</option>
+              <option value="consulta">Consulta</option>
+              <option value="ambos">Triagem e consulta</option>
+            </select>
+          </div>
+          <div class="filter-field filter-field--checkbox">
+            <input type="checkbox" id="filtro-apenas-liberados">
+            <label for="filtro-apenas-liberados">Somente liberados pela instituição</label>
+          </div>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="btn-limpar-filtros" type="button">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="catalog-list" id="lista-protocolos">
+        <!-- Preenchido dinamicamente por adminCatalogosLista.js -->
+      </div>
+
+      <div class="pagination" id="paginacao">
+        <!-- Preenchido dinamicamente por adminCatalogosLista.js -->
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== DRAWER DE DETALHE DO PROTOCOLO =====
+     Mesmo padrão de overlay dos modais (settings.css), mas como
+     painel lateral direito -- abre por cima da listagem sem tirar o
+     usuário da página. Corpo preenchido por adminCatalogosDetalhe.js. -->
+<div class="catalogo-drawer-overlay" id="catalogo-drawer-overlay" aria-hidden="true">
+  <aside class="catalogo-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-nome">
+    <button class="settings-close catalogo-drawer-close" id="catalogo-drawer-close" aria-label="Fechar" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <div class="catalogo-drawer-corpo">
+      <span class="catalog-badge catalog-badge--sigla" id="drawer-sigla"></span>
+      <h2 class="catalogo-drawer-nome" id="drawer-nome"></h2>
+      <div class="catalogo-drawer-badges" id="drawer-badges"></div>
+
+      <!-- Ações por papel -- mesmas opções do card, contextualizadas -->
+      <div class="catalogo-drawer-acoes" id="drawer-acoes"></div>
+
+      <section class="catalogo-drawer-secao" id="secao-o-que-e">
+        <h3 class="catalogo-drawer-secao-titulo">O que é</h3>
+        <p class="catalogo-drawer-texto" id="drawer-o-que-e"></p>
+      </section>
+
+      <section class="catalogo-drawer-secao" id="secao-quando-usar">
+        <h3 class="catalogo-drawer-secao-titulo">Quando usar</h3>
+        <p class="catalogo-drawer-texto" id="drawer-quando-usar"></p>
+      </section>
+
+      <section class="catalogo-drawer-secao" id="secao-como-interpretar">
+        <h3 class="catalogo-drawer-secao-titulo">Como interpretar</h3>
+        <p class="catalogo-drawer-texto" id="drawer-como-interpretar"></p>
+      </section>
+
+      <section class="catalogo-drawer-secao">
+        <h3 class="catalogo-drawer-secao-titulo">Informações do protocolo</h3>
+        <dl class="catalogo-drawer-meta">
+          <div class="catalogo-drawer-meta-item">
+            <dt>Órgão emissor</dt>
+            <dd id="drawer-orgao">—</dd>
+          </div>
+          <div class="catalogo-drawer-meta-item">
+            <dt>Versão vigente</dt>
+            <dd id="drawer-versao">—</dd>
+          </div>
+          <div class="catalogo-drawer-meta-item">
+            <dt>Em vigor desde</dt>
+            <dd id="drawer-vigencia">—</dd>
+          </div>
+          <div class="catalogo-drawer-meta-item">
+            <dt>Referência bibliográfica</dt>
+            <dd id="drawer-referencia">—</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+  </aside>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
+<script type="module" src="../../../../js/sharedConfig/settingsLoader.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminCatalogos/adminCatalogosLista.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminCatalogos/adminCatalogosDetalhe.js"></script>
+<script type="module" src="../../../../js/sharedConfig/initHomePage.js"></script>
+<script src="../../../../js/sharedConfig/sidebarLoader.js"></script>
+</body>
+</html>
