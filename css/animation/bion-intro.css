@@ -1,31 +1,77 @@
 /* ═══════════════════════════════════════════════
    B-ÍON · INTRO (entrada do site)
    Requer: bion-core.css
+   As durações (--atom-in, --expand, --char) são definidas pelo
+   bion-intro.js (constante SLOW), os valores abaixo são só reserva.
    ═══════════════════════════════════════════════ */
 
-#bion-intro { flex-direction: column; gap: 0; }
+#bion-intro { flex-direction: column; gap: 0; transition-duration: .85s; } /* fade 30% mais lento (só na intro) */
 
 .bion-intro-logo {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center;
   font-family: 'Lexend Deca', 'Plus Jakarta Sans', sans-serif;
 }
-.bion-intro-logo .bion-atom { --atom-size: 96px; }
-.bion-intro-logo .bion-b { font-size: 40px; }
 
+/* ── 1. ÁTOMO ENTRA SOZINHO NO CENTRO ──
+   o B surge com fade + zoom, as órbitas se desenham e os elétrons aparecem */
+.bion-intro-logo .bion-atom {
+  --atom-size: 144px;
+  animation: bion-atom-in var(--atom-in, 1105ms) cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes bion-atom-in {
+  from { opacity: 0; transform: scale(.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+#bion-intro .bion-atom path {
+  stroke-dasharray: 130; stroke-dashoffset: 130; /* comprimento da elipse ≈ 128 */
+  animation: bion-draw calc(var(--atom-in, 1105ms) * 1.1) ease-out .1s forwards;
+}
+@keyframes bion-draw { to { stroke-dashoffset: 0; } }
+
+#bion-intro .bion-atom circle {
+  opacity: 0;
+  animation: bion-fade calc(var(--atom-in, 1105ms) * .6) ease forwards;
+  animation-delay: calc(var(--atom-in, 1105ms) * .5);
+}
+@keyframes bion-fade { to { opacity: 1; } }
+
+/* ── 2. O RESTO DAS LETRAS ENTRA PELA DIREITA ──
+   a caixa do texto abre de 0 → 100% da largura (grid 0fr → 1fr);
+   como o conjunto é centralizado, o átomo é empurrado suavemente para a esquerda */
 .bion-intro-word {
-  font-size: 40px; font-weight: 700; color: #F5F5F5;
+  display: grid; grid-template-columns: 0fr;
+  transition: grid-template-columns var(--expand, 1170ms) cubic-bezier(.22,1,.36,1);
+  font-size: 60px; font-weight: 700; color: #F5F5F5;
   letter-spacing: -0.02em; white-space: nowrap;
-  min-width: 0; /* cresce conforme digita */
 }
-.bion-intro-word span {
-  display: inline-block; opacity: 0; transform: translateY(6px);
-  animation: bion-char .28s ease forwards;
+#bion-intro.bion-expand .bion-intro-word { grid-template-columns: 1fr; }
+
+.bion-intro-word-inner {
+  min-width: 0; overflow: hidden;
+  padding: .2em 0; margin: -.2em 0; /* folga vertical p/ o acento do "í" não cortar */
 }
-@keyframes bion-char { to { opacity: 1; transform: translateY(0); } }
+.bion-intro-word span { display: inline-block; opacity: 0; }
+.bion-intro-word span:first-child { margin-left: 9px; } /* espaço entre átomo e texto */
 
-/* fase 2: o overlay inteiro (logo + fundo) esmaece via .bion-hidden (bion-core.css) */
+#bion-intro.bion-expand .bion-intro-word span {
+  animation: bion-char var(--char, 455ms) cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes bion-char {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 
-/* respeita usuários que preferem menos movimento */
+/* fase 3: o overlay inteiro (logo + fundo) esmaece via .bion-hidden (bion-core.css) */
+
+/* respeita usuários que preferem menos movimento: tudo já aparece montado */
 @media (prefers-reduced-motion: reduce) {
-  .bion-intro-word span { animation: none; opacity: 1; transform: none; }
+  .bion-intro-logo .bion-atom,
+  #bion-intro .bion-atom path,
+  #bion-intro .bion-atom circle,
+  #bion-intro.bion-expand .bion-intro-word span { animation: none; }
+  #bion-intro .bion-atom path { stroke-dashoffset: 0; }
+  #bion-intro .bion-atom circle { opacity: 1; }
+  .bion-intro-word { grid-template-columns: 1fr; transition: none; }
+  .bion-intro-word span { opacity: 1; }
 }

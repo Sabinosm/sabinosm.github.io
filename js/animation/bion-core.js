@@ -11,9 +11,12 @@
   /* caminho elíptico da órbita (rx 27 × ry 10, centro 32,32) */
   var ORBIT_PATH = 'M 5 32 A 27 10 0 1 1 59 32 A 27 10 0 1 1 5 32 Z';
 
-  function buildAtom() {
+  function buildAtom(slow) {
+    slow = slow || 1; /* multiplicador de duração: 1.3 = 30% mais lento */
     uid++;
     function orbit(rot, dur, begin) {
+      dur = (dur * slow).toFixed(2) + 's';
+      begin = (begin * slow).toFixed(2) + 's';
       var id = 'bion-orb-' + uid + '-' + rot;
       return (
         '<g transform="rotate(' + rot + ' 32 32)">' +
@@ -29,9 +32,9 @@
     return (
       '<div class="bion-atom">' +
         '<svg viewBox="0 0 64 64">' +
-          orbit(0,   '3.4s', '0s') +
-          orbit(60,  '5.1s', '-1.7s') +
-          orbit(120, '6.8s', '-3.2s') +
+          orbit(0,   3.4, 0) +
+          orbit(60,  5.1, -1.7) +
+          orbit(120, 6.8, -3.2) +
         '</svg>' +
         '<div class="bion-b">B</div>' +
       '</div>'
