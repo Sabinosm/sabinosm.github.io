@@ -442,8 +442,8 @@ p.hint {
 }
 
 #logo-bion-svg {
-  width: 44px;
-  height: 44px;
+  width: 37px;
+  height: 37px;
   display: inline-block;
   vertical-align: middle;
   opacity: 1; /* A opacidade geral permanece total, pois cada elemento interno (<circle>, <ellipse>) já possui a sua própria opacidade definida no SVG */

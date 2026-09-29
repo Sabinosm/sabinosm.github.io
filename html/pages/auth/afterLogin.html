@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Confirmando login — Bion</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;500;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../../../css/pages/auth/auth.css"/>
+  <link rel="stylesheet" href="../../../css/shared/bion-core.css"/>
+  <link rel="stylesheet" href="../../../css/shared/bion-loader.css"/>
   <link rel="icon" type="image/svg+xml" href="../../../assets/imgs/favicon.svg">
 </head>
 <body>
@@ -15,8 +17,14 @@
 <div class="card">
 
   <div class="logo">
-    <img src="../../../assets/imgs/logo.svg" alt="" id="logo-bion-svg">
-    <span class="logo-text">B-íon</span>
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="14" cy="14" r="2.3" fill="#fff"/>
+      <ellipse cx="14" cy="14" rx="11" ry="4.8" stroke="#fff" stroke-width=".8" opacity=".3" transform="rotate(-35 14 14)"/>
+      <ellipse cx="14" cy="14" rx="11" ry="4.8" stroke="#fff" stroke-width=".8" opacity=".3" transform="rotate(85 14 14)"/>
+      <circle cx="25" cy="14" r="1.4" fill="#fff" opacity=".6"/>
+      <circle cx="6"  cy="11" r="1.4" fill="#fff" opacity=".6"/>
+    </svg>
+    <span class="logo-text">B-íon AI</span>
   </div>
 
     <div class="loading-wrap">
@@ -45,6 +53,9 @@
 
 </div>
 
+<!-- Loader B-íon (scripts clássicos: expõem window.Bion antes dos módulos abaixo) -->
+<script src="../../../js/shared/bion-core.js"></script>
+<script src="../../../js/shared/bion-loader.js"></script>
 <script type="module" src="../../../js/shared/particles.js"></script>
 <script type="module" src="../../../js/shared/feedback.js"></script>
 <script type="module" src="../../../js/pages/auth/afterLogin.js"></script>

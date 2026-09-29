@@ -75,12 +75,30 @@ const btnMfaEscolherTotp = document.getElementById("btn-mfa-escolher-totp");
 // por erro do WebAuthn (para saber se vale tentar TOTP em seguida).
 let ultimosMetodosDisponiveis = [];
 
+// Loader B-íon (bion-loader.js, carregado como script clássico no HTML).
+// Aparece SÓ depois que o login foi confirmado (status "completa" ou
+// 2FA aprovado), cobrindo a espera do /me + a navegação para a home.
+// Se o bion-loader.js não carregar, tudo segue funcionando sem ele.
+let esconderLoadingBion = null;
+
+function mostrarLoadingBion() {
+  if (esconderLoadingBion || !window.Bion?.showLoading) return;
+  esconderLoadingBion = window.Bion.showLoading(); // sem duração: fica até chamarmos hide()
+}
+
+function ocultarLoadingBion() {
+  if (!esconderLoadingBion) return;
+  esconderLoadingBion();
+  esconderLoadingBion = null;
+}
+
 // pageshow dispara tanto no carregamento normal quanto quando a
 // página é restaurada do bfcache do navegador (ex.: botão "voltar"
 // depois de já ter saído desta página). DOMContentLoaded sozinho não
 // dispara nesse segundo caso, o que deixava o spinner girando pra
 // sempre -- a checagem de status nunca era refeita.
 window.addEventListener("pageshow", async () => {
+  ocultarLoadingBion(); // voltou do bfcache com o loader ainda visível
   await tratarPosLogin();
 });
 
@@ -184,6 +202,8 @@ function decidirDestino(ehAdmin, funcaoClinica) {
 async function irParaHomeDoUsuario() {
   let payload;
 
+  mostrarLoadingBion();
+
   try {
     const resp = await fetch(`${URL_BASE_API}/auth/me`, {
       method: "GET",
@@ -198,6 +218,7 @@ async function irParaHomeDoUsuario() {
     payload = corpo.data ?? corpo; // json_success envelopa em { data, message }
   } catch (erro) {
     console.error("Falha ao buscar dados do usuário em /me:", erro);
+    ocultarLoadingBion(); // a mensagem de erro aparece no card, então o loader sai
     exibirMensagem("Não foi possível carregar seus dados. Tente entrar novamente.", "erro");
     setTimeout(() => { window.location.href = ROTA_LOGIN; }, 2000);
     return;
