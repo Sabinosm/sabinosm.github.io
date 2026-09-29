@@ -12,10 +12,12 @@
 //   { uuid, nome_protocolo, sigla, tipo_protocolo, escopo_populacao,
 //     escopo_uso, liberado_pela_empresa, politica }
 //
-// Escopo deste degrau (ver plano): MOSTRAR o catálogo e as OPÇÕES por
-// papel -- executar, destaque pessoal e liberação institucional são
-// renderizados mas ainda não funcionam (avisam "em breve" via toast).
-// Detalhe já funciona de verdade, porque é só leitura (GET /<uuid>).
+// Escopo deste degrau (ver plano): MOSTRAR o catálogo e as OPÇÕES de
+// configuração -- destaque pessoal (todos) e liberação institucional
+// (admin) são renderizados mas ainda não funcionam (avisam "em breve"
+// via toast). A EXECUÇÃO de protocolos não acontece nesta página: vive
+// na página de consultas. Detalhe já funciona de verdade, porque é só
+// leitura (GET /<uuid>).
 //
 // Paginação: GET /catalogo/filtrar usa 'pagina' como NÚMERO DA
 // PÁGINA (0, 1, 2...); o backend multiplica por 20 internamente. O
@@ -44,7 +46,7 @@ import {
   rotuloTipoProtocolo,
 } from "./adminCatalogosLabels.js";
 import { abrirDrawerProtocolo } from "./adminCatalogosDetalhe.js";
-import { souAdmin, souProfissionalDeSaude } from "./adminCatalogosSessao.js";
+import { souAdmin } from "./adminCatalogosSessao.js";
 
 const POR_PAGINA = 20;
 
@@ -237,11 +239,10 @@ function criarEstadoVazio() {
 // ============================================
 // Card de protocolo
 //
-// As opções são renderizadas por papel (is_admin / funcao_clinica do
-// cache de sessão), mas NENHUMA ação é funcional neste degrau, exceto
-// "Detalhes" -- as demais avisam "em breve" via toast. O back protege
-// as rotas reais (requer_papel_clinico / gate institucional), então
-// esconder o botão aqui é só experiência, não segurança.
+// As opções são renderizadas por papel (is_admin do cache de sessão),
+// mas NENHUMA ação é funcional neste degrau, exceto "Detalhes" -- as
+// demais avisam "em breve" via toast. O back protege as rotas reais,
+// então esconder o botão aqui é só experiência, não segurança.
 // ============================================
 function criarCardProtocolo(p) {
   const card = document.createElement('article');
@@ -284,25 +285,6 @@ function criarCardProtocolo(p) {
   btnDetalhes.textContent = 'Detalhes';
   btnDetalhes.addEventListener('click', () => abrirDrawerProtocolo(p));
   acoes.appendChild(btnDetalhes);
-
-  if (souProfissionalDeSaude()) {
-    const btnExecutar = document.createElement('button');
-    if (p.liberado_pela_empresa) {
-      btnExecutar.className = 'btn-primary';
-      btnExecutar.textContent = 'Executar';
-      btnExecutar.addEventListener('click', () =>
-        mostrarToast('A execução de protocolos chega no próximo passo.'));
-    } else {
-      // Liberado pela empresa é o ÚNICO gate de execução -- sem ele,
-      // nem mostramos como ação disponível: botão desabilitado com o
-      // motivo. Preferência pessoal nunca bloquearia aqui (ver md).
-      btnExecutar.className = 'btn-primary';
-      btnExecutar.textContent = 'Executar';
-      btnExecutar.disabled = true;
-      btnExecutar.title = 'Protocolo não liberado pela instituição';
-    }
-    acoes.appendChild(btnExecutar);
-  }
 
   // Destaque pessoal: conveniência de interface, não gate -- aparece
   // para qualquer usuário logado. Ainda sem endpoint no back (ver

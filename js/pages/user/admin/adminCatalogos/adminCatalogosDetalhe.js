@@ -4,7 +4,9 @@
 // preenche o overlay #catalogo-drawer-overlay de adminCatalogos.html
 // com a explicação estruturada (o_que_e / quando_usar / como_interpretar),
 // metadados (órgão emissor, versão, vigência, referência) e as mesmas
-// opções por papel do card.
+// opções de configuração do card (destaque pessoal e liberação
+// institucional). A execução NÃO acontece aqui: fica na página de
+// consultas.
 //
 // Dados: o resumo do card (com liberado_pela_empresa e politica) vem
 // junto na chamada -- o detalhe GET /<uuid> NÃO repete esses campos
@@ -13,7 +15,7 @@
 //
 // A explicação vem do seed (Caminho A -- schema ExplicacaoProtocolo) e
 // é somente leitura; por isso o detalhe já funciona neste degrau,
-// enquanto executar/liberação/destaque seguem como "em breve".
+// enquanto destaque/liberação seguem como "em breve".
 
 import { ApiError, buscarProtocolo } from "./adminCatalogosApi.js";
 import {
@@ -23,7 +25,7 @@ import {
   rotuloTipoProtocolo,
   rotuloTipoResultado,
 } from "./adminCatalogosLabels.js";
-import { souAdmin, souProfissionalDeSaude } from "./adminCatalogosSessao.js";
+import { souAdmin } from "./adminCatalogosSessao.js";
 
 let resumoAtual = null; // item do card que abriu o drawer
 
@@ -111,16 +113,16 @@ function renderizarAcoes(resumo) {
     mostrarToast('A visualização dos campos do protocolo chega em breve.'));
   container.appendChild(btnCampos);
 
-  if (souProfissionalDeSaude()) {
-    const btnExecutar = document.createElement('button');
-    btnExecutar.className = 'btn-primary';
-    btnExecutar.textContent = 'Executar';
-    btnExecutar.disabled = !resumo.liberado_pela_empresa;
-    btnExecutar.title = resumo.liberado_pela_empresa ? '' : 'Protocolo não liberado pela instituição';
-    btnExecutar.addEventListener('click', () =>
-      mostrarToast('A execução de protocolos chega no próximo passo.'));
-    container.appendChild(btnExecutar);
-  }
+  // Destaque pessoal: paridade com a estrela do card. Conveniência de
+  // interface, não gate -- aparece para qualquer usuário logado. Ainda
+  // sem endpoint no back, então só renderiza e avisa.
+  const btnDestaque = document.createElement('button');
+  btnDestaque.className = 'btn-ghost';
+  btnDestaque.textContent = 'Fixar em destaque';
+  btnDestaque.title = 'Destaque pessoal (em breve)';
+  btnDestaque.addEventListener('click', () =>
+    mostrarToast('Preferência pessoal de destaque ainda não está disponível.'));
+  container.appendChild(btnDestaque);
 
   if (souAdmin()) {
     const btnLiberacao = document.createElement('button');
