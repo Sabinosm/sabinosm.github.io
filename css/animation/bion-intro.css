@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════════
+   B-ÍON · INTRO (entrada do site)
+   Requer: bion-core.css
+   ═══════════════════════════════════════════════ */
+
+#bion-intro { flex-direction: column; gap: 0; }
+
+.bion-intro-logo {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Lexend Deca', 'Plus Jakarta Sans', sans-serif;
+}
+.bion-intro-logo .bion-atom { --atom-size: 96px; }
+.bion-intro-logo .bion-b { font-size: 40px; }
+
+.bion-intro-word {
+  font-size: 40px; font-weight: 700; color: #F5F5F5;
+  letter-spacing: -0.02em; white-space: nowrap;
+  min-width: 0; /* cresce conforme digita */
+}
+.bion-intro-word span {
+  display: inline-block; opacity: 0; transform: translateY(6px);
+  animation: bion-char .28s ease forwards;
+}
+@keyframes bion-char { to { opacity: 1; transform: translateY(0); } }
+
+/* fase 2: o overlay inteiro (logo + fundo) esmaece via .bion-hidden (bion-core.css) */
+
+/* respeita usuários que preferem menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  .bion-intro-word span { animation: none; opacity: 1; transform: none; }
+}

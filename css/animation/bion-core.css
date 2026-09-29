@@ -1,0 +1,52 @@
+/* ═══════════════════════════════════════════════
+   B-ÍON · CORE (compartilhado por intro e loader)
+   Fonte sugerida: Lexend Deca (500/700)
+   ═══════════════════════════════════════════════ */
+
+/* ---------- OVERLAY BASE ---------- */
+.bion-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #0A0A0A;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .65s ease, visibility .65s;
+}
+.bion-overlay.bion-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* ---------- ÁTOMO (svg reutilizável) ---------- */
+.bion-atom { position: relative; width: var(--atom-size, 140px); height: var(--atom-size, 140px); }
+.bion-atom svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.bion-atom .bion-b {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Lexend Deca', 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700; color: #F5F5F5;
+  font-size: calc(var(--atom-size, 140px) * 0.42);
+  line-height: 1; user-select: none;
+}
+
+/* ---------- FUNDO (aplicado por Bion.createBackground) ----------
+   grade sutil (some nas bordas) + brilho central + canvas de partículas */
+.bion-bg { overflow: hidden; }
+.bion-bg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.bion-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(var(--gray-1, #1c1c1f) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gray-1, #1c1c1f) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: .35;
+  -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 75%);
+          mask-image: radial-gradient(circle at center, black 0%, transparent 75%);
+  pointer-events: none;
+}
+.bion-bg::after {
+  content: '';
+  position: absolute; top: 50%; left: 50%;
+  width: 640px; height: 640px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, var(--glow, rgba(255,255,255,.04)) 0%, transparent 70%);
+  pointer-events: none;
+}
+/* conteúdo do overlay fica acima da grade, partículas e brilho */
+.bion-bg > :not(.bion-bg-canvas) { position: relative; z-index: 1; }

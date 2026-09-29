@@ -1,0 +1,26 @@
+/* ═══════════════════════════════════════════════
+   B-ÍON · LOADER (carregando)
+   Requer: bion-core.css
+   ═══════════════════════════════════════════════ */
+
+#bion-loading { flex-direction: column; gap: 26px; }
+#bion-loading .bion-atom { --atom-size: 110px; }
+#bion-loading .bion-b { font-size: 46px; }
+
+.bion-loader-text {
+  font-family: 'Lexend Deca', 'Plus Jakarta Sans', sans-serif;
+  font-size: .82rem; font-weight: 500; color: #A0A0A0;
+  letter-spacing: .18em; text-transform: uppercase;
+  display: flex; align-items: baseline; gap: 2px;
+}
+.bion-loader-text i {
+  font-style: normal; opacity: 0;
+  animation: bion-ellipsis 1.2s infinite;
+}
+.bion-loader-text i:nth-child(2) { animation-delay: .2s; }
+.bion-loader-text i:nth-child(3) { animation-delay: .4s; }
+@keyframes bion-ellipsis { 0%,60%,100% { opacity: 0; } 30% { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bion-loader-text i { animation-duration: 3s; }
+}
