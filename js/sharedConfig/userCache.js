@@ -16,6 +16,10 @@
 //   userCacheHelpers/userCacheConfiguracoes.js
 //     dados.configuracoes.design e dados.configuracoes.preferencias.
 //
+//   userCacheHelpers/userCacheProtocolos.js
+//     dados.configuracoes.protocolos (favoritos e padrão pessoal, por
+//     sigla; atualizado pela página de catálogo de protocolos).
+//
 //   userCacheHelpers/userCacheWebauthn.js
 //     dados.webauthn.credenciais (substituição total da lista).
 //
@@ -62,6 +66,8 @@ export {
   atualizarDesignCache,
   atualizarPreferenciasCache,
 } from './userCacheHelpers/userCacheConfiguracoes.js';
+
+export { atualizarProtocoloCache } from './userCacheHelpers/userCacheProtocolos.js';
 
 export { atualizarCredenciaisWebauthnCache } from './userCacheHelpers/userCacheWebauthn.js';
 
