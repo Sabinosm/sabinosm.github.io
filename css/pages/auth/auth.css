@@ -88,14 +88,14 @@ canvas {
 .logo svg { width:26px; height:26px; }
 .logo-text {
   font-family: 'Share Tech Mono', monospace;
-  font-size: calc(.95rem * var(--font-scale));
+  font-size: .95rem;
   letter-spacing: .2em;
   color: var(--text-strong);
 }
 
 /* ── Headings ─────────────────────────────── */
 h1 {
-  font-size: calc(1.35rem * var(--font-scale));
+  font-size: 1.35rem;
   font-weight: 600;
   color: var(--text);
   text-align: center;
@@ -104,13 +104,13 @@ h1 {
 }
 .sub {
   text-align: center;
-  font-size: calc(.76rem * var(--font-scale));
+  font-size: .76rem;
   color: var(--muted);
   letter-spacing: .05em;
   margin-bottom: 28px;
 }
 p.hint {
-  font-size: calc(.78rem * var(--font-scale));
+  font-size: .78rem;
   color: var(--muted2);
   text-align: center;
   line-height: 1.5;
@@ -130,7 +130,7 @@ p.hint {
   padding: 11px;
   color: var(--text);
   font-family: 'Inter', sans-serif;
-  font-size: calc(.85rem * var(--font-scale));
+  font-size: .85rem;
   font-weight: 500;
   letter-spacing: .02em;
   cursor: pointer;
@@ -148,7 +148,7 @@ p.hint {
   gap: 12px;
   margin: 18px 0;
   color: var(--muted);
-  font-size: calc(.7rem * var(--font-scale));
+  font-size: .7rem;
   letter-spacing: .1em;
 }
 .divider::before,.divider::after {
@@ -160,7 +160,7 @@ p.hint {
 .field { margin-bottom: 10px; text-align: left; }
 .field label {
   display: block;
-  font-size: calc(.76rem * var(--font-scale));
+  font-size: .76rem;
   color: var(--muted2);
   margin-bottom: 6px;
 }
@@ -172,7 +172,7 @@ p.hint {
   padding: 11px 14px;
   color: var(--text);
   font-family: 'Inter', sans-serif;
-  font-size: calc(.86rem * var(--font-scale));
+  font-size: .86rem;
   outline: none;
   transition: border-color .2s, background .2s;
 }
@@ -182,7 +182,7 @@ p.hint {
   background: var(--input-bg-focus);
 }
 .field .error-msg {
-  font-size: calc(.7rem * var(--font-scale));
+  font-size: .7rem;
   color: #ff6b6b;
   margin-top: 5px;
   /* Altura sempre reservada -- visibility/opacity em vez de display,
@@ -236,7 +236,7 @@ p.hint {
 /* ── Forgot ───────────────────────────────── */
 .forgot { text-align: right; margin: 4px 0 18px; }
 .forgot a {
-  font-size: calc(.74rem * var(--font-scale));
+  font-size: .74rem;
   color: var(--muted2);
   text-decoration: none;
   transition: color .2s;
@@ -252,7 +252,7 @@ p.hint {
   padding: 12px;
   color: var(--btn-text);
   font-family: 'Inter', sans-serif;
-  font-size: calc(.88rem * var(--font-scale));
+  font-size: .88rem;
   font-weight: 600;
   letter-spacing: .07em;
   cursor: pointer;
@@ -269,7 +269,7 @@ p.hint {
 .footer {
   text-align: center;
   margin-top: 20px;
-  font-size: calc(.76rem * var(--font-scale));
+  font-size: .76rem;
   color: var(--muted);
 }
 .footer a {
@@ -282,7 +282,7 @@ p.hint {
 /* ── Feedback ─────────────────────────────── */
 #mensagemFeedback {
   text-align: center;
-  font-size: calc(.78rem * var(--font-scale));
+  font-size: .78rem;
   margin-top: 14px;
   min-height: 1em;
 }
@@ -329,7 +329,7 @@ p.hint {
   padding: 10px;
   color: var(--muted2);
   font-family: 'Inter', sans-serif;
-  font-size: calc(.82rem * var(--font-scale));
+  font-size: .82rem;
   font-weight: 500;
   cursor: pointer;
   transition: color .2s, background .2s;
@@ -366,7 +366,7 @@ p.hint {
   background: var(--hover-bg);
 }
 .btn-2fa-opcao strong {
-  font-size: calc(.88rem * var(--font-scale));
+  font-size: .88rem;
   font-weight: 600;
   color: var(--text-strong);
 }
@@ -375,7 +375,7 @@ p.hint {
      é uma legenda inline dentro do cartão, não o subtítulo da tela. */
   text-align: left;
   margin-bottom: 0;
-  font-size: calc(.74rem * var(--font-scale));
+  font-size: .74rem;
   color: var(--muted2);
   letter-spacing: normal;
   line-height: 1.4;
@@ -398,7 +398,7 @@ p.hint {
 
 #totp-secret-texto {
   text-align: center;
-  font-size: calc(.74rem * var(--font-scale));
+  font-size: .74rem;
   color: var(--muted2);
   word-break: break-all;
   margin-bottom: 18px;
@@ -413,7 +413,7 @@ p.hint {
 .field-group { margin-bottom: 10px; text-align: left; }
 .field-label {
   display: block;
-  font-size: calc(.76rem * var(--font-scale));
+  font-size: .76rem;
   color: var(--muted2);
   margin-bottom: 6px;
 }
@@ -425,7 +425,7 @@ p.hint {
   padding: 11px 14px;
   color: var(--text);
   font-family: 'Inter', sans-serif;
-  font-size: calc(.86rem * var(--font-scale));
+  font-size: .86rem;
   outline: none;
   transition: border-color .2s, background .2s;
 }
