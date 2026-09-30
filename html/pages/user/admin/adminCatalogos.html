@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>B-íon — Catálogo de Protocolos</title>
-<script src="../../../../js/sharedConfig/preferenciasLoader.js"></script>
+<script src="../../../../js/sharedConfig/themeLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminCatalogos.css">
@@ -120,8 +120,20 @@
       <h2 class="catalogo-drawer-nome" id="drawer-nome"></h2>
       <div class="catalogo-drawer-badges" id="drawer-badges"></div>
 
-      <!-- Ações por papel -- mesmas opções do card, contextualizadas -->
       <div class="catalogo-drawer-acoes" id="drawer-acoes"></div>
+
+      <!-- Blocos de configuração -- preenchidos por adminCatalogosDetalhe.js.
+           Pessoal: só médico/enfermeiro (o back manda favorito = null aos demais).
+           Governança: só admin. Um médico-admin vê os dois. -->
+      <section class="catalogo-drawer-config" id="drawer-config-pessoal" hidden>
+        <h3 class="catalogo-drawer-secao-titulo">Minha configuração</h3>
+        <div id="drawer-config-pessoal-corpo"></div>
+      </section>
+
+      <section class="catalogo-drawer-config" id="drawer-config-admin" hidden>
+        <h3 class="catalogo-drawer-secao-titulo">Governança da instituição</h3>
+        <div id="drawer-config-admin-corpo"></div>
+      </section>
 
       <section class="catalogo-drawer-secao" id="secao-o-que-e">
         <h3 class="catalogo-drawer-secao-titulo">O que é</h3>
