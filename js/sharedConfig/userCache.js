@@ -28,7 +28,7 @@
 // afterLogin.js, logo após o /me do login. initHomePage.js lê esse
 // mesmo valor em toda navegação de página e passa pra
 // preencherPainelPerfil.js, que trata como fonte de verdade pra
-// popular a UI (inclusive tema, ver preencherTema em
+// popular a UI (inclusive tema, ver preencherPreferencias em
 // preencherPerfil.js, que também escreve em localStorage a partir
 // dele).
 //
@@ -39,7 +39,7 @@
 // visualmente a mudança (ela continua salva no backend, só não
 // aparece até o próximo login). Foi exatamente o bug observado com
 // o tema antes deste módulo existir: localStorage era atualizado no
-// save, mas sessionStorage não, e preencherTema() sobrescrevia o
+// save, mas sessionStorage não, e preencherPreferencias() sobrescrevia o
 // localStorage de volta com o valor velho do sessionStorage na
 // página seguinte.
 //
