@@ -70,7 +70,7 @@
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   font-family: inherit;
   padding: 11px 14px 11px 40px;
   border-radius: var(--radius-sm);
@@ -93,7 +93,7 @@
   border: 1px solid var(--border);
   padding: 11px 16px;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -148,7 +148,7 @@
 }
 
 .filter-field label {
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text-muted);
 }
@@ -158,7 +158,7 @@
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   font-family: inherit;
   padding: 8px 10px;
   border-radius: var(--radius-sm);
@@ -201,14 +201,14 @@
 
 .aud-card-nome {
   margin: 0;
-  font-size: 15px;
+  font-size: calc(15px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text-strong);
 }
 
 .aud-card-evento {
   margin: 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
   display: flex;
   align-items: baseline;
@@ -232,11 +232,11 @@
 .aud-card-evento-data {
   margin-left: auto;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
 }
 
 .aud-loading {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
   text-align: center;
 }
@@ -252,7 +252,7 @@
 }
 
 .pagination-info {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
 }
 
@@ -264,7 +264,7 @@
 
 .pagination-ellipsis {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   padding: 0 4px;
 }
 
@@ -279,7 +279,7 @@
   border: 1px solid var(--border);
   color: var(--text-muted);
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
@@ -311,7 +311,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
 }
 
@@ -339,13 +339,13 @@
 }
 
 .empty-state-title {
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text);
 }
 
 .empty-state-text {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   max-width: 320px;
 }
 
@@ -369,13 +369,13 @@
 
 .detalhe-nome {
   margin: 0;
-  font-size: 18px;
+  font-size: calc(18px * var(--font-scale, 1));
   font-weight: 600;
 }
 
 .detalhe-sub {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
 }
 
@@ -406,14 +406,14 @@
 }
 
 .detalhe-filtros-sep {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
 }
 
 .field-input--sm {
   width: auto;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
 }
 
 .field-input--grow {
@@ -423,7 +423,7 @@
 
 .btn-primary--sm {
   padding: 8px 14px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
 }
 
 /* ===== Seletor segmentado (Ambos / Acessos / Alterações) ===== */
@@ -441,7 +441,7 @@
   border: none;
   background: transparent;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   font-weight: 600;
   font-family: inherit;
   padding: 6px 16px;
@@ -475,7 +475,7 @@
 
 .log-bloco-titulo {
   margin: 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text-strong);
 }
@@ -510,20 +510,20 @@
 .log-item-frase {
   flex: 1;
   min-width: 0;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text);
   word-break: break-word;
 }
 
 .log-item-meta {
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   color: var(--text-muted);
   font-family: monospace;
 }
 
 .log-item-data {
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   color: var(--text-muted);
 }
 
@@ -533,7 +533,7 @@
   border: none;
   padding: 0;
   margin-top: 4px;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   font-weight: 600;
   font-family: inherit;
   color: var(--accent);
@@ -551,7 +551,7 @@
   margin-top: 6px;
   padding-top: 8px;
   border-top: 1px dashed var(--border);
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
 }
 
 .log-diff-row {
@@ -593,7 +593,7 @@
   align-items: center;
   padding: 2px 8px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
   font-weight: 600;
   white-space: nowrap;
   background: var(--status-bg);
@@ -628,7 +628,7 @@
 /* ===== Feedback (erro de período / falha de API) ===== */
 .aud-feedback {
   display: none;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   margin-bottom: 14px;

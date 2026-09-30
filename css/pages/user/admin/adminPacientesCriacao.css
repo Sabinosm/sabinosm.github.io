@@ -34,7 +34,7 @@
 }
 
 .creation-section-title {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;

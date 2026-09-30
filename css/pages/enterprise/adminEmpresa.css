@@ -41,7 +41,7 @@
    (registration.css): título de seção + campos em grade, para os dois
    formulários lerem como a mesma família visual. */
 .section-label {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -141,7 +141,7 @@
    é sinal real de erro, não decoração). */
 .error-msg {
   color: var(--status-danger-fg, #e5484d);
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   margin-top: 4px;
   min-height: 14px;
 }
