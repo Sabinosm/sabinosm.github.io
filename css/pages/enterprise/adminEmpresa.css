@@ -14,7 +14,7 @@
   align-items: center;
   /* ocupa a altura visível abaixo do header da página, para o card
      centralizar de verdade na tela, não só na largura */
-  min-height: calc(100vh - 200px);
+   min-height: calc(100vh - 200px);
 }
 
 .panel-card {
@@ -41,7 +41,7 @@
    (registration.css): título de seção + campos em grade, para os dois
    formulários lerem como a mesma família visual. */
 .section-label {
-  font-size: calc(13px * var(--font-scale, 1));
+  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -141,7 +141,7 @@
    é sinal real de erro, não decoração). */
 .error-msg {
   color: var(--status-danger-fg, #e5484d);
-  font-size: calc(12px * var(--font-scale, 1));
+  font-size: 12px;
   margin-top: 4px;
   min-height: 14px;
 }
