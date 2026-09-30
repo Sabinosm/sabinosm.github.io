@@ -14,13 +14,14 @@
 import { preencherIdentidade, preencherDadosInstitucionais } from './preencherHelpers/preencherIdentidade.js';
 import { preencherDispositivos } from './preencherHelpers/preencherDispositivosWebauthn.js';
 import { preencherTotp } from './preencherHelpers/preencherTotp.js';
-import { preencherTema } from './preencherHelpers/preencherTema.js';
 import { atualizarAvisoUnicoFator } from './preencherHelpers/preencherAvisos.js';
+import { preencherPreferencias } from './preencherHelpers/preencherPreferencias.js';
 
 /**
  * Preenche toda a UI de perfil a partir do payload de /me.
  * @param {{ usuario: object, configuracoes: object, webauthn: object, totp: object|null }} dados
  */
+
 export function preencherPainelPerfil(dados) {
   const { usuario, configuracoes, webauthn, totp } = dados;
 
@@ -29,5 +30,5 @@ export function preencherPainelPerfil(dados) {
   preencherDispositivos(webauthn);
   preencherTotp(totp);
   atualizarAvisoUnicoFator(webauthn, totp);
-  preencherTema(configuracoes);
+  preencherPreferencias(configuracoes); // <-- era preencherTema(configuracoes)
 }

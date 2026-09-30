@@ -1,6 +1,6 @@
 // ============================================
 // B-íon — Modal de Configurações: estado por painel (save-bar),
-// seleção de tema, cancelar e salvar.
+// seleção de tema, escala de fonte, cancelar e salvar.
 // ============================================
 
 import { atualizarDesignCache, atualizarPreferenciasCache } from '../userCache.js';
@@ -8,6 +8,8 @@ import { exibirFeedbackConfiguracoes, limparFeedbackConfiguracoes, exibirFeedbac
 import { montarConfiguracoesParaApi, salvarConfiguracoesNaApi } from './settingsApi.js';
 
 const THEME_STORAGE_KEY = 'bion-theme';
+const FONT_STORAGE_KEY = 'bion-font-size';
+const TAMANHO_FONTE_POR_INDICE = ['pequeno', 'medio', 'grande'];
 
 export function getActivePanel() {
   return document.querySelector('.settings-panel--active');
@@ -36,8 +38,14 @@ document.querySelectorAll('.settings-panel[data-savable]').forEach(panel => {
   });
 
   trackedFields.forEach(el => {
-    el.addEventListener('input', () => refreshSaveBarForActivePanel());
-    el.addEventListener('change', () => refreshSaveBarForActivePanel());
+    el.addEventListener('input', () => {
+      if (el.id === 'f-fonte') aplicarPreviewFonte(el.value);
+      refreshSaveBarForActivePanel();
+    });
+    el.addEventListener('change', () => {
+      if (el.id === 'f-fonte') aplicarPreviewFonte(el.value);
+      refreshSaveBarForActivePanel();
+    });
   });
 });
 
@@ -56,6 +64,30 @@ export function refreshSaveBarForActivePanel() {
   const panel = getActivePanel();
   const savable = panel && panel.hasAttribute('data-savable');
   saveBar.classList.toggle('save-bar--visible', savable && isPanelDirty(panel));
+}
+
+/**
+ * Corrige o "valor de referência" (initialValues) de um campo
+ * [data-track] depois que ele foi preenchido programaticamente com o
+ * valor vindo da API (ver preencherPreferencias.js) -- sem isso, o
+ * campo apareceria como "alterado" na save-bar assim que o modal
+ * fosse aberto, mesmo sem o usuário ter tocado nele. Mesmo papel que
+ * sincronizarUiComTemaAtual (mais abaixo) cumpre para o tema, só que
+ * genérico para qualquer campo [data-track].
+ */
+export function definirValorInicial(elemento, valor) {
+  for (const state of panelState.values()) {
+    if (state.initialValues.has(elemento)) {
+      state.initialValues.set(elemento, valor);
+      return;
+    }
+  }
+}
+
+// ===== Preview da escala de fonte (aba Preferências) =====
+function aplicarPreviewFonte(indice) {
+  const nome = TAMANHO_FONTE_POR_INDICE[Number(indice)];
+  if (nome) document.documentElement.dataset.fontSize = nome;
 }
 
 // ===== Seleção de tema (aba Preferências) =====
@@ -83,7 +115,10 @@ export function revertActivePanel() {
   if (!state) return;
 
   const trackedFields = panel.querySelectorAll('[data-track]');
-  trackedFields.forEach(el => { el.value = state.initialValues.get(el); });
+  trackedFields.forEach(el => {
+    el.value = state.initialValues.get(el);
+    if (el.id === 'f-fonte') aplicarPreviewFonte(el.value); // desfaz o preview de fonte
+  });
 
   if (state.pendingTheme !== null) {
     document.documentElement.dataset.theme = state.initialTheme;
@@ -129,12 +164,12 @@ btnSave.addEventListener('click', async () => {
 
   if (!resultado.ok) {
     exibirFeedbackConfiguracoes(resultado.mensagem, 'erro');
-    // Nota: o preview de tema (aplicado no clique do swatch, ver
-    // sincronizarUiComTemaAtual/theme-option handler) NÃO é revertido
-    // aqui de propósito -- o usuário ainda está com a save-bar aberta
-    // e pode corrigir outro campo e tentar salvar de novo. Se ele
-    // desistir, fechar o modal ou clicar Cancelar chama
-    // revertActivePanel(), que aí sim desfaz o preview.
+    // Nota: os previews de tema e fonte (aplicados no clique do swatch
+    // e no input do slider) NÃO são revertidos aqui de propósito -- o
+    // usuário ainda está com a save-bar aberta e pode corrigir outro
+    // campo e tentar salvar de novo. Se ele desistir, fechar o modal
+    // ou clicar Cancelar chama revertActivePanel(), que aí sim desfaz
+    // os previews.
     return; // mantém campos e save-bar como estavam
   }
 
@@ -146,13 +181,21 @@ btnSave.addEventListener('click', async () => {
     localStorage.setItem(THEME_STORAGE_KEY, state.initialTheme);
   }
 
+  // Escala de fonte não tem "pendingTheme" próprio (é só um [data-track]
+  // normal), então o cache de localStorage é atualizado direto aqui a
+  // partir do payload já confirmado pela API.
+  if (payload['f-fonte'] !== undefined) {
+    const nome = TAMANHO_FONTE_POR_INDICE[Number(payload['f-fonte'])];
+    if (nome) localStorage.setItem(FONT_STORAGE_KEY, nome);
+  }
+
   // Reflete o que acabou de ser confirmado pela API também no
   // snapshot de sessionStorage (bion-dados-usuario), que
   // initHomePage.js relê em toda navegação de página e
   // preencherPainelPerfil.js trata como fonte de verdade.
   //
   // Sem isso, o valor salvo aqui fica correto no backend e em
-  // localStorage (no caso do tema), mas a PRÓXIMA página lê o
+  // localStorage (no caso do tema/fonte), mas a PRÓXIMA página lê o
   // snapshot velho do login via sessionStorage e "desfaz" a mudança
   // visualmente -- foi exatamente o bug observado com o tema antes
   // deste módulo existir. Usamos o mesmo payload já montado para a
@@ -173,10 +216,15 @@ btnSave.addEventListener('click', async () => {
 // ============================================
 // Sincroniza a UI do painel de Preferências com o tema já aplicado.
 // O <html data-theme="..."> em si já foi setado o mais cedo possível
-// por applyTheme.js (carregado no <head>, antes do primeiro paint --
-// evita flash de tema errado enquanto este modal ainda está sendo
-// buscado/injetado). Aqui só marcamos o swatch ativo certo e
+// por preferenciasLoader.js (carregado no <head>, antes do primeiro
+// paint -- evita flash de tema errado enquanto este modal ainda está
+// sendo buscado/injetado). Aqui só marcamos o swatch ativo certo e
 // sincronizamos panelState, que dependem do modal já existir no DOM.
+//
+// Escala de fonte não precisa do equivalente aqui: preencherPreferencias.js
+// (chamado depois que o payload de /me chega) já faz esse trabalho via
+// definirValorInicial, e o valor inicial do slider no HTML já é
+// coerente com data-font-size padrão do CSS.
 // ============================================
 (function sincronizarUiComTemaAtual() {
   const atual = document.documentElement.dataset.theme;

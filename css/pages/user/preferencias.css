@@ -504,3 +504,18 @@
   --status-fg: var(--palette-status-neutral);
   --status-bg: var(--palette-status-neutral-bg);
 }
+
+/* ============================================
+   Escala de fonte -- usado em calc(Xrem * var(--font-scale))
+   por todo o CSS do app (auth.css, settings.css, ...).
+   Este arquivo precisa ser importado/carregado em TODAS as páginas
+   que usam --font-scale, senão a variável cai no fallback (1) e o
+   controle de tamanho de fonte não tem efeito nelas.
+   ============================================ */
+:root {
+  --font-scale: 1;
+}
+
+:root[data-font-size="pequeno"] { --font-scale: 0.875; }
+:root[data-font-size="medio"]   { --font-scale: 1; }
+:root[data-font-size="grande"]  { --font-scale: 1.125; }
