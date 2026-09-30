@@ -1,7 +1,7 @@
 /* adminEmpresa.css
  *
  * Estilos específicos da página Empresa (adminEmpresa.html).
- * Reaproveita os tokens de tema já definidos em themes.css (importado
+ * Reaproveita os tokens de tema já definidos em preferencias.css (importado
  * via adminHomePage.css) -- não redefine cor nenhuma aqui, só compõe
  * layout e a mesma receita neumórfica do .consult-card (borda sólida +
  * sombra dupla suave, para o contorno se manter legível mesmo que a

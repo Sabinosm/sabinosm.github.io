@@ -72,7 +72,7 @@ export function labelResultadoAcesso(valor) {
 // ============================================
 // Badges — devolvem { classe, texto } prontos para montarBadge().
 // As classes aud-badge--* variam só --status-fg/--status-bg, que
-// vêm da paleta de status de themes.css (funciona em todos os temas).
+// vêm da paleta de status de preferencias.css (funciona em todos os temas).
 // ============================================
 export function badgeOperacaoAcesso(valor) {
   switch (valor) {

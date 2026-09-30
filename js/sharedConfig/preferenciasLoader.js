@@ -2,9 +2,9 @@
 //
 // Aplica cedo, antes do primeiro paint, as duas preferências visuais
 // cacheadas em localStorage: tema (data-theme) e escala de fonte
-// (data-font-size). Era dois arquivos (themeLoader.js + fontLoader.js)
+// (data-font-size). Era dois arquivos (preferenciasLoader.js + fontLoader.js)
 // com o mesmo padrão -- consolidado aqui porque preferencias.css
-// (antes themes.css) também juntou as regras dos dois num só lugar.
+// (antes preferencias.css) também juntou as regras dos dois num só lugar.
 //
 // localStorage aqui é só CACHE local para matar o flash de tema/fonte
 // errados -- a fonte de verdade é a API. Assim que o payload de /me
