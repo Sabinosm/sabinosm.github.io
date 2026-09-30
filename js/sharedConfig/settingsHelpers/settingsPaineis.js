@@ -1,14 +1,16 @@
 // ============================================
 // B-íon — Modal de Configurações: estado por painel (save-bar),
-// seleção de tema, escala de fonte, cancelar e salvar.
+// seleção de tema, escala de fonte, idioma, cancelar e salvar.
 // ============================================
 
 import { atualizarDesignCache, atualizarPreferenciasCache } from '../userCache.js';
 import { exibirFeedbackConfiguracoes, limparFeedbackConfiguracoes, exibirFeedbackSucessoTemporario } from './settingsFeedback.js';
 import { montarConfiguracoesParaApi, salvarConfiguracoesNaApi } from './settingsApi.js';
+import { aplicarIdioma } from '../i18n/aplicarIdioma.js';
 
 const THEME_STORAGE_KEY = 'bion-theme';
 const FONT_STORAGE_KEY = 'bion-font-size';
+const IDIOMA_STORAGE_KEY = 'bion-idioma';
 const TAMANHO_FONTE_POR_INDICE = ['pequeno', 'medio', 'grande'];
 
 export function getActivePanel() {
@@ -40,10 +42,12 @@ document.querySelectorAll('.settings-panel[data-savable]').forEach(panel => {
   trackedFields.forEach(el => {
     el.addEventListener('input', () => {
       if (el.id === 'f-fonte') aplicarPreviewFonte(el.value);
+      if (el.id === 'f-idioma') aplicarIdioma(el.value);
       refreshSaveBarForActivePanel();
     });
     el.addEventListener('change', () => {
       if (el.id === 'f-fonte') aplicarPreviewFonte(el.value);
+      if (el.id === 'f-idioma') aplicarIdioma(el.value);
       refreshSaveBarForActivePanel();
     });
   });
@@ -73,7 +77,7 @@ export function refreshSaveBarForActivePanel() {
  * campo apareceria como "alterado" na save-bar assim que o modal
  * fosse aberto, mesmo sem o usuário ter tocado nele. Mesmo papel que
  * sincronizarUiComTemaAtual (mais abaixo) cumpre para o tema, só que
- * genérico para qualquer campo [data-track].
+ * genérico para qualquer campo [data-track] (fonte, idioma, etc).
  */
 export function definirValorInicial(elemento, valor) {
   for (const state of panelState.values()) {
@@ -118,6 +122,7 @@ export function revertActivePanel() {
   trackedFields.forEach(el => {
     el.value = state.initialValues.get(el);
     if (el.id === 'f-fonte') aplicarPreviewFonte(el.value); // desfaz o preview de fonte
+    if (el.id === 'f-idioma') aplicarIdioma(el.value); // desfaz o preview de idioma
   });
 
   if (state.pendingTheme !== null) {
@@ -164,12 +169,12 @@ btnSave.addEventListener('click', async () => {
 
   if (!resultado.ok) {
     exibirFeedbackConfiguracoes(resultado.mensagem, 'erro');
-    // Nota: os previews de tema e fonte (aplicados no clique do swatch
-    // e no input do slider) NÃO são revertidos aqui de propósito -- o
-    // usuário ainda está com a save-bar aberta e pode corrigir outro
-    // campo e tentar salvar de novo. Se ele desistir, fechar o modal
-    // ou clicar Cancelar chama revertActivePanel(), que aí sim desfaz
-    // os previews.
+    // Nota: os previews de tema, fonte e idioma (aplicados no clique
+    // do swatch e no input do slider/select) NÃO são revertidos aqui
+    // de propósito -- o usuário ainda está com a save-bar aberta e
+    // pode corrigir outro campo e tentar salvar de novo. Se ele
+    // desistir, fechar o modal ou clicar Cancelar chama
+    // revertActivePanel(), que aí sim desfaz os previews.
     return; // mantém campos e save-bar como estavam
   }
 
@@ -181,12 +186,16 @@ btnSave.addEventListener('click', async () => {
     localStorage.setItem(THEME_STORAGE_KEY, state.initialTheme);
   }
 
-  // Escala de fonte não tem "pendingTheme" próprio (é só um [data-track]
-  // normal), então o cache de localStorage é atualizado direto aqui a
-  // partir do payload já confirmado pela API.
+  // Fonte e idioma não têm "pendingTheme" próprio (são [data-track]
+  // normais), então o cache de localStorage é atualizado direto aqui
+  // a partir do payload já confirmado pela API.
   if (payload['f-fonte'] !== undefined) {
     const nome = TAMANHO_FONTE_POR_INDICE[Number(payload['f-fonte'])];
     if (nome) localStorage.setItem(FONT_STORAGE_KEY, nome);
+  }
+
+  if (payload['f-idioma'] !== undefined) {
+    localStorage.setItem(IDIOMA_STORAGE_KEY, payload['f-idioma']);
   }
 
   // Reflete o que acabou de ser confirmado pela API também no
@@ -195,7 +204,7 @@ btnSave.addEventListener('click', async () => {
   // preencherPainelPerfil.js trata como fonte de verdade.
   //
   // Sem isso, o valor salvo aqui fica correto no backend e em
-  // localStorage (no caso do tema/fonte), mas a PRÓXIMA página lê o
+  // localStorage (tema/fonte/idioma), mas a PRÓXIMA página lê o
   // snapshot velho do login via sessionStorage e "desfaz" a mudança
   // visualmente -- foi exatamente o bug observado com o tema antes
   // deste módulo existir. Usamos o mesmo payload já montado para a
@@ -221,10 +230,10 @@ btnSave.addEventListener('click', async () => {
 // sendo buscado/injetado). Aqui só marcamos o swatch ativo certo e
 // sincronizamos panelState, que dependem do modal já existir no DOM.
 //
-// Escala de fonte não precisa do equivalente aqui: preencherPreferencias.js
+// Fonte e idioma não precisam do equivalente aqui: preencherPreferencias.js
 // (chamado depois que o payload de /me chega) já faz esse trabalho via
-// definirValorInicial, e o valor inicial do slider no HTML já é
-// coerente com data-font-size padrão do CSS.
+// definirValorInicial, e os valores iniciais do slider/select no HTML
+// já são coerentes com data-font-size/lang padrão da página.
 // ============================================
 (function sincronizarUiComTemaAtual() {
   const atual = document.documentElement.dataset.theme;

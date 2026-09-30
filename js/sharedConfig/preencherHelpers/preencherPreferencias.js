@@ -1,38 +1,21 @@
 // preencherPreferencias.js
 //
-// Sincroniza tema e escala de fonte com o valor vindo do payload
-// (sessionStorage, ver USER_CACHE_KEY em userCache.js -- este payload
-// É o snapshot de /me, não um fetch novo).
-//
-// Era dois arquivos (preencherTema.js + preencherFonte.js) com o
-// mesmo padrão -- consolidado aqui pelo mesmo motivo de
-// preferencias.css e preferenciasLoader.js: tema e fonte são a mesma
-// categoria de preferência (aplicar no <html>, cachear em
-// localStorage, sincronizar o painel de Preferências).
+// Sincroniza tema, escala de fonte e idioma com o valor vindo do
+// payload (sessionStorage, ver USER_CACHE_KEY em userCache.js -- este
+// payload É o snapshot de /me, não um fetch novo).
 
 import { definirValorInicial } from '../settingsHelpers/settingsPaineis.js';
+import { aplicarIdioma } from '../i18n/aplicarIdioma.js';
 
 const THEME_STORAGE_KEY = 'bion-theme';
 const FONT_STORAGE_KEY = 'bion-font-size';
+const IDIOMA_STORAGE_KEY = 'bion-idioma';
 const TAMANHO_FONTE_POR_INDICE = ['pequeno', 'medio', 'grande'];
 
-/**
- * preferenciasLoader.js já aplicou tema e fonte salvos em localStorage
- * antes do primeiro paint (evita flash). Aqui, sobrescrevemos com o
- * valor do snapshot -- cobre o caso de o usuário ter mudado a
- * preferência em outro dispositivo/sessão desde a última vez que este
- * navegador salvou algo em localStorage.
- *
- * IMPORTANTE: desde a introdução de userCache.js, qualquer save de
- * configurações bem-sucedido (ver settings.js) já atualiza este mesmo
- * snapshot via atualizarDesignCache(). Isso garante que os valores
- * lidos aqui nunca ficam "atrás" de uma mudança que o usuário acabou
- * de salvar na aba Preferências -- se ficarem, o bug está na
- * gravação, não aqui.
- */
 export function preencherPreferencias(configuracoes) {
   preencherTema(configuracoes);
   preencherFonte(configuracoes);
+  preencherIdioma(configuracoes);
 }
 
 function preencherTema(configuracoes) {
@@ -44,8 +27,7 @@ function preencherTema(configuracoes) {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, tema);
   } catch {
-    // localStorage indisponível (modo privado restritivo, etc.) --
-    // o tema ainda fica aplicado via data-theme nesta sessão.
+    // localStorage indisponível -- o tema ainda fica aplicado nesta sessão
   }
 
   sincronizarSwatchDoModal(tema);
@@ -60,23 +42,34 @@ function preencherFonte(configuracoes) {
   try {
     localStorage.setItem(FONT_STORAGE_KEY, tamanho);
   } catch {
-    // localStorage indisponível -- fonte ainda fica aplicada nesta sessão
+    // localStorage indisponível -- a fonte ainda fica aplicada nesta sessão
   }
 
   sincronizarSliderDoModal(tamanho);
 }
 
 /**
- * Se o modal de Configurações já estiver no DOM (settingsLoader.js já
- * rodou), marca o swatch de tema ativo e corrige o initialTheme do
- * panelState, para não aparecer como "alteração pendente" na save-bar
- * por causa de uma diferença que já veio resolvida da API.
- *
- * Se o modal ainda não existir, não faz nada aqui -- a
- * auto-sincronização que já existe em settingsPaineis.js
- * (sincronizarUiComTemaAtual, que roda ao final do módulo) cobre esse
- * caso lendo o data-theme já setado acima.
+ * linguagem vem da API como lista (ex: ["pt-BR"]) -- ver
+ * PreferenciasSchema.linguagem no backend. Hoje só o primeiro item é
+ * usado como idioma ativo da UI; a lista existir sugere suporte a
+ * múltiplos idiomas preferidos no futuro, mas aplicarIdioma() só
+ * troca para UM idioma de cada vez.
  */
+function preencherIdioma(configuracoes) {
+  const idioma = configuracoes?.preferencias?.linguagem?.[0];
+  if (!idioma) return;
+
+  aplicarIdioma(idioma);
+
+  try {
+    localStorage.setItem(IDIOMA_STORAGE_KEY, idioma);
+  } catch {
+    // localStorage indisponível -- o idioma ainda fica aplicado nesta sessão
+  }
+
+  sincronizarSelectDoModal(idioma);
+}
+
 function sincronizarSwatchDoModal(tema) {
   const prefsPanel = document.getElementById('panel-preferencias');
   if (!prefsPanel) return;
@@ -86,13 +79,6 @@ function sincronizarSwatchDoModal(tema) {
   });
 }
 
-/**
- * Equivalente ao de cima, mas para o slider de fonte: preenche o
- * valor e corrige o initialValues via definirValorInicial (exportado
- * por settingsPaineis.js), pelo mesmo motivo -- sem isso, a save-bar
- * acusaria "alterado" assim que o modal fosse aberto, mesmo sem o
- * usuário ter tocado no slider.
- */
 function sincronizarSliderDoModal(tamanho) {
   const slider = document.getElementById('f-fonte');
   if (!slider) return;
@@ -102,4 +88,12 @@ function sincronizarSliderDoModal(tamanho) {
 
   slider.value = indice;
   definirValorInicial(slider, String(indice));
+}
+
+function sincronizarSelectDoModal(idioma) {
+  const select = document.getElementById('f-idioma');
+  if (!select) return;
+
+  select.value = idioma;
+  definirValorInicial(select, idioma);
 }
