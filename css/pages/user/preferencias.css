@@ -516,6 +516,6 @@
   --font-scale: 1;
 }
 
-:root[data-font-size="pequeno"] { --font-scale: 0.875; }
+:root[data-font-size="pequeno"] { --font-scale: 0.9; }
 :root[data-font-size="medio"]   { --font-scale: 1; }
-:root[data-font-size="grande"]  { --font-scale: 1.125; }
+:root[data-font-size="grande"]  { --font-scale: 1.1; }
