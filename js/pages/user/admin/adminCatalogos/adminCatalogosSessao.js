@@ -8,11 +8,13 @@
 // e são ortogonais (um médico-admin tem is_admin=True E
 // funcao_clinica='medico' ao mesmo tempo).
 //
-// Na página de catálogo eles decidem quais OPÇÕES aparecem:
-//   - souProfissionalDeSaude() -> botão "Executar" (a execução em si
-//     continua protegida no back por requer_papel_clinico + gate
-//     institucional -- aqui é só renderização);
-//   - souAdmin() -> controle de liberação institucional.
+// Na página de catálogo só souAdmin() decide uma OPÇÃO (controle de
+// liberação institucional). A execução de protocolos NÃO acontece
+// nesta página -- vive na página de consultas --, então
+// souProfissionalDeSaude() não é usado aqui; segue exportado para
+// a página de consultas reaproveitar (a execução continua protegida
+// no back por requer_papel_clinico + gate institucional; no front é
+// só renderização).
 // Ler o catálogo e o detalhe é aberto a qualquer usuário logado,
 // então não há checagem de papel para as ações de estudo.
 
@@ -28,7 +30,7 @@ export function souAdmin() {
 }
 
 /** true se o usuário logado é médico ou enfermeiro (profissional de
- * saúde) -- usado para decidir se a opção "Executar" aparece. */
+ * saúde). Não usado no catálogo; reservado à página de consultas. */
 export function souProfissionalDeSaude() {
   const funcao = lerDadosUsuario()?.funcao_clinica;
   return funcao === "medico" || funcao === "enfermeiro";

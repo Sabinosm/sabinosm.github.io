@@ -1,6 +1,8 @@
 // adminCatalogosApi.js
 //
-// Camada de acesso à API de protocolos (blueprint Flask "protocolo").
+// Camada de acesso à API de protocolos (blueprint Flask "protocolo") e
+// às duas camadas de configuração que a página aciona (preferência
+// pessoal e liberação institucional -- ver as seções ao final).
 // Espelha as rotas usadas pela página de catálogo:
 //
 //   GET  /catalogo/filtrar?tipo_protocolo=&escopo_populacao=&escopo_uso=&apenas_liberados=&pagina=
@@ -28,6 +30,14 @@ import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 // TODO: confirmar o prefixo real de registro do blueprint no app.py.
 const BASE_URL = `${URL_BASE_API}/protocolos`;
 
+// Preferência pessoal do profissional (favoritos e padrão pessoal) --
+// blueprint "configuracao" (main.py: /v1/api/configuracoes).
+const BASE_CONFIG = `${URL_BASE_API}/configuracoes/protocolos`;
+
+// Liberação institucional (admin) -- blueprint "empresa_protocolo"
+// (main.py: /v1/api/liberacao-protocolos).
+const BASE_LIBERACAO = `${URL_BASE_API}/liberacao-protocolos`;
+
 function headersPadrao() {
   return { 'Content-Type': 'application/json' };
 }
@@ -36,10 +46,10 @@ function headersPadrao() {
  * Executa o fetch e normaliza a resposta no formato do backend.
  * Lança ApiError em caso de erro de rede ou de negócio.
  */
-async function requisitar(path, options = {}) {
+async function requisitar(base, path, options = {}) {
   let resposta;
   try {
-    resposta = await fetch(`${BASE_URL}${path}`, {
+    resposta = await fetch(`${base}${path}`, {
       credentials: "include",
       headers: headersPadrao(),
       ...options,
@@ -104,7 +114,7 @@ export function listarProtocolos({
   if (escopo_uso) params.set('escopo_uso', escopo_uso);
   if (apenas_liberados) params.set('apenas_liberados', 'true');
 
-  return requisitar(`/catalogo/filtrar?${params.toString()}`, { method: 'GET' });
+  return requisitar(BASE_URL, `/catalogo/filtrar?${params.toString()}`, { method: 'GET' });
 }
 
 /**
@@ -116,5 +126,64 @@ export function listarProtocolos({
  *   { o_que_e, quando_usar, como_interpretar }
  */
 export function buscarProtocolo(uuid) {
-  return requisitar(`/${uuid}`, { method: 'GET' });
+  return requisitar(BASE_URL, `/${encodeURIComponent(uuid)}`, { method: 'GET' });
+}
+
+// ============================================
+// Preferência pessoal (médico/enfermeiro)
+// Todas devolvem ConfiguracaoProtocolo.to_dict():
+//   { id, id_protocolo, uuid, sigla, nome, tipo, em_uso, escopo_default, ... }
+// Erros de regra chegam como ApiError (409 obrigatório / padrão da
+// instituição, 400 não liberado, etc.) com mensagem pronta em português.
+// ============================================
+
+/** PUT /habilitar -- adiciona aos favoritos (só se liberado pela instituição). */
+export function habilitarProtocolo(uuid) {
+  return requisitar(BASE_CONFIG, `/${encodeURIComponent(uuid)}/habilitar`, { method: 'PUT' });
+}
+
+/** PUT /desabilitar -- pausa o favorito (recusado se obrigatório ou padrão da instituição). */
+export function desabilitarProtocolo(uuid) {
+  return requisitar(BASE_CONFIG, `/${encodeURIComponent(uuid)}/desabilitar`, { method: 'PUT' });
+}
+
+/** PUT /default { escopo } -- define o padrão pessoal do escopo. */
+export function definirDefaultPessoal(uuid, escopo) {
+  return requisitar(BASE_CONFIG, `/${encodeURIComponent(uuid)}/default`, {
+    method: 'PUT',
+    body: JSON.stringify({ escopo }),
+  });
+}
+
+/** DELETE /default -- volta ao padrão da instituição naquele escopo. */
+export function removerDefaultPessoal(uuid) {
+  return requisitar(BASE_CONFIG, `/${encodeURIComponent(uuid)}/default`, { method: 'DELETE' });
+}
+
+// ============================================
+// Liberação institucional (admin)
+// Devolvem EmpresaProtocolo.to_dict() + uuid_protocolo:
+//   { ativo, politica, escopo_default_institucional, aprovado_por, ... }
+// ============================================
+
+/**
+ * PUT /<uuid>/status { ativo, politica? } -- libera/desativa e/ou muda a política.
+ * `politica` omitida = não altera. Desativar um 'obrigatorio' exige mandar
+ * politica: 'opcional' junto (o back recusa caso contrário).
+ */
+export function alterarStatusProtocolo(uuid, { ativo, politica } = {}) {
+  const corpo = { ativo: Boolean(ativo) };
+  if (politica !== undefined) corpo.politica = politica;
+  return requisitar(BASE_LIBERACAO, `/${encodeURIComponent(uuid)}/status`, {
+    method: 'PUT',
+    body: JSON.stringify(corpo),
+  });
+}
+
+/** PUT /<uuid>/default { escopo } -- define o padrão da instituição do escopo. */
+export function definirPadraoInstitucional(uuid, escopo) {
+  return requisitar(BASE_LIBERACAO, `/${encodeURIComponent(uuid)}/default`, {
+    method: 'PUT',
+    body: JSON.stringify({ escopo }),
+  });
 }

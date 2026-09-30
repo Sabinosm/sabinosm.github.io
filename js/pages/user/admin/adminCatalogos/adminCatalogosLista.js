@@ -10,14 +10,21 @@
 //
 // Modelo de dados que a API devolve (ProtocoloCatalogoService._montar_resumo):
 //   { uuid, nome_protocolo, sigla, tipo_protocolo, escopo_populacao,
-//     escopo_uso, liberado_pela_empresa, politica }
+//     escopo_uso, liberado_pela_empresa, politica,
+//     padrao_institucional, favorito, default_pessoal }
+// onde favorito é null para quem não tem papel clínico (sem estrela).
 //
-// Escopo deste degrau (ver plano): MOSTRAR o catálogo e as OPÇÕES de
-// configuração -- destaque pessoal (todos) e liberação institucional
-// (admin) são renderizados mas ainda não funcionam (avisam "em breve"
-// via toast). A EXECUÇÃO de protocolos não acontece nesta página: vive
-// na página de consultas. Detalhe já funciona de verdade, porque é só
-// leitura (GET /<uuid>).
+// Escopo: o card mostra o catálogo, o Detalhes e a estrela de favorito
+// (só para médico/enfermeiro). Os controles de configuração mais
+// pesados -- padrão pessoal, liberação, política e padrão da
+// instituição -- ficam no drawer (adminCatalogosDetalhe.js). A EXECUÇÃO
+// de protocolos não acontece nesta página: vive na página de consultas.
+//
+// As ações mutam o objeto do card in-place (adminCatalogosAcoes.js) e
+// avisam por evento; aoProtocoloAtualizado redesenha a lista SEM
+// recarregar da API -- um card recém-desativado continua visível até o
+// próximo carregamento, o que também preserva a heurística de página
+// cheia da paginação.
 //
 // Paginação: GET /catalogo/filtrar usa 'pagina' como NÚMERO DA
 // PÁGINA (0, 1, 2...); o backend multiplica por 20 internamente. O
@@ -39,14 +46,10 @@
 // trocar para usá-la no request.
 
 import { ApiError, listarProtocolos } from "./adminCatalogosApi.js";
-import {
-  rotuloEscopoPopulacao,
-  rotuloEscopoUso,
-  rotuloPolitica,
-  rotuloTipoProtocolo,
-} from "./adminCatalogosLabels.js";
 import { abrirDrawerProtocolo } from "./adminCatalogosDetalhe.js";
-import { souAdmin } from "./adminCatalogosSessao.js";
+import { EVENTO_ATUALIZADO, alternarFavorito } from "./adminCatalogosAcoes.js";
+import { regrasEstrela } from "./adminCatalogosRegras.js";
+import { comTrava, criarBadgesProtocolo } from "./adminCatalogosUi.js";
 
 const POR_PAGINA = 20;
 
@@ -63,8 +66,26 @@ let carregando = false; // trava contra requests de listagem sobrepostos
 document.addEventListener('DOMContentLoaded', () => {
   configurarBusca();
   configurarFiltros();
+  document.addEventListener(EVENTO_ATUALIZADO, aoProtocoloAtualizado);
   carregarERenderizar();
 });
+
+/**
+ * Uma ação de configuração terminou (card ou drawer). O objeto do card já
+ * foi atualizado in-place; aqui só limpamos o "padrão" que o back tirou de
+ * OUTRO protocolo da página (um só padrão por escopo) e redesenhamos.
+ */
+function aoProtocoloAtualizado(evento) {
+  const { uuid, limparOutros } = evento.detail || {};
+  if (limparOutros) {
+    itensPaginaAtual.forEach(item => {
+      if (item.uuid !== uuid && item[limparOutros.campo] === limparOutros.escopo) {
+        item[limparOutros.campo] = null;
+      }
+    });
+  }
+  renderizarLista();
+}
 
 // ============================================
 // Busca (client-side, restrita à página atual -- ver nota no topo)
@@ -239,10 +260,10 @@ function criarEstadoVazio() {
 // ============================================
 // Card de protocolo
 //
-// As opções são renderizadas por papel (is_admin do cache de sessão),
-// mas NENHUMA ação é funcional neste degrau, exceto "Detalhes" -- as
-// demais avisam "em breve" via toast. O back protege as rotas reais,
-// então esconder o botão aqui é só experiência, não segurança.
+// Ações do card: "Detalhes" e a estrela de favorito. A estrela só existe
+// se o back mandou favorito (true/false); admin puro recebe null e não a
+// vê. Cheia = favorito; travada quando obrigatório/padrão da instituição
+// (regras em adminCatalogosRegras.js). O back protege as rotas reais.
 // ============================================
 function criarCardProtocolo(p) {
   const card = document.createElement('article');
@@ -262,21 +283,12 @@ function criarCardProtocolo(p) {
   header.appendChild(titulo);
   header.appendChild(criarBadgeSigla(p.sigla));
 
-  // --- Badges de classificação ---
+  // --- Badges de classificação e estado ---
   const badges = document.createElement('div');
   badges.className = 'catalog-card-badges';
-  badges.append(
-    criarBadge(rotuloTipoProtocolo(p.tipo_protocolo), 'catalog-badge--info'),
-    criarBadge(rotuloEscopoPopulacao(p.escopo_populacao)),
-    criarBadge(rotuloEscopoUso(p.escopo_uso)),
-    p.liberado_pela_empresa
-      ? criarBadge('Liberado pela instituição', 'catalog-badge--liberado')
-      : criarBadge('Não liberado', 'catalog-badge--bloqueado'),
-  );
-  const politica = rotuloPolitica(p.politica);
-  if (politica) badges.appendChild(criarBadge(politica, 'catalog-badge--politica'));
+  badges.append(...criarBadgesProtocolo(p));
 
-  // --- Ações por papel ---
+  // --- Ações ---
   const acoes = document.createElement('div');
   acoes.className = 'catalog-card-acoes';
 
@@ -286,41 +298,30 @@ function criarCardProtocolo(p) {
   btnDetalhes.addEventListener('click', () => abrirDrawerProtocolo(p));
   acoes.appendChild(btnDetalhes);
 
-  // Destaque pessoal: conveniência de interface, não gate -- aparece
-  // para qualquer usuário logado. Ainda sem endpoint no back (ver
-  // plano), então só renderiza e avisa.
-  const btnDestaque = document.createElement('button');
-  btnDestaque.className = 'catalog-icon-btn';
-  btnDestaque.setAttribute('aria-label', 'Fixar em destaque');
-  btnDestaque.title = 'Destaque pessoal (em breve)';
-  btnDestaque.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
-      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9-5.4 2.9 1.1-6L3.2 9.4l6.1-.8L12 3z" stroke-linejoin="round"/>
-    </svg>`;
-  btnDestaque.addEventListener('click', () =>
-    mostrarToast('Preferência pessoal de destaque ainda não está disponível.'));
-  acoes.appendChild(btnDestaque);
-
-  if (souAdmin()) {
-    const btnLiberacao = document.createElement('button');
-    btnLiberacao.className = 'btn-ghost';
-    btnLiberacao.textContent = p.liberado_pela_empresa
-      ? 'Desativar para a instituição'
-      : 'Liberar para a instituição';
-    btnLiberacao.addEventListener('click', () =>
-      mostrarToast('A liberação institucional será configurável em breve.'));
-    acoes.appendChild(btnLiberacao);
-  }
+  const btnEstrela = criarBotaoEstrela(p);
+  if (btnEstrela) acoes.appendChild(btnEstrela);
 
   card.append(header, badges, acoes);
   return card;
 }
 
-function criarBadge(texto, modificador) {
-  const badge = document.createElement('span');
-  badge.className = `catalog-badge${modificador ? ` ${modificador}` : ''}`;
-  badge.textContent = texto;
-  return badge;
+function criarBotaoEstrela(p) {
+  const regras = regrasEstrela(p);
+  if (!regras.visivel) return null;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = `catalog-icon-btn${regras.cheia ? ' catalog-icon-btn--ativo' : ''}`;
+  btn.setAttribute('aria-label', regras.cheia ? 'Remover dos favoritos' : 'Adicionar aos favoritos');
+  btn.setAttribute('aria-pressed', String(regras.cheia));
+  btn.title = regras.titulo;
+  btn.disabled = !regras.habilitada;
+  btn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="${regras.cheia ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.8" width="18" height="18">
+      <path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9-5.4 2.9 1.1-6L3.2 9.4l6.1-.8L12 3z" stroke-linejoin="round"/>
+    </svg>`;
+  btn.addEventListener('click', () => comTrava(btn, () => alternarFavorito(p)));
+  return btn;
 }
 
 function criarBadgeSigla(sigla) {
@@ -328,26 +329,6 @@ function criarBadgeSigla(sigla) {
   badge.className = 'catalog-badge catalog-badge--sigla';
   badge.textContent = sigla ?? '—';
   return badge;
-}
-
-// ============================================
-// Toast — feedback leve para as ações "em breve"
-// ============================================
-let toastTimer = null;
-
-function mostrarToast(mensagem) {
-  let toast = document.getElementById('catalogo-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'catalogo-toast';
-    toast.className = 'catalogo-toast';
-    toast.setAttribute('role', 'status');
-    document.body.appendChild(toast);
-  }
-  toast.textContent = mensagem;
-  toast.classList.add('catalogo-toast--visible');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('catalogo-toast--visible'), 3200);
 }
 
 // ============================================

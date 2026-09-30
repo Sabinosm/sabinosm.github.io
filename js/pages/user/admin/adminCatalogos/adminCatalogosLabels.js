@@ -44,14 +44,31 @@ export function rotuloTipoResultado(valor) {
   })[valor] ?? valor ?? '—';
 }
 
-// Política de destaque vem da liberação institucional (EmpresaProtocolo)
-// -- ainda não sabemos os valores exatos (ver TODO no plano), então
-// o fallback exibe o valor cru. `null`/`undefined` = sem política
-// definida (não renderiza badge -- ver módulos que chamam).
+// Política de destaque vem da liberação institucional (EmpresaProtocolo).
+// Só "obrigatorio" merece badge no card: "opcional" é o estado comum de todo
+// protocolo liberado e só poluiria a listagem (`null` = não renderiza badge).
 export function rotuloPolitica(valor) {
-  if (!valor) return null;
+  if (!valor || valor === 'opcional') return null;
   return ({
     obrigatorio: 'Destaque obrigatório',
-    opcional: 'Destaque opcional',
   })[valor] ?? valor;
+}
+
+// Opções do seletor de política (admin) -- aqui "opcional" aparece, é uma escolha.
+export const POLITICAS = ['opcional', 'obrigatorio'];
+
+export function rotuloOpcaoPolitica(valor) {
+  return ({
+    opcional: 'Opcional',
+    obrigatorio: 'Obrigatório',
+  })[valor] ?? valor;
+}
+
+// Badges de padrão -- `escopo` é 'triagem' | 'consulta' | 'ambos' | null.
+export function rotuloPadraoInstitucional(escopo) {
+  return escopo ? `Padrão da instituição · ${rotuloEscopoUso(escopo)}` : null;
+}
+
+export function rotuloPadraoPessoal(escopo) {
+  return escopo ? `Meu padrão · ${rotuloEscopoUso(escopo)}` : null;
 }

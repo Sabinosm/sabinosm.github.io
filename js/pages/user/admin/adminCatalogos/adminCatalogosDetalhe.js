@@ -1,33 +1,61 @@
 // adminCatalogosDetalhe.js
 //
-// Drawer lateral de detalhe do protocolo (intenção "informação"):
-// preenche o overlay #catalogo-drawer-overlay de adminCatalogos.html
-// com a explicação estruturada (o_que_e / quando_usar / como_interpretar),
-// metadados (órgão emissor, versão, vigência, referência) e as mesmas
-// opções de configuração do card (destaque pessoal e liberação
-// institucional). A execução NÃO acontece aqui: fica na página de
-// consultas.
+// Drawer lateral de detalhe do protocolo: preenche o overlay
+// #catalogo-drawer-overlay de adminCatalogos.html com a explicação
+// estruturada (o_que_e / quando_usar / como_interpretar), metadados
+// (órgão emissor, versão, vigência, referência) e dois blocos de
+// configuração:
 //
-// Dados: o resumo do card (com liberado_pela_empresa e politica) vem
-// junto na chamada -- o detalhe GET /<uuid> NÃO repete esses campos
-// (ProtocoloCatalogo.to_dict não os tem), então o drawer depende dos
-// dois: resumo para badges/ações, detalhe para explicação e metadados.
+//   - "Minha configuração" (médico/enfermeiro -- o back manda favorito
+//     null aos demais): favorito e padrão pessoal.
+//   - "Governança da instituição" (is_admin): liberar/desativar, política
+//     (opcional/obrigatório) e padrão da instituição.
 //
-// A explicação vem do seed (Caminho A -- schema ExplicacaoProtocolo) e
-// é somente leitura; por isso o detalhe já funciona neste degrau,
-// enquanto destaque/liberação seguem como "em breve".
+// A EXECUÇÃO do protocolo não acontece aqui: vive na página de consultas.
+//
+// Dados: o resumo do card (com liberado_pela_empresa, politica, favorito,
+// default_pessoal, padrao_institucional) vem junto na chamada -- o detalhe
+// GET /<uuid> NÃO repete esses campos, então o drawer depende dos dois:
+// resumo para badges/configuração, detalhe para explicação e metadados.
+//
+// O objeto do resumo é o MESMO da lista: as ações (adminCatalogosAcoes.js)
+// o atualizam in-place e disparam EVENTO_ATUALIZADO, que redesenha badges
+// e blocos de configuração sem novo fetch.
 
 import { ApiError, buscarProtocolo } from "./adminCatalogosApi.js";
 import {
-  rotuloEscopoPopulacao,
+  POLITICAS,
   rotuloEscopoUso,
-  rotuloPolitica,
-  rotuloTipoProtocolo,
+  rotuloOpcaoPolitica,
   rotuloTipoResultado,
 } from "./adminCatalogosLabels.js";
 import { souAdmin } from "./adminCatalogosSessao.js";
+import {
+  EVENTO_ATUALIZADO,
+  alterarLiberacao,
+  alternarFavorito,
+  definirDefaultPessoal,
+  definirPadraoInstitucional,
+  removerDefaultPessoal,
+} from "./adminCatalogosAcoes.js";
+import {
+  regrasEstrela,
+  regrasLiberacao,
+  regrasPadraoInstitucional,
+  regrasPadraoPessoal,
+} from "./adminCatalogosRegras.js";
+import {
+  comTrava,
+  confirmar,
+  criarBadge,
+  criarBadgesProtocolo,
+  criarBotao,
+  criarSelect,
+  mostrarToast,
+} from "./adminCatalogosUi.js";
 
-let resumoAtual = null; // item do card que abriu o drawer
+let resumoAtual = null;       // item do card que abriu o drawer (mesma referência da lista)
+let tipoResultadoAtual = null; // só existe no detalhe -- entra nos badges
 
 document.addEventListener('DOMContentLoaded', configurarDrawer);
 
@@ -48,11 +76,17 @@ function configurarDrawer() {
       fecharDrawer();
     }
   });
+
+  // Uma ação terminou: o resumo já foi atualizado in-place.
+  document.addEventListener(EVENTO_ATUALIZADO, () => {
+    if (resumoAtual) renderizarEstado();
+  });
 }
 
 /** Abre o drawer para o protocolo do card clicado. */
 export function abrirDrawerProtocolo(resumo) {
   resumoAtual = resumo;
+  tipoResultadoAtual = null;
   preencherCabecalho(resumo);
   mostrarOverlay();
   carregarDetalhe(resumo.uuid);
@@ -71,69 +105,231 @@ function fecharDrawer() {
   overlay.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('no-scroll');
   resumoAtual = null;
+  tipoResultadoAtual = null;
 }
 
 // ============================================
-// Cabeçalho e ações -- vêm do resumo do card
+// Cabeçalho, badges e configuração -- vêm do resumo do card
 // ============================================
 function preencherCabecalho(resumo) {
   definirTexto('drawer-nome', resumo.nome_protocolo);
   definirTexto('drawer-sigla', resumo.sigla);
-
-  const badges = document.getElementById('drawer-badges');
-  if (badges) {
-    badges.innerHTML = '';
-    badges.append(
-      criarBadge(rotuloTipoProtocolo(resumo.tipo_protocolo), 'catalog-badge--info'),
-      criarBadge(rotuloEscopoPopulacao(resumo.escopo_populacao)),
-      criarBadge(rotuloEscopoUso(resumo.escopo_uso)),
-      resumo.liberado_pela_empresa
-        ? criarBadge('Liberado pela instituição', 'catalog-badge--liberado')
-        : criarBadge('Não liberado', 'catalog-badge--bloqueado'),
-    );
-    const politica = rotuloPolitica(resumo.politica);
-    if (politica) badges.appendChild(criarBadge(politica, 'catalog-badge--politica'));
-  }
-
-  renderizarAcoes(resumo);
+  renderizarAcoes();
+  renderizarEstado();
 }
 
-function renderizarAcoes(resumo) {
+/** Tudo que depende do estado mutável do resumo. */
+function renderizarEstado() {
+  renderizarBadges();
+  renderizarConfigPessoal(resumoAtual);
+  renderizarConfigAdmin(resumoAtual);
+}
+
+function renderizarBadges() {
+  const badges = document.getElementById('drawer-badges');
+  if (!badges || !resumoAtual) return;
+  badges.innerHTML = '';
+  badges.append(...criarBadgesProtocolo(resumoAtual));
+  if (tipoResultadoAtual) {
+    badges.appendChild(criarBadge(rotuloTipoResultado(tipoResultadoAtual), 'catalog-badge--info'));
+  }
+}
+
+function renderizarAcoes() {
   const container = document.getElementById('drawer-acoes');
   if (!container) return;
   container.innerHTML = '';
 
   // "Ver campos" é a pesquisa do protocolo (GET /<id>/campos, aberta a
-  // qualquer logado) -- neste degrau renderiza junto das opções "em
-  // breve", com o mesmo aviso.
-  const btnCampos = document.createElement('button');
-  btnCampos.className = 'btn-ghost';
-  btnCampos.textContent = 'Ver campos';
-  btnCampos.addEventListener('click', () =>
-    mostrarToast('A visualização dos campos do protocolo chega em breve.'));
-  container.appendChild(btnCampos);
+  // qualquer logado) -- ainda não implementada no front.
+  container.appendChild(criarBotao('Ver campos', 'btn-ghost', {
+    onClick: () => mostrarToast('A visualização dos campos do protocolo chega em breve.'),
+  }));
+}
 
-  // Destaque pessoal: paridade com a estrela do card. Conveniência de
-  // interface, não gate -- aparece para qualquer usuário logado. Ainda
-  // sem endpoint no back, então só renderiza e avisa.
-  const btnDestaque = document.createElement('button');
-  btnDestaque.className = 'btn-ghost';
-  btnDestaque.textContent = 'Fixar em destaque';
-  btnDestaque.title = 'Destaque pessoal (em breve)';
-  btnDestaque.addEventListener('click', () =>
-    mostrarToast('Preferência pessoal de destaque ainda não está disponível.'));
-  container.appendChild(btnDestaque);
+// ============================================
+// Bloco "Minha configuração" (médico/enfermeiro)
+// ============================================
+function renderizarConfigPessoal(p) {
+  const secao = document.getElementById('drawer-config-pessoal');
+  const corpo = document.getElementById('drawer-config-pessoal-corpo');
+  if (!secao || !corpo || !p) return;
 
-  if (souAdmin()) {
-    const btnLiberacao = document.createElement('button');
-    btnLiberacao.className = 'btn-ghost';
-    btnLiberacao.textContent = resumo.liberado_pela_empresa
-      ? 'Desativar para a instituição'
-      : 'Liberar para a instituição';
-    btnLiberacao.addEventListener('click', () =>
-      mostrarToast('A liberação institucional será configurável em breve.'));
-    container.appendChild(btnLiberacao);
+  const estrela = regrasEstrela(p);
+  secao.hidden = !estrela.visivel;
+  corpo.innerHTML = '';
+  if (!estrela.visivel) return;
+
+  // --- Favorito ---
+  const btnFavorito = criarBotao(
+    estrela.cheia ? 'Remover dos favoritos' : 'Adicionar aos favoritos',
+    'btn-ghost',
+    {
+      desabilitado: !estrela.habilitada,
+      titulo: estrela.titulo,
+      onClick: (btn) => comTrava(btn, () => alternarFavorito(p)),
+    },
+  );
+  corpo.appendChild(criarLinha(
+    'Favorito',
+    p.favorito
+      ? 'Este protocolo está entre os seus favoritos.'
+      : 'Favoritos aparecem em destaque na consulta. Não bloqueiam nada: só organizam a sua tela.',
+    [btnFavorito],
+  ));
+
+  // --- Padrão pessoal ---
+  const regras = regrasPadraoPessoal(p);
+  const select = criarSelect(
+    regras.escopos.map(e => ({ valor: e, rotulo: rotuloEscopoUso(e) })),
+    regras.atual ?? regras.escopos[0],
+    !regras.habilitado,
+  );
+  const btnDefinir = criarBotao('Definir como meu padrão', 'btn-ghost', {
+    titulo: regras.motivo ?? '',
+    onClick: (btn) => comTrava(btn, () => definirDefaultPessoal(p, select.value)),
+  });
+  const atualizarBotao = () => {
+    btnDefinir.disabled = !regras.habilitado || select.value === regras.atual;
+  };
+  select.addEventListener('change', atualizarBotao);
+  atualizarBotao();
+
+  const controles = [select, btnDefinir];
+  if (regras.atual) {
+    controles.push(criarBotao('Voltar ao padrão da instituição', 'btn-ghost', {
+      onClick: (btn) => comTrava(btn, () => removerDefaultPessoal(p)),
+    }));
   }
+  corpo.appendChild(criarLinha(
+    'Padrão pessoal',
+    regras.atual
+      ? `É o seu padrão para: ${rotuloEscopoUso(regras.atual)}.`
+      : 'Carregado automaticamente na consulta. Sem escolha sua, vale o padrão da instituição.',
+    controles,
+    !regras.habilitado ? regras.motivo : null,
+  ));
+}
+
+// ============================================
+// Bloco "Governança da instituição" (admin)
+// ============================================
+function renderizarConfigAdmin(p) {
+  const secao = document.getElementById('drawer-config-admin');
+  const corpo = document.getElementById('drawer-config-admin-corpo');
+  if (!secao || !corpo || !p) return;
+
+  const admin = souAdmin();
+  secao.hidden = !admin;
+  corpo.innerHTML = '';
+  if (!admin) return;
+
+  // --- Liberação + política ---
+  const lib = regrasLiberacao(p);
+  const politicaAtual = p.politica || 'opcional';
+  const selPolitica = criarSelect(
+    POLITICAS.map(v => ({ valor: v, rotulo: rotuloOpcaoPolitica(v) })),
+    politicaAtual,
+  );
+  const controlesLiberacao = [selPolitica];
+
+  if (!lib.liberado) {
+    controlesLiberacao.push(criarBotao('Liberar para a instituição', 'btn-primary', {
+      onClick: (btn) => comTrava(btn, () =>
+        alterarLiberacao(p, { ativo: true, politica: selPolitica.value })),
+    }));
+  } else {
+    const btnPolitica = criarBotao('Aplicar política', 'btn-ghost', {
+      desabilitado: true, // habilita quando o seletor muda
+      onClick: (btn) => comTrava(btn, () =>
+        alterarLiberacao(p, { ativo: true, politica: selPolitica.value })),
+    });
+    selPolitica.addEventListener('change', () => {
+      btnPolitica.disabled = selPolitica.value === politicaAtual;
+    });
+    controlesLiberacao.push(btnPolitica);
+
+    controlesLiberacao.push(criarBotao('Desativar', 'btn-ghost', {
+      desabilitado: !lib.podeDesativar,
+      titulo: lib.motivoDesativar ?? '',
+      onClick: (btn) => comTrava(btn, async () => {
+        const ok = await confirmar({
+          titulo: 'Desativar protocolo?',
+          texto: `«${p.nome_protocolo}» deixará de estar disponível para toda a instituição. ` +
+            'Os favoritos dos profissionais são preservados.',
+          rotuloConfirmar: 'Desativar',
+        });
+        if (ok) await alterarLiberacao(p, { ativo: false });
+      }),
+    }));
+  }
+
+  corpo.appendChild(criarLinha(
+    'Liberação e política',
+    lib.liberado
+      ? 'Liberado. "Obrigatório" impede que os profissionais tirem o protocolo dos favoritos.'
+      : 'Não liberado. Escolha a política e libere: "obrigatório" impede que os profissionais tirem o protocolo dos favoritos.',
+    controlesLiberacao,
+    lib.liberado && !lib.podeDesativar ? lib.motivoDesativar : null,
+  ));
+
+  // --- Padrão da instituição ---
+  const padrao = regrasPadraoInstitucional(p);
+  const selEscopo = criarSelect(
+    padrao.escopos.map(e => ({ valor: e, rotulo: rotuloEscopoUso(e) })),
+    padrao.atual ?? padrao.escopos[0],
+    !padrao.habilitado,
+  );
+  const btnPadrao = criarBotao('Definir como padrão da instituição', 'btn-ghost', {
+    desabilitado: !padrao.habilitado,
+    titulo: padrao.motivo ?? '',
+    onClick: (btn) => comTrava(btn, async () => {
+      const escopo = selEscopo.value;
+      const ok = await confirmar({
+        titulo: 'Definir padrão da instituição?',
+        texto: `«${p.nome_protocolo}» passa a ser o padrão de "${rotuloEscopoUso(escopo)}" ` +
+          'para quem não escolheu o próprio. Substitui o padrão atual desse escopo.',
+        rotuloConfirmar: 'Definir padrão',
+      });
+      if (ok) await definirPadraoInstitucional(p, escopo);
+    }),
+  });
+  corpo.appendChild(criarLinha(
+    'Padrão da instituição',
+    padrao.atual
+      ? `É o padrão da instituição para: ${rotuloEscopoUso(padrao.atual)}. Não pode ser desativado.`
+      : 'Usado como padrão por quem não escolheu o próprio.',
+    [selEscopo, btnPadrao],
+    !padrao.habilitado ? padrao.motivo : null,
+  ));
+}
+
+/** Linha de configuração: título, nota, controles e (opcional) motivo de bloqueio. */
+function criarLinha(titulo, nota, controles, motivoBloqueio = null) {
+  const linha = document.createElement('div');
+  linha.className = 'catalogo-config-linha';
+
+  const t = document.createElement('span');
+  t.className = 'catalogo-config-titulo';
+  t.textContent = titulo;
+
+  const n = document.createElement('p');
+  n.className = 'catalogo-config-nota';
+  n.textContent = nota;
+
+  const c = document.createElement('div');
+  c.className = 'catalogo-config-controles';
+  c.append(...controles);
+
+  linha.append(t, n, c);
+
+  if (motivoBloqueio) {
+    const m = document.createElement('p');
+    m.className = 'catalogo-config-nota';
+    m.textContent = motivoBloqueio;
+    linha.appendChild(m);
+  }
+  return linha;
 }
 
 // ============================================
@@ -153,12 +349,15 @@ async function carregarDetalhe(uuid) {
     const resposta = await buscarProtocolo(uuid);
     detalhe = resposta.data;
   } catch (erro) {
+    if (resumoAtual?.uuid !== uuid) return; // drawer fechado/trocado durante o fetch
     const mensagem = erro instanceof ApiError ? erro.message : 'Não foi possível carregar o detalhe.';
     definirTexto('drawer-o-que-e', mensagem);
     definirTexto('drawer-quando-usar', '');
     definirTexto('drawer-como-interpretar', '');
     return;
   }
+
+  if (resumoAtual?.uuid !== uuid) return; // resposta atrasada de outro protocolo
 
   // Explicação estruturada (seed, Caminho A). Seção ausente do payload
   // esconde a seção inteira em vez de mostrar vazio.
@@ -172,11 +371,10 @@ async function carregarDetalhe(uuid) {
   definirTexto('drawer-vigencia', formatarData(detalhe.data_vigencia));
   definirTexto('drawer-referencia', detalhe.referencia_bibliografica ?? '—');
 
-  // Tipo de resultado só existe no detalhe -- entra nos badges.
-  if (detalhe.tipo_resultado) {
-    document.getElementById('drawer-badges')
-      ?.appendChild(criarBadge(rotuloTipoResultado(detalhe.tipo_resultado), 'catalog-badge--info'));
-  }
+  // Tipo de resultado só existe no detalhe -- entra nos badges (e sobrevive
+  // aos redesenhos causados pelas ações).
+  tipoResultadoAtual = detalhe.tipo_resultado ?? null;
+  renderizarBadges();
 }
 
 function preencherSecaoExplicacao(idSecao, idTexto, texto) {
@@ -199,36 +397,7 @@ function formatarData(valor) {
   return data.toLocaleDateString('pt-BR');
 }
 
-// ============================================
-// Pequenos helpers de DOM
-// ============================================
 function definirTexto(id, texto) {
   const el = document.getElementById(id);
   if (el) el.textContent = texto ?? '—';
-}
-
-function criarBadge(texto, modificador) {
-  const badge = document.createElement('span');
-  badge.className = `catalog-badge${modificador ? ` ${modificador}` : ''}`;
-  badge.textContent = texto;
-  return badge;
-}
-
-// Toast próprio do drawer (o da lista é privado de lá) -- mesma classe
-// CSS, mesma ideia.
-let toastTimer = null;
-
-function mostrarToast(mensagem) {
-  let toast = document.getElementById('catalogo-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'catalogo-toast';
-    toast.className = 'catalogo-toast';
-    toast.setAttribute('role', 'status');
-    document.body.appendChild(toast);
-  }
-  toast.textContent = mensagem;
-  toast.classList.add('catalogo-toast--visible');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove('catalogo-toast--visible'), 3200);
 }
