@@ -24,49 +24,49 @@
     </button>
 
     <nav class="settings-tabs">
-      <span class="settings-tabs-title">Configurações</span>
-      <button class="settings-tab settings-tab--active" data-tab="user">User</button>
-      <button class="settings-tab" data-tab="seguranca">Segurança</button>
-      <button class="settings-tab" data-tab="preferencias">Preferências</button>
-      <button class="settings-tab" data-tab="arquivos">Arquivos</button>
+      <span class="settings-tabs-title" data-i18n="settings.title">Configurações</span>
+      <button class="settings-tab settings-tab--active" data-tab="user" data-i18n="settings.tab.user">User</button>
+      <button class="settings-tab" data-tab="seguranca" data-i18n="settings.tab.seguranca">Segurança</button>
+      <button class="settings-tab" data-tab="preferencias" data-i18n="settings.tab.preferencias">Preferências</button>
+      <button class="settings-tab" data-tab="arquivos" data-i18n="settings.tab.arquivos">Arquivos</button>
     </nav>
 
     <div class="settings-panels">
 
       <!-- ===== USER ===== -->
       <section class="settings-panel settings-panel--active" id="panel-user">
-        <h2 class="panel-title">Informações básicas</h2>
-        <p class="panel-subtitle">Alguns dados são gerenciados pela sua instituição e não podem ser editados aqui.</p>
+        <h2 class="panel-title" data-i18n="settings.user.titulo">Informações básicas</h2>
+        <p class="panel-subtitle" data-i18n="settings.user.subtitulo">Alguns dados são gerenciados pela sua instituição e não podem ser editados aqui.</p>
 
         <div class="avatar-row">
           <div class="avatar-preview" id="user-avatar-iniciais"></div>
           <div>
-            <button class="btn-secondary btn-secondary--sm">Alterar foto</button>
-            <p class="field-hint">JPG ou PNG, até 4MB.</p>
+            <button class="btn-secondary btn-secondary--sm" data-i18n="settings.user.alterar_foto">Alterar foto</button>
+            <p class="field-hint" data-i18n="settings.user.foto_hint">JPG ou PNG, até 4MB.</p>
           </div>
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="f-nome">Nome</label>
+          <label class="field-label" for="f-nome" data-i18n="settings.user.nome">Nome</label>
           <input class="field-input" type="text" id="f-nome" value="" data-track>
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="f-telefone">Telefone</label>
+          <label class="field-label" for="f-telefone" data-i18n="settings.user.telefone">Telefone</label>
           <input class="field-input" type="tel" id="f-telefone" value="" data-track>
         </div>
 
         <div class="field-group field-group--locked">
           <label class="field-label">CRM</label>
           <div class="field-locked" id="user-crm">
-            <span class="field-locked-tag">Gerenciado pela instituição</span>
+            <span class="field-locked-tag" data-i18n="settings.gerenciado_instituicao">Gerenciado pela instituição</span>
           </div>
         </div>
 
         <div class="field-group field-group--locked">
-          <label class="field-label">E-mail</label>
+          <label class="field-label" data-i18n="settings.user.email">E-mail</label>
           <div class="field-locked" id="user-email">
-            <span class="field-locked-tag">Gerenciado pela instituição</span>
+            <span class="field-locked-tag" data-i18n="settings.gerenciado_instituicao">Gerenciado pela instituição</span>
           </div>
         </div>
       </section>
@@ -74,8 +74,8 @@
       <!-- ===== SEGURANÇA ===== -->
       <section class="settings-panel" id="panel-seguranca">
 
-        <h2 class="panel-title">Autenticação em duas etapas</h2>
-        <p class="panel-subtitle" id="seguranca-2fa-status">
+        <h2 class="panel-title" data-i18n="settings.seguranca.2fa_titulo">Autenticação em duas etapas</h2>
+        <p class="panel-subtitle" id="seguranca-2fa-status" data-i18n="settings.seguranca.2fa_descricao">
           Chave de acesso (WebAuthn) e aplicativo autenticador (TOTP) —
           cadastre pelo menos um destes para ativar a confirmação em
           duas etapas.
@@ -85,7 +85,7 @@
           <!-- Preenchido dinamicamente por preencherPainelPerfil.js a partir de webauthn.credenciais -->
         </div>
 
-        <button class="btn-secondary" id="btn-add-device" style="margin-top: 4px;">+ Adicionar novo dispositivo</button>
+        <button class="btn-secondary" id="btn-add-device" style="margin-top: 4px;" data-i18n="settings.seguranca.adicionar_dispositivo">+ Adicionar novo dispositivo</button>
 
         <!-- ALTERADO: aviso de "redundância" removido -- não existe
              mais o conceito de 2FA se tornar obrigatório condicional
@@ -99,8 +99,8 @@
 
         <div class="panel-divider"></div>
 
-        <h2 class="panel-title">Aplicativo autenticador (TOTP)</h2>
-        <p class="panel-subtitle">
+        <h2 class="panel-title" data-i18n="settings.seguranca.totp_titulo">Aplicativo autenticador (TOTP)</h2>
+        <p class="panel-subtitle" data-i18n="settings.seguranca.totp_descricao">
           Google Authenticator, Microsoft Authenticator ou similar — não
           depende de Bluetooth nem de porta USB, só do celular que você
           já carrega.
@@ -110,7 +110,7 @@
              entre este bloco e #totp-configurado conforme o payload de
              /me. -->
         <div id="totp-nao-configurado">
-          <button class="btn-secondary" id="btn-configurar-totp">+ Configurar aplicativo autenticador</button>
+          <button class="btn-secondary" id="btn-configurar-totp" data-i18n="settings.seguranca.totp_configurar">+ Configurar aplicativo autenticador</button>
         </div>
 
         <!-- Estado "TOTP já configurado" -->
@@ -118,10 +118,10 @@
           <div class="device-item">
             <div class="device-icon" id="totp-configurado-icone"></div>
             <div class="device-info">
-              <p class="device-name">Aplicativo autenticador</p>
+              <p class="device-name" data-i18n="totp.nome">Aplicativo autenticador</p>
               <p class="device-meta" id="totp-configurado-meta"></p>
             </div>
-            <button class="btn-ghost btn-ghost--sm" id="btn-remover-totp">Remover</button>
+            <button class="btn-ghost btn-ghost--sm" id="btn-remover-totp" data-i18n="settings.seguranca.totp_remover">Remover</button>
           </div>
         </div>
 
@@ -134,15 +134,15 @@
 
         <div class="panel-divider"></div>
 
-        <h2 class="panel-title">Senha</h2>
-        <p class="panel-subtitle">Usada como primeiro fator, junto ao login institucional.</p>
-        <button class="btn-secondary" id="btn-alterar-senha">Alterar senha</button>
+        <h2 class="panel-title" data-i18n="settings.seguranca.senha_titulo">Senha</h2>
+        <p class="panel-subtitle" data-i18n="settings.seguranca.senha_descricao">Usada como primeiro fator, junto ao login institucional.</p>
+        <button class="btn-secondary" id="btn-alterar-senha" data-i18n="senha.alterar">Alterar senha</button>
 
         <div class="panel-divider"></div>
 
-        <h2 class="panel-title">Login</h2>
+        <h2 class="panel-title" data-i18n="settings.seguranca.login_titulo">Login</h2>
         <div class="field-group field-group--locked">
-          <label class="field-label">Usuário de login</label>
+          <label class="field-label" data-i18n="settings.seguranca.login_usuario">Usuário de login</label>
           <div class="field-locked" id="user-login"></div>
         </div>
       </section>
@@ -150,8 +150,8 @@
       <!-- ===== PREFERÊNCIAS ===== -->
       <section class="settings-panel" id="panel-preferencias" data-savable>
 
-        <h2 class="panel-title">Tema</h2>
-        <p class="panel-subtitle">Escolha o esquema de cores da aplicação.</p>
+        <h2 class="panel-title" data-i18n="settings.pref.tema_titulo">Tema</h2>
+        <p class="panel-subtitle" data-i18n="settings.pref.tema_descricao">Escolha o esquema de cores da aplicação.</p>
         <div class="theme-options">
           <button class="theme-option theme-option--active" data-theme-option="dark">
               <span class="theme-swatch theme-swatch--dark"></span>
@@ -189,20 +189,20 @@
 
         <div class="panel-divider"></div>
 
-        <h2 class="panel-title">Acessibilidade</h2>
+        <h2 class="panel-title" data-i18n="settings.pref.acessibilidade_titulo">Acessibilidade</h2>
         <div class="field-group">
-          <label class="field-label" for="f-fonte">Tamanho da fonte</label>
+          <label class="field-label" for="f-fonte" data-i18n="settings.pref.fonte_label">Tamanho da fonte</label>
           <input class="field-range" type="range" id="f-fonte" min="0" max="2" value="1" step="1" data-track>
           <div class="field-range-labels">
-            <span>Pequena</span><span>Padrão</span><span>Grande</span>
+            <span data-i18n="settings.pref.fonte_pequena">Pequena</span><span data-i18n="settings.pref.fonte_padrao">Padrão</span><span data-i18n="settings.pref.fonte_grande">Grande</span>
           </div>
         </div>
 
         <div class="panel-divider"></div>
 
-        <h2 class="panel-title">Idioma</h2>
+        <h2 class="panel-title" data-i18n="settings.pref.idioma_titulo">Idioma</h2>
         <div class="field-group">
-          <label class="field-label" for="f-idioma">Idioma da interface</label>
+          <label class="field-label" for="f-idioma" data-i18n="settings.pref.idioma_label">Idioma da interface</label>
           <select class="field-input" id="f-idioma" data-track>
             <option value="pt-BR">Português (Brasil)</option>
             <option value="en-US">English</option>
@@ -213,8 +213,8 @@
       <!-- ===== ARQUIVOS ===== -->
       <section class="settings-panel" id="panel-arquivos">
 
-        <h2 class="panel-title">Documentos</h2>
-        <p class="panel-subtitle">Termos, políticas e outros documentos institucionais.</p>
+        <h2 class="panel-title" data-i18n="settings.arquivos.titulo">Documentos</h2>
+        <p class="panel-subtitle" data-i18n="settings.arquivos.descricao">Termos, políticas e outros documentos institucionais.</p>
 
         <!-- Lista de arquivos disponíveis. Cada item é estático por
              enquanto (data-file aponta para um caminho fixo em
@@ -232,14 +232,14 @@
               </svg>
             </div>
             <div class="file-info">
-              <p class="file-name">Termos de Consentimento</p>
+              <p class="file-name" data-i18n="settings.arquivos.termo_consentimento">Termos de Consentimento</p>
               <p class="file-meta">PDF</p>
             </div>
             <div class="file-actions">
-              <button class="btn-ghost btn-ghost--sm" type="button" data-action="visualizar" aria-label="Visualizar Termos de Consentimento">
+              <button class="btn-ghost btn-ghost--sm" type="button" data-action="visualizar" data-i18n="settings.arquivos.visualizar" aria-label="Visualizar Termos de Consentimento">
                 Visualizar
               </button>
-              <button class="btn-ghost btn-ghost--sm" type="button" data-action="baixar" aria-label="Baixar Termos de Consentimento">
+              <button class="btn-ghost btn-ghost--sm" type="button" data-action="baixar" data-i18n="settings.arquivos.baixar" aria-label="Baixar Termos de Consentimento">
                 Baixar
               </button>
             </div>
@@ -252,14 +252,14 @@
               </svg>
             </div>
             <div class="file-info">
-              <p class="file-name">Termos de Uso</p>
+              <p class="file-name" data-i18n="settings.arquivos.termo_uso">Termos de Uso</p>
               <p class="file-meta">PDF</p>
             </div>
             <div class="file-actions">
-              <button class="btn-ghost btn-ghost--sm" type="button" data-action="visualizar" aria-label="Visualizar Termos de Uso">
+              <button class="btn-ghost btn-ghost--sm" type="button" data-action="visualizar" data-i18n="settings.arquivos.visualizar" aria-label="Visualizar Termos de Uso">
                 Visualizar
               </button>
-              <button class="btn-ghost btn-ghost--sm" type="button" data-action="baixar" aria-label="Baixar Termos de Uso">
+              <button class="btn-ghost btn-ghost--sm" type="button" data-action="baixar" data-i18n="settings.arquivos.baixar" aria-label="Baixar Termos de Uso">
                 Baixar
               </button>
             </div>
@@ -281,10 +281,10 @@
 
     <!-- Barra de salvar/cancelar — só aparece com mudança pendente -->
     <div class="save-bar" id="save-bar">
-      <span class="save-bar-text">Você tem alterações não salvas</span>
+      <span class="save-bar-text" data-i18n="settings.savebar.texto">Você tem alterações não salvas</span>
       <div class="save-bar-actions">
-        <button class="btn-ghost" id="btn-cancel">Cancelar</button>
-        <button class="btn-primary" id="btn-save">Salvar alterações</button>
+        <button class="btn-ghost" id="btn-cancel" data-i18n="btn.cancelar">Cancelar</button>
+        <button class="btn-primary" id="btn-save" data-i18n="settings.savebar.salvar">Salvar alterações</button>
       </div>
     </div>
 
@@ -306,8 +306,8 @@
       </svg>
     </button>
 
-    <h2 class="totp-modal-titulo" id="totp-modal-titulo">Aplicativo autenticador</h2>
-    <p class="totp-modal-subtitulo">
+    <h2 class="totp-modal-titulo" id="totp-modal-titulo" data-i18n="totp.nome">Aplicativo autenticador</h2>
+    <p class="totp-modal-subtitulo" data-i18n="totp.modal.subtitulo">
       Escaneie o QR code no seu aplicativo autenticador (Google
       Authenticator, Microsoft Authenticator ou similar), ou digite o
       código abaixo manualmente.
@@ -320,7 +320,7 @@
            (ver aguardarLibQrCode em settings.js). -->
       <div class="totp-modal-carregando" id="totp-modal-carregando">
         <div class="totp-modal-spinner" aria-hidden="true"></div>
-        <p>Gerando código de configuração...</p>
+        <p data-i18n="totp.modal.carregando">Gerando código de configuração...</p>
       </div>
 
       <!-- Estado "pronto": QR + secret + form de confirmação. -->
@@ -332,13 +332,13 @@
 
         <form id="totp-form-confirmar" class="totp-modal-form">
           <div class="field-group">
-            <label class="field-label" for="totp-codigo-confirmacao">Código gerado pelo aplicativo</label>
+            <label class="field-label" for="totp-codigo-confirmacao" data-i18n="totp.modal.codigo_label">Código gerado pelo aplicativo</label>
             <input class="field-input" type="text" id="totp-codigo-confirmacao" inputmode="numeric"
                    autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
           </div>
           <div class="stepup-actions">
-            <button class="btn-ghost" type="button" id="btn-cancelar-cadastro-totp">Cancelar</button>
-            <button class="btn-primary" type="submit">Confirmar</button>
+            <button class="btn-ghost" type="button" id="btn-cancelar-cadastro-totp" data-i18n="btn.cancelar">Cancelar</button>
+            <button class="btn-primary" type="submit" data-i18n="btn.confirmar">Confirmar</button>
           </div>
         </form>
       </div>
@@ -347,7 +347,7 @@
            iniciarCadastro em settings.js). -->
       <div class="totp-modal-erro-inicial" id="totp-modal-erro-inicial" hidden>
         <p id="totp-erro-inicial-texto"></p>
-        <button class="btn-secondary" type="button" id="btn-tentar-novamente-totp">Tentar novamente</button>
+        <button class="btn-secondary" type="button" id="btn-tentar-novamente-totp" data-i18n="btn.tentar_novamente">Tentar novamente</button>
       </div>
 
       <p class="field-hint field-hint--erro" id="totp-cadastro-erro"></p>
@@ -373,21 +373,21 @@
       </svg>
     </button>
 
-    <h2 class="senha-modal-titulo" id="senha-modal-titulo">Alterar senha</h2>
-    <p class="senha-modal-subtitulo">
+    <h2 class="senha-modal-titulo" id="senha-modal-titulo" data-i18n="senha.alterar">Alterar senha</h2>
+    <p class="senha-modal-subtitulo" data-i18n="senha.modal.subtitulo">
       Você precisará confirmar sua identidade antes de definir a nova senha.
     </p>
 
     <form id="senha-form" class="senha-modal-form">
       <div class="field-group">
-        <label class="field-label" for="senha-nova">Nova senha</label>
+        <label class="field-label" for="senha-nova" data-i18n="senha.nova">Nova senha</label>
         <input class="field-input" type="password" id="senha-nova"
                autocomplete="new-password" minlength="12" required>
-        <p class="field-hint">Mínimo de 12 caracteres.</p>
+        <p class="field-hint" data-i18n="senha.nova_hint">Mínimo de 12 caracteres.</p>
       </div>
 
       <div class="field-group">
-        <label class="field-label" for="senha-confirmar">Confirmar nova senha</label>
+        <label class="field-label" for="senha-confirmar" data-i18n="senha.confirmar_nova">Confirmar nova senha</label>
         <input class="field-input" type="password" id="senha-confirmar"
                autocomplete="new-password" minlength="12" required>
       </div>
@@ -395,8 +395,8 @@
       <p class="field-hint field-hint--erro" id="senha-erro"></p>
 
       <div class="stepup-actions">
-        <button class="btn-ghost" type="button" id="btn-cancelar-senha">Cancelar</button>
-        <button class="btn-primary" type="submit" id="btn-confirmar-senha">Confirmar</button>
+        <button class="btn-ghost" type="button" id="btn-cancelar-senha" data-i18n="btn.cancelar">Cancelar</button>
+        <button class="btn-primary" type="submit" id="btn-confirmar-senha" data-i18n="btn.confirmar">Confirmar</button>
       </div>
     </form>
 

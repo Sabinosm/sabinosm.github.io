@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B-íon — Ficha do Paciente</title>
+<title data-i18n="pagina.paciente_detalhe.titulo">B-íon — Ficha do Paciente</title>
 <script src="../../../../js/sharedConfig/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
@@ -25,12 +25,12 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      Voltar para Pacientes
+      <span data-i18n="paciente.voltar">Voltar para Pacientes</span>
     </a>
 
     <!-- Estado de carregamento (step-up + fetch em andamento) -->
     <div id="estado-carregando" class="empty-state" style="padding: 64px 20px;">
-      <p class="empty-state-text">Carregando ficha do paciente…</p>
+      <p class="empty-state-text" data-i18n="paciente.carregando">Carregando ficha do paciente…</p>
     </div>
 
     <!-- Estado de erro/cancelamento -->
@@ -39,7 +39,7 @@
         <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
         <path d="M12 8v5M12 16h.01" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
-      <p class="empty-state-title">Não foi possível abrir a ficha</p>
+      <p class="empty-state-title" data-i18n="paciente.erro_titulo">Não foi possível abrir a ficha</p>
       <p class="empty-state-text" id="estado-erro-texto"></p>
     </div>
 
@@ -68,19 +68,19 @@
            abaixo e o TODO em adminPacientesDetalheLista.js. -->
       <section id="painel-pessoal">
         <div class="block-header">
-          <h2>Dados pessoais</h2>
+          <h2 data-i18n="secao.dados_pessoais">Dados pessoais</h2>
           <button class="btn-ghost" id="btn-editar-pessoal" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 20h9" stroke-linecap="round"/>
               <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Editar
+            <span data-i18n="paciente.editar">Editar</span>
           </button>
         </div>
 
         <dl class="field-grid">
           <div class="field-readonly">
-            <dt>Nome completo</dt>
+            <dt data-i18n="campo.nome_completo">Nome completo</dt>
             <dd id="pf-view-nome"></dd>
           </div>
           <div class="field-readonly">
@@ -92,27 +92,27 @@
             <dd id="pf-view-rg"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Data de nascimento</dt>
+            <dt data-i18n="paciente.nascimento">Data de nascimento</dt>
             <dd id="pf-view-nascimento"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Sexo biológico</dt>
+            <dt data-i18n="paciente.sexo">Sexo biológico</dt>
             <dd id="pf-view-sexo"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Tipo sanguíneo</dt>
+            <dt data-i18n="paciente.sangue">Tipo sanguíneo</dt>
             <dd id="pf-view-sangue"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Telefone</dt>
+            <dt data-i18n="settings.user.telefone">Telefone</dt>
             <dd id="pf-view-telefone"></dd>
           </div>
           <div class="field-readonly">
-            <dt>E-mail</dt>
+            <dt data-i18n="settings.user.email">E-mail</dt>
             <dd id="pf-view-email"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Endereço</dt>
+            <dt data-i18n="paciente.endereco">Endereço</dt>
             <dd id="pf-view-endereco"></dd>
           </div>
           <div class="field-readonly">
@@ -120,11 +120,11 @@
             <dd id="pf-view-cep"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Contato de emergência</dt>
+            <dt data-i18n="paciente.emergencia_contato">Contato de emergência</dt>
             <dd id="pf-view-emergencia-nome"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Telefone de emergência</dt>
+            <dt data-i18n="paciente.emergencia_telefone">Telefone de emergência</dt>
             <dd id="pf-view-emergencia-telefone"></dd>
           </div>
         </dl>
@@ -132,23 +132,23 @@
         <div class="panel-divider"></div>
 
         <div class="block-header">
-          <h2>Gerenciamento</h2>
+          <h2 data-i18n="paciente.gerenciamento">Gerenciamento</h2>
         </div>
         <dl class="field-grid">
           <div class="field-readonly">
-            <dt>Status</dt>
+            <dt data-i18n="campo.status">Status</dt>
             <dd id="pf-view-status"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Primeiro atendimento</dt>
+            <dt data-i18n="paciente.primeiro_atendimento">Primeiro atendimento</dt>
             <dd id="pf-view-primeiro-atendimento"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Cadastrado por</dt>
+            <dt data-i18n="paciente.cadastrado_por">Cadastrado por</dt>
             <dd id="pf-view-cadastrado-por"></dd>
           </div>
           <div class="field-readonly">
-            <dt>Cadastrado em</dt>
+            <dt data-i18n="paciente.cadastrado_em">Cadastrado em</dt>
             <dd id="pf-view-criado-em"></dd>
           </div>
         </dl>
@@ -168,9 +168,9 @@
            adminPacientesApi.js, que já ficaram prontas para isso. -->
       <section class="panel-divider" style="margin-top: 28px; border: none; height: auto;">
         <div class="block-header" style="margin-bottom: 8px;">
-          <h2>Dados clínicos</h2>
+          <h2 data-i18n="paciente.clinicos_titulo">Dados clínicos</h2>
         </div>
-        <p class="empty-state-text" style="padding: 0;">
+        <p class="empty-state-text" style="padding: 0;" data-i18n="paciente.clinicos_texto">
           Alergias, medicamentos em uso, doenças crônicas e consentimento LGPD são registrados
           durante a consulta. Esta seção será exibida aqui assim que o módulo de Consultas
           estiver disponível.

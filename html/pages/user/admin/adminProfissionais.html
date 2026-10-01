@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B-íon — Profissionais</title>
+<title data-i18n="pagina.profissionais.titulo">B-íon — Profissionais</title>
 <script src="../../../../js/sharedConfig/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
@@ -23,14 +23,14 @@
 
     <header class="main-header">
       <div>
-        <h1>Profissionais</h1>
-        <p class="main-subtitle">Equipe médica da instituição</p>
+        <h1 data-i18n="nav.profissionais">Profissionais</h1>
+        <p class="main-subtitle" data-i18n="profissionais.subtitulo">Equipe médica da instituição</p>
       </div>
       <button class="btn-primary" id="btn-convidar-profissional">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
           <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Convidar profissional
+        <span data-i18n="profissionais.convidar">Convidar profissional</span>
       </button>
     </header>
 
@@ -43,34 +43,34 @@
               <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
               <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
             </svg>
-            <input type="text" class="search-input" id="busca-profissional" placeholder="Buscar por nome, CRM ou especialidade">
+            <input type="text" class="search-input" id="busca-profissional" placeholder="Buscar por nome, CRM ou especialidade" data-i18n-placeholder="profissionais.busca_placeholder">
           </div>
           <button class="btn-filter" id="btn-toggle-filtros" type="button">
             <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Filtros
+            <span data-i18n="profissionais.filtros">Filtros</span>
           </button>
         </div>
 
         <!-- Painel de filtros — campos reais a definir depois -->
         <div class="filter-panel" id="filter-panel">
           <div class="filter-field">
-            <label for="filtro-especialidade">Especialidade</label>
+            <label for="filtro-especialidade" data-i18n="campo.especialidade">Especialidade</label>
             <select id="filtro-especialidade">
-              <option value="">Todas</option>
+              <option value="" data-i18n="profissionais.filtro_todas">Todas</option>
             </select>
           </div>
           <div class="filter-field">
-            <label for="filtro-status">Status</label>
+            <label for="filtro-status" data-i18n="campo.status">Status</label>
             <select id="filtro-status">
-              <option value="">Todos</option>
-              <option value="ativo">Ativo</option>
-              <option value="pendente">Convite pendente</option>
+              <option value="" data-i18n="profissionais.filtro_todos">Todos</option>
+              <option value="ativo" data-i18n="profissionais.filtro_ativo">Ativo</option>
+              <option value="pendente" data-i18n="profissionais.filtro_pendente">Convite pendente</option>
             </select>
           </div>
           <div class="filter-panel-actions">
-            <button class="btn-ghost" id="btn-limpar-filtros" type="button">Limpar</button>
+            <button class="btn-ghost" id="btn-limpar-filtros" type="button" data-i18n="profissionais.limpar">Limpar</button>
           </div>
         </div>
       </div>
@@ -104,14 +104,14 @@
 
       <div class="prof-modal-body">
 
-        <p class="field-hint" id="prof-modal-edit-hint" hidden>
+        <p class="field-hint" id="prof-modal-edit-hint" hidden data-i18n="profissionais.modal.edit_hint">
           Deixe um campo em branco para manter o valor atual. Só o que for preenchido é alterado.
         </p>
 
         <div id="mensagemFeedback" class="prof-form-feedback" role="alert" aria-live="polite"></div>
 
         <div class="field-group">
-          <label class="field-label" for="pf-nome">Nome completo</label>
+          <label class="field-label" for="pf-nome" data-i18n="campo.nome_completo">Nome completo</label>
           <input class="field-input" type="text" id="pf-nome" autocomplete="name">
           <p class="field-error" id="pf-nome-error"></p>
         </div>
@@ -123,14 +123,14 @@
             <p class="field-error" id="pf-cpf-error"></p>
           </div>
           <div class="field-group">
-            <label class="field-label" for="pf-login">Usuário de login</label>
+            <label class="field-label" for="pf-login" data-i18n="settings.seguranca.login_usuario">Usuário de login</label>
             <input class="field-input" type="text" id="pf-login" autocomplete="username">
             <p class="field-error" id="pf-login-error"></p>
           </div>
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="pf-telefone">Telefone <span class="field-optional">(opcional)</span></label>
+          <label class="field-label" for="pf-telefone"><span data-i18n="settings.user.telefone">Telefone</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
           <input class="field-input" type="tel" id="pf-telefone" placeholder="(00) 00000-0000">
           <p class="field-error" id="pf-telefone-error"></p>
         </div>
@@ -139,12 +139,12 @@
 
         <div class="field-row">
           <div class="field-group">
-            <label class="field-label" for="pf-email">E-mail</label>
+            <label class="field-label" for="pf-email" data-i18n="settings.user.email">E-mail</label>
             <input class="field-input" type="email" id="pf-email" autocomplete="off">
             <p class="field-error" id="pf-email-error"></p>
           </div>
           <div class="field-group">
-            <label class="field-label" for="pf-email-confirma">Confirme o e-mail</label>
+            <label class="field-label" for="pf-email-confirma" data-i18n="profissionais.modal.confirmar_email">Confirme o e-mail</label>
             <input class="field-input" type="email" id="pf-email-confirma" autocomplete="off" onpaste="return false">
             <p class="field-error" id="pf-email-confirma-error"></p>
           </div>
@@ -155,20 +155,20 @@
         <div class="field-group">
           <div class="field-checkbox">
             <input type="checkbox" id="pf-is-admin">
-            <label for="pf-is-admin">É administrador</label>
+            <label for="pf-is-admin" data-i18n="profissionais.modal.admin_label">É administrador</label>
           </div>
-          <p class="field-hint" id="pf-is-admin-hint">
+          <p class="field-hint" id="pf-is-admin-hint" data-i18n="profissionais.modal.admin_hint">
             Um administrador com função clínica (médico/enfermeiro) segue as mesmas regras de CRM/COREN abaixo, além de ganhar acesso de gerenciamento da empresa.
           </p>
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="pf-tipo">Tipo de profissional</label>
+          <label class="field-label" for="pf-tipo" data-i18n="profissionais.modal.tipo_label">Tipo de profissional</label>
           <select class="field-input" id="pf-tipo">
-            <option value="">Selecione</option>
-            <option value="nenhum">Nenhum</option>
-            <option value="medico">Médico</option>
-            <option value="enfermeiro">Enfermeiro</option>
+            <option value="" data-i18n="profissionais.modal.tipo_selecione">Selecione</option>
+            <option value="nenhum" data-i18n="papel.nenhum">Nenhum</option>
+            <option value="medico" data-i18n="papel.medico">Médico</option>
+            <option value="enfermeiro" data-i18n="papel.enfermeiro">Enfermeiro</option>
           </select>
           <p class="field-error" id="pf-tipo-error"></p>
         </div>
@@ -177,7 +177,7 @@
         <div id="bloco-medico" class="prof-conditional-block" hidden>
           <div class="field-row">
             <div class="field-group">
-              <label class="field-label" for="pf-crm">Número do CRM</label>
+              <label class="field-label" for="pf-crm" data-i18n="profissionais.modal.crm_numero">Número do CRM</label>
               <input class="field-input" type="text" id="pf-crm">
               <p class="field-error" id="pf-crm-error"></p>
             </div>
@@ -187,7 +187,7 @@
               <p class="field-error" id="pf-uf-crm-error"></p>
             </div>
             <div class="field-group">
-              <label class="field-label" for="pf-rqe">RQE <span class="field-optional">(opcional)</span></label>
+              <label class="field-label" for="pf-rqe">RQE <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
               <input class="field-input" type="text" id="pf-rqe">
             </div>
           </div>
@@ -197,7 +197,7 @@
         <div id="bloco-enfermeiro" class="prof-conditional-block" hidden>
           <div class="field-row">
             <div class="field-group">
-              <label class="field-label" for="pf-coren">Número do COREN</label>
+              <label class="field-label" for="pf-coren" data-i18n="profissionais.modal.coren_numero">Número do COREN</label>
               <input class="field-input" type="text" id="pf-coren">
               <p class="field-error" id="pf-coren-error"></p>
             </div>
@@ -207,7 +207,7 @@
               <p class="field-error" id="pf-uf-coren-error"></p>
             </div>
             <div class="field-group">
-              <label class="field-label" for="pf-especialidade">Especialidade</label>
+              <label class="field-label" for="pf-especialidade" data-i18n="campo.especialidade">Especialidade</label>
               <input class="field-input" type="text" id="pf-especialidade">
               <p class="field-error" id="pf-especialidade-error"></p>
             </div>
@@ -217,16 +217,16 @@
       </div>
 
       <div class="field-group" id="prof-modal-acoes-admin" hidden>
-        <label class="field-label">Ações administrativas</label>
-        <p class="field-hint">Cada ação abaixo exige reconfirmação de identidade.</p>
+        <label class="field-label" data-i18n="profissionais.modal.acoes_admin">Ações administrativas</label>
+        <p class="field-hint" data-i18n="profissionais.modal.acoes_hint">Cada ação abaixo exige reconfirmação de identidade.</p>
         <div class="prof-modal-acoes-botoes">
-          <button type="button" class="btn-ghost" id="prof-modal-resetar-senha">Resetar senha</button>
-          <button type="button" class="btn-ghost" id="prof-modal-resetar-2fa">Resetar 2FA</button>
-          <button type="button" class="btn-danger" id="prof-modal-resetar-completo">Resetar tudo</button>
+          <button type="button" class="btn-ghost" id="prof-modal-resetar-senha" data-i18n="profissionais.modal.resetar_senha">Resetar senha</button>
+          <button type="button" class="btn-ghost" id="prof-modal-resetar-2fa" data-i18n="profissionais.modal.resetar_2fa">Resetar 2FA</button>
+          <button type="button" class="btn-danger" id="prof-modal-resetar-completo" data-i18n="profissionais.modal.resetar_tudo">Resetar tudo</button>
         </div>
       </div>
 
-      <p class="field-hint prof-modal-footer-hint">
+      <p class="field-hint prof-modal-footer-hint" data-i18n="profissionais.modal.footer_hint">
         Este e-mail será usado pelo profissional para entrar com a Conta Google. A senha de acesso é
         definida por ele mesmo, num fluxo próprio de ativação — o cadastro não pede senha aqui. Confira
         o e-mail com atenção: um endereço incorreto envia o convite de acesso para a pessoa errada, e a
@@ -236,7 +236,7 @@
       <div class="prof-modal-footer">
         <button type="button" class="btn-danger" id="prof-modal-toggle-status" hidden></button>
         <div class="prof-modal-footer-right">
-          <button type="button" class="btn-ghost" id="prof-modal-cancel">Cancelar</button>
+          <button type="button" class="btn-ghost" id="prof-modal-cancel" data-i18n="btn.cancelar">Cancelar</button>
           <button type="submit" class="btn-primary" id="prof-modal-save">Enviar convite</button>
         </div>
       </div>
