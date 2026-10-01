@@ -31,7 +31,7 @@ export function rotuloTipoProtocolo(valor) {
     'escore-ponderado': 'Escore ponderado',
     'arvore-decisao': 'Árvore de decisão',
     'regra-categorica': 'Regra categórica',
-    'composicao-modulos': 'Composição de módulos',
+    'protocolo-composto': 'Composição de módulos',
   })[valor] ?? valor ?? '—';
 }
 
@@ -71,4 +71,40 @@ export function rotuloPadraoInstitucional(escopo) {
 
 export function rotuloPadraoPessoal(escopo) {
   return escopo ? `Meu padrão · ${rotuloEscopoUso(escopo)}` : null;
+}
+
+// --- Protocolo composto (módulos) e campos -----------------------------
+export function rotuloPapelModulo(valor) {
+  return ({ principal: 'Principal', gatilho: 'Gatilho', informativo: 'Informativo' })[valor] ?? valor ?? '—';
+}
+
+export function rotuloAgregacao(valor) {
+  return ({
+    nenhuma: 'Sem agregação',
+    soma: 'Soma',
+    maximo: 'Máximo',
+    pior_categoria: 'Pior categoria',
+    any_flag: 'Qualquer sinalizador',
+  })[valor] ?? valor ?? '—';
+}
+
+export function rotuloFamiliaCalculo(valor) {
+  return ({ pontuador: 'Pontuador', classificador: 'Classificador', regra: 'Regra' })[valor] ?? valor ?? '—';
+}
+
+export function rotuloTipoSaida(valor) {
+  return ({ pontos: 'Pontos', categoria: 'Categoria', flag: 'Sinalizador' })[valor] ?? valor ?? '—';
+}
+
+export function rotuloTipoModulo(valor) {
+  return ({
+    epidemiologico: 'Epidemiológico',
+    comorbidade: 'Comorbidade',
+    'faixa-etaria': 'Faixa etária',
+    institucional: 'Institucional',
+  })[valor] ?? valor ?? '—';
+}
+
+export function rotuloTipoCampo(valor) {
+  return ({ numerico: 'Numérico', categorico: 'Categórico', booleano: 'Sim/não' })[valor] ?? valor ?? '—';
 }

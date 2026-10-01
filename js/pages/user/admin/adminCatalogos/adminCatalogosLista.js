@@ -5,8 +5,8 @@
 // de uso e "somente liberados" — resolvidos no servidor) e paginação
 // por número de página.
 //
-// O drawer de detalhe vive em adminCatalogosDetalhe.js -- este arquivo
-// o abre ao clicar em "Detalhes" num card (abrirDrawerProtocolo).
+// O detalhe vive em página própria (adminCatalogosDetalhe.html, orquestrada
+// por adminCatalogosDetalhe.js) -- "Detalhes" num card navega até ela.
 //
 // Modelo de dados que a API devolve (ProtocoloCatalogoService._montar_resumo):
 //   { uuid, nome_protocolo, sigla, tipo_protocolo, escopo_populacao,
@@ -17,7 +17,7 @@
 // Escopo: o card mostra o catálogo, o Detalhes e a estrela de favorito
 // (só para médico/enfermeiro). Os controles de configuração mais
 // pesados -- padrão pessoal, liberação, política e padrão da
-// instituição -- ficam no drawer (adminCatalogosDetalhe.js). A EXECUÇÃO
+// instituição -- ficam na página de detalhe (adminCatalogosConfig.js). A EXECUÇÃO
 // de protocolos não acontece nesta página: vive na página de consultas.
 //
 // As ações mutam o objeto do card in-place (adminCatalogosAcoes.js) e
@@ -46,7 +46,6 @@
 // trocar para usá-la no request.
 
 import { ApiError, listarProtocolos } from "./adminCatalogosApi.js";
-import { abrirDrawerProtocolo } from "./adminCatalogosDetalhe.js";
 import { EVENTO_ATUALIZADO, alternarFavorito } from "./adminCatalogosAcoes.js";
 import { regrasEstrela } from "./adminCatalogosRegras.js";
 import { comTrava, criarBadgesProtocolo } from "./adminCatalogosUi.js";
@@ -66,12 +65,63 @@ let carregando = false; // trava contra requests de listagem sobrepostos
 document.addEventListener('DOMContentLoaded', () => {
   configurarBusca();
   configurarFiltros();
+  restaurarEstadoDaUrl();
   document.addEventListener(EVENTO_ATUALIZADO, aoProtocoloAtualizado);
   carregarERenderizar();
 });
 
+// Voltar da página de detalhe pode restaurar esta página do cache do
+// navegador (bfcache) com favoritos/liberação já defasados -- recarrega.
+window.addEventListener('pageshow', (evento) => {
+  if (evento.persisted) carregarERenderizar();
+});
+
+// ============================================
+// Estado na URL (página e filtros) -- para o "voltar" da página de detalhe
+// devolver o usuário exatamente onde estava. A busca por texto não entra:
+// ela só filtra a página já carregada.
+// ============================================
+function restaurarEstadoDaUrl() {
+  const q = new URLSearchParams(location.search);
+  paginaAtual = Math.max(0, parseInt(q.get('pagina') ?? '0', 10) || 0);
+  filtroTipoProtocolo = q.get('tipo') || '';
+  filtroEscopoPopulacao = q.get('populacao') || '';
+  filtroEscopoUso = q.get('uso') || '';
+  filtroApenasLiberados = q.get('liberados') === '1';
+
+  // Reflete nos controles; valor que não existe mais nas opções é descartado.
+  const aplicar = (id, valor) => {
+    const select = document.getElementById(id);
+    if (!select) return '';
+    select.value = valor;
+    return select.value;
+  };
+  filtroTipoProtocolo = aplicar('filtro-tipo-protocolo', filtroTipoProtocolo);
+  filtroEscopoPopulacao = aplicar('filtro-escopo-populacao', filtroEscopoPopulacao);
+  filtroEscopoUso = aplicar('filtro-escopo-uso', filtroEscopoUso);
+  const checkbox = document.getElementById('filtro-apenas-liberados');
+  if (checkbox) checkbox.checked = filtroApenasLiberados;
+
+  // Painel aberto se algum filtro veio ativo.
+  if (filtroTipoProtocolo || filtroEscopoPopulacao || filtroEscopoUso || filtroApenasLiberados) {
+    document.getElementById('filter-panel')?.classList.add('filter-panel--visible');
+    document.getElementById('btn-toggle-filtros')?.classList.add('btn-filter--active');
+  }
+}
+
+function salvarEstadoNaUrl() {
+  const q = new URLSearchParams();
+  if (paginaAtual > 0) q.set('pagina', String(paginaAtual));
+  if (filtroTipoProtocolo) q.set('tipo', filtroTipoProtocolo);
+  if (filtroEscopoPopulacao) q.set('populacao', filtroEscopoPopulacao);
+  if (filtroEscopoUso) q.set('uso', filtroEscopoUso);
+  if (filtroApenasLiberados) q.set('liberados', '1');
+  const query = q.toString();
+  history.replaceState(null, '', query ? `?${query}` : location.pathname);
+}
+
 /**
- * Uma ação de configuração terminou (card ou drawer). O objeto do card já
+ * Uma ação de configuração terminou (card ou página de detalhe). O objeto do card já
  * foi atualizado in-place; aqui só limpamos o "padrão" que o back tirou de
  * OUTRO protocolo da página (um só padrão por escopo) e redesenhamos.
  */
@@ -195,6 +245,7 @@ async function carregarERenderizar() {
   }
 
   carregando = false;
+  salvarEstadoNaUrl();
   renderizarLista();
 }
 
@@ -295,7 +346,11 @@ function criarCardProtocolo(p) {
   const btnDetalhes = document.createElement('button');
   btnDetalhes.className = 'btn-ghost';
   btnDetalhes.textContent = 'Detalhes';
-  btnDetalhes.addEventListener('click', () => abrirDrawerProtocolo(p));
+  // Página própria (um protocolo pode ser grande). location.assign, não <a>:
+  // esta página tem <base target="_blank"> e queremos a mesma aba.
+  btnDetalhes.addEventListener('click', () => {
+    location.assign(`adminCatalogosDetalhe.html?uuid=${encodeURIComponent(p.uuid)}`);
+  });
   acoes.appendChild(btnDetalhes);
 
   const btnEstrela = criarBotaoEstrela(p);

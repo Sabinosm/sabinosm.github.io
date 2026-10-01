@@ -1,6 +1,6 @@
 // adminCatalogosUi.js
 //
-// Helpers de DOM compartilhados por lista e drawer: toast, modal de
+// Helpers de DOM compartilhados por lista e página de detalhe: toast, modal de
 // confirmação, trava de botão durante requisição e construtores de
 // badge/botão/select. Sem estado de negócio -- as regras vivem em
 // adminCatalogosRegras.js e as ações em adminCatalogosAcoes.js.
@@ -71,8 +71,8 @@ export function confirmar({ titulo, texto, rotuloConfirmar = 'Confirmar' }) {
       if (evento.target === overlay) fechar(false);
     });
 
-    // Escape cancela SÓ o modal: a captura + stopPropagation impede que o
-    // listener do drawer (que também escuta Escape) feche o painel junto.
+    // Escape cancela o modal; a captura + stopPropagation evita que outro
+    // listener de Escape da página aja junto.
     function aoTeclar(evento) {
       if (evento.key !== 'Escape') return;
       evento.stopPropagation();
@@ -115,7 +115,7 @@ export function criarBadge(texto, modificador) {
   return badge;
 }
 
-/** Badges de classificação/estado -- iguais no card e no drawer. */
+/** Badges de classificação/estado -- iguais no card e na página de detalhe. */
 export function criarBadgesProtocolo(p) {
   const badges = [
     criarBadge(rotuloTipoProtocolo(p.tipo_protocolo), 'catalog-badge--info'),
@@ -162,4 +162,66 @@ export function criarSelect(opcoes, selecionado, desabilitado = false) {
   });
   if (selecionado !== undefined && selecionado !== null) select.value = selecionado;
   return select;
+}
+
+// ============================================
+// Texto da página de detalhe
+// ============================================
+const ROTULOS_EXPLICACAO = {
+  o_que_e: 'O que é',
+  quando_usar: 'Quando usar',
+  como_interpretar: 'Como interpretar',
+};
+
+/**
+ * Bloco de explicação de um módulo. Defensivo quanto ao formato: string
+ * vira um parágrafo; objeto mostra cada valor de texto (as três chaves
+ * conhecidas com rótulo próprio, as demais com a chave humanizada).
+ * Devolve null se não houver nada a mostrar.
+ */
+export function criarBlocoExplicacao(explicacao) {
+  if (!explicacao) return null;
+
+  const bloco = document.createElement('div');
+  bloco.className = 'detalhe-explicacao';
+
+  if (typeof explicacao === 'string') {
+    if (!explicacao.trim()) return null;
+    const p = document.createElement('p');
+    p.className = 'detalhe-texto';
+    p.textContent = explicacao;
+    bloco.appendChild(p);
+    return bloco;
+  }
+
+  const entradas = Object.entries(explicacao)
+    .filter(([, valor]) => typeof valor === 'string' && valor.trim());
+  if (entradas.length === 0) return null;
+
+  entradas.forEach(([chave, valor]) => {
+    const rotulo = ROTULOS_EXPLICACAO[chave]
+      ?? (chave.charAt(0).toUpperCase() + chave.slice(1).replace(/_/g, ' '));
+    const h = document.createElement('h4');
+    h.className = 'detalhe-explicacao-titulo';
+    h.textContent = rotulo;
+    const p = document.createElement('p');
+    p.className = 'detalhe-texto';
+    p.textContent = valor;
+    bloco.append(h, p);
+  });
+  return bloco;
+}
+
+/** Referência bibliográfica: se o texto inteiro for uma URL, vira link. */
+export function criarReferencia(texto) {
+  if (!texto) return document.createTextNode('—');
+  if (/^https?:\/\/\S+$/i.test(texto.trim())) {
+    const a = document.createElement('a');
+    a.href = texto.trim();
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = texto.trim();
+    return a;
+  }
+  return document.createTextNode(texto);
 }

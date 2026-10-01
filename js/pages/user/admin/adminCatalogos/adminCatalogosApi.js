@@ -187,3 +187,41 @@ export function definirPadraoInstitucional(uuid, escopo) {
     body: JSON.stringify({ escopo }),
   });
 }
+
+
+// ============================================
+// Página de detalhe (adminCatalogosDetalhe.html) -- só leitura, qualquer
+// usuário logado, liberado ou não: ver não é usar.
+// ============================================
+
+/**
+ * GET /catalogo/<uuid> -- tudo que a página precisa para carregar sozinha:
+ *   { protocolo, resumo, versao_ativa }
+ *   protocolo: detalhe do catálogo (explicacao {o_que_e, quando_usar,
+ *     como_interpretar}, orgao_emissor, referencia_bibliografica,
+ *     data_vigencia, versao_vigente, tipo_resultado...)
+ *   resumo: o MESMO DTO dos cards (liberado_pela_empresa, politica,
+ *     padrao_institucional, favorito, default_pessoal...)
+ *   versao_ativa: { numero_versao, vigente_desde, status } | null
+ */
+export function buscarDetalheCatalogo(uuid) {
+  return requisitar(BASE_URL, `/catalogo/${encodeURIComponent(uuid)}`, { method: 'GET' });
+}
+
+/** GET /news2/<uuid>/campos -- [{ campo, texto, tipo_campo, opcoes }] (só o NEWS2). */
+export function buscarCamposNews2(uuid) {
+  return requisitar(BASE_URL, `/news2/${encodeURIComponent(uuid)}/campos`, { method: 'GET' });
+}
+
+/**
+ * GET /protocolo-composto/<uuid>/composicao -- estrutura do composto:
+ *   { versao, agregacao, regra_gatilho, modulos: [{ papel, grupo_agregacao, ordem,
+ *     modulo: { nome_modulo, sigla, tipo_modulo, familia_calculo, tipo_saida,
+ *               descricao, referencia_bibliografica },
+ *     numero_versao, explicacao,
+ *     campos: [{ codigo, nome, tipo_dado, unidade, opcoes, valor_min, valor_max,
+ *                obrigatorio, ordem }] }] }
+ */
+export function buscarComposicao(uuid) {
+  return requisitar(BASE_URL, `/protocolo-composto/${encodeURIComponent(uuid)}/composicao`, { method: 'GET' });
+}

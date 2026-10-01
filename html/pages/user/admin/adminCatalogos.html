@@ -57,7 +57,7 @@
               <option value="escore-ponderado">Escore ponderado</option>
               <option value="arvore-decisao">Árvore de decisão</option>
               <option value="regra-categorica">Regra categórica</option>
-              <option value="composicao-modulos">Composição de módulos</option>
+              <option value="protocolo-composto">Composição de módulos</option>
             </select>
           </div>
           <div class="filter-field">
@@ -103,84 +103,11 @@
   </main>
 </div>
 
-<!-- ===== DRAWER DE DETALHE DO PROTOCOLO =====
-     Mesmo padrão de overlay dos modais (settings.css), mas como
-     painel lateral direito -- abre por cima da listagem sem tirar o
-     usuário da página. Corpo preenchido por adminCatalogosDetalhe.js. -->
-<div class="catalogo-drawer-overlay" id="catalogo-drawer-overlay" aria-hidden="true">
-  <aside class="catalogo-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-nome">
-    <button class="settings-close catalogo-drawer-close" id="catalogo-drawer-close" aria-label="Fechar" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
-        <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-
-    <div class="catalogo-drawer-corpo">
-      <span class="catalog-badge catalog-badge--sigla" id="drawer-sigla"></span>
-      <h2 class="catalogo-drawer-nome" id="drawer-nome"></h2>
-      <div class="catalogo-drawer-badges" id="drawer-badges"></div>
-
-      <div class="catalogo-drawer-acoes" id="drawer-acoes"></div>
-
-      <!-- Blocos de configuração -- preenchidos por adminCatalogosDetalhe.js.
-           Pessoal: só médico/enfermeiro (o back manda favorito = null aos demais).
-           Governança: só admin. Um médico-admin vê os dois. -->
-      <section class="catalogo-drawer-config" id="drawer-config-pessoal" hidden>
-        <h3 class="catalogo-drawer-secao-titulo">Minha configuração</h3>
-        <div id="drawer-config-pessoal-corpo"></div>
-      </section>
-
-      <section class="catalogo-drawer-config" id="drawer-config-admin" hidden>
-        <h3 class="catalogo-drawer-secao-titulo">Governança da instituição</h3>
-        <div id="drawer-config-admin-corpo"></div>
-      </section>
-
-      <section class="catalogo-drawer-secao" id="secao-o-que-e">
-        <h3 class="catalogo-drawer-secao-titulo">O que é</h3>
-        <p class="catalogo-drawer-texto" id="drawer-o-que-e"></p>
-      </section>
-
-      <section class="catalogo-drawer-secao" id="secao-quando-usar">
-        <h3 class="catalogo-drawer-secao-titulo">Quando usar</h3>
-        <p class="catalogo-drawer-texto" id="drawer-quando-usar"></p>
-      </section>
-
-      <section class="catalogo-drawer-secao" id="secao-como-interpretar">
-        <h3 class="catalogo-drawer-secao-titulo">Como interpretar</h3>
-        <p class="catalogo-drawer-texto" id="drawer-como-interpretar"></p>
-      </section>
-
-      <section class="catalogo-drawer-secao">
-        <h3 class="catalogo-drawer-secao-titulo">Informações do protocolo</h3>
-        <dl class="catalogo-drawer-meta">
-          <div class="catalogo-drawer-meta-item">
-            <dt>Órgão emissor</dt>
-            <dd id="drawer-orgao">—</dd>
-          </div>
-          <div class="catalogo-drawer-meta-item">
-            <dt>Versão vigente</dt>
-            <dd id="drawer-versao">—</dd>
-          </div>
-          <div class="catalogo-drawer-meta-item">
-            <dt>Em vigor desde</dt>
-            <dd id="drawer-vigencia">—</dd>
-          </div>
-          <div class="catalogo-drawer-meta-item">
-            <dt>Referência bibliográfica</dt>
-            <dd id="drawer-referencia">—</dd>
-          </div>
-        </dl>
-      </section>
-    </div>
-  </aside>
-</div>
-
 <!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
      (partial compartilhado: html/partials/settingsModal.html) -->
 
 <script type="module" src="../../../../js/sharedConfig/settingsLoader.js"></script>
 <script type="module" src="../../../../js/pages/user/admin/adminCatalogos/adminCatalogosLista.js"></script>
-<script type="module" src="../../../../js/pages/user/admin/adminCatalogos/adminCatalogosDetalhe.js"></script>
 <script type="module" src="../../../../js/sharedConfig/initHomePage.js"></script>
 <script src="../../../../js/sharedConfig/sidebarLoader.js"></script>
 </body>

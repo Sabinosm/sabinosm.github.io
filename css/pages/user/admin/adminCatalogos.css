@@ -6,8 +6,8 @@
    .pagination, .page-btn, .btn-primary, .btn-ghost,
    .main-header, .section...). Aqui ficam só os
    componentes novos: cards de protocolo, badges,
-   drawer de detalhe (com blocos de configuração), modal de
-   confirmação e toast.
+   página de detalhe (campos, composição, blocos de
+   configuração), modal de confirmação e toast.
    ============================================ */
 
 /* ===== Lista de cards ===== */
@@ -38,7 +38,7 @@
 }
 
 .catalog-card-nome {
-  font-size: 16px;
+  font-size: calc(16px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text-strong);
   line-height: 1.3;
@@ -46,7 +46,7 @@
 
 /* ===== Badges ===== */
 .catalog-card-badges,
-.catalogo-drawer-badges {
+.detalhe-badges {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -55,7 +55,7 @@
 .catalog-badge {
   display: inline-flex;
   align-items: center;
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
   font-weight: 600;
   letter-spacing: 0.02em;
   padding: 3px 10px;
@@ -69,7 +69,7 @@
   background: var(--sidebar-active-bg);
   color: var(--text);
   font-family: monospace;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   letter-spacing: 0.06em;
 }
 
@@ -153,13 +153,13 @@ button:disabled {
 }
 
 .catalog-empty-title {
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text);
 }
 
 .catalog-empty-text {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
   max-width: 420px;
 }
@@ -176,115 +176,184 @@ button:disabled {
   accent-color: var(--accent);
 }
 .filter-field--checkbox label {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   color: var(--text);
   cursor: pointer;
 }
 
-/* ===== Drawer de detalhe ===== */
-.catalogo-drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: none;
-  z-index: 90; /* abaixo do modal de configurações (100) */
+/* ===== Página de detalhe ===== */
+.detalhe-voltar {
+  display: inline-block;
+  font-size: calc(13px * var(--font-scale, 1));
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 16px;
 }
+.detalhe-voltar:hover { color: var(--text); }
 
-.catalogo-drawer-overlay--visible {
-  display: block;
+.detalhe-estado {
+  padding: 48px 24px;
+  text-align: center;
+  font-size: calc(14px * var(--font-scale, 1));
+  color: var(--text-muted);
 }
+.detalhe-estado--erro { color: var(--palette-status-red); }
 
-.catalogo-drawer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  height: 100%;
-  width: min(560px, 100%);
-  background: var(--bg);
-  border-left: 1px solid var(--border);
-  overflow-y: auto;
-  padding: 32px 36px;
-  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.35);
-}
-
-.catalogo-drawer-close {
-  position: sticky;
-  float: right;
-  top: 0;
-  /* .settings-close já traz position/styling -- aqui só garante que
-     flutua no topo do painel sem quebrar o fluxo do conteúdo */
-}
-
-.catalogo-drawer-corpo {
+.detalhe-conteudo {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 28px;
+  max-width: 920px;
 }
+.detalhe-conteudo[hidden] { display: none; }
 
-.catalogo-drawer-nome {
-  font-size: 20px;
+.detalhe-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.detalhe-cabecalho-titulo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.detalhe-nome {
+  font-size: calc(26px * var(--font-scale, 1));
   font-weight: 700;
   color: var(--text-strong);
   line-height: 1.25;
-  padding-right: 32px; /* não fica embaixo do botão de fechar */
 }
-
-.catalogo-drawer-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 14px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.catalogo-drawer-secao-titulo {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.catalogo-drawer-texto {
-  font-size: 14px;
-  color: var(--text);
-  line-height: 1.65;
-  white-space: pre-line;
-}
-
-.catalogo-drawer-meta {
+.detalhe-versao {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.catalogo-drawer-meta-item {
-  display: flex;
-  flex-direction: column;
+  align-items: flex-end;
   gap: 2px;
-}
-
-.catalogo-drawer-meta-item dt {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: calc(12px * var(--font-scale, 1));
   color: var(--text-muted);
 }
-
-.catalogo-drawer-meta-item dd {
-  font-size: 14px;
+.detalhe-versao-numero {
+  font-family: monospace;
+  font-size: calc(15px * var(--font-scale, 1));
+  font-weight: 700;
   color: var(--text);
-  line-height: 1.5;
 }
 
-/* ===== Blocos de configuração do drawer ===== */
-.catalogo-drawer-config {
+.detalhe-bloco {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 14px 16px;
 }
 
+.detalhe-secao-titulo {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.detalhe-texto {
+  font-size: calc(14px * var(--font-scale, 1));
+  color: var(--text);
+  line-height: 1.65;
+  white-space: pre-line;
+}
+.detalhe-texto a { color: var(--accent); word-break: break-all; }
+
+.detalhe-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.detalhe-meta-item { display: flex; flex-direction: column; gap: 2px; }
+.detalhe-meta-item[hidden] { display: none; }
+.detalhe-meta-item dt { font-size: calc(12px * var(--font-scale, 1)); font-weight: 600; color: var(--text-muted); }
+.detalhe-meta-item dd { font-size: calc(14px * var(--font-scale, 1)); color: var(--text); }
+
+/* Campos de entrada */
+.detalhe-campos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.detalhe-campo {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.detalhe-campo-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.detalhe-campo-rotulo { font-size: calc(14px * var(--font-scale, 1)); font-weight: 600; color: var(--text-strong); }
+.detalhe-campo-codigo { font-family: monospace; font-size: calc(12px * var(--font-scale, 1)); color: var(--text-muted); }
+.detalhe-campo-meta { font-size: calc(12px * var(--font-scale, 1)); color: var(--text-muted); }
+
+.detalhe-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.detalhe-chip {
+  font-size: calc(12px * var(--font-scale, 1));
+  padding: 2px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.detalhe-chip--obrigatorio { border-color: var(--palette-status-blue); }
+
+/* Composição (protocolo composto) */
+.detalhe-composicao-resumo { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.detalhe-regra summary { cursor: pointer; font-size: calc(13px * var(--font-scale, 1)); color: var(--text-muted); }
+.detalhe-pre {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: calc(12px * var(--font-scale, 1));
+  overflow-x: auto;
+}
+
+.detalhe-modulo {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  background: var(--bg-elevated);
+}
+.detalhe-modulo-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.detalhe-modulo-resumo::-webkit-details-marker { display: none; }
+.detalhe-modulo-nome { font-size: calc(15px * var(--font-scale, 1)); font-weight: 600; color: var(--text-strong); margin-right: 4px; }
+.detalhe-modulo-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+.detalhe-explicacao { display: flex; flex-direction: column; gap: 4px; }
+.detalhe-explicacao-titulo {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ===== Blocos de configuração (página de detalhe) ===== */
 .catalogo-config-linha {
   display: flex;
   flex-direction: column;
@@ -296,13 +365,13 @@ button:disabled {
 .catalogo-config-linha:last-child { padding-bottom: 0; border-bottom: none; }
 
 .catalogo-config-titulo {
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   font-weight: 600;
   color: var(--text);
 }
 
 .catalogo-config-nota {
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   color: var(--text-muted);
   line-height: 1.5;
 }
@@ -319,7 +388,7 @@ button:disabled {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   padding: 7px 10px;
 }
 
@@ -348,13 +417,13 @@ button:disabled {
 }
 
 .catalogo-confirm-titulo {
-  font-size: 16px;
+  font-size: calc(16px * var(--font-scale, 1));
   font-weight: 700;
   color: var(--text-strong);
 }
 
 .catalogo-confirm-texto {
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   color: var(--text);
   line-height: 1.6;
 }
@@ -375,7 +444,7 @@ button:disabled {
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   padding: 10px 18px;
   border-radius: var(--radius-sm);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
@@ -391,10 +460,8 @@ button:disabled {
 }
 
 @media (max-width: 760px) {
-  .catalogo-drawer {
-    width: 100%;
-    padding: 24px 20px;
-  }
+  .detalhe-nome { font-size: calc(22px * var(--font-scale, 1)); }
+  .detalhe-versao { align-items: flex-start; }
   .catalog-card {
     padding: 14px 16px;
   }
