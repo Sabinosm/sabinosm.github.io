@@ -88,7 +88,7 @@ canvas {
 .logo svg { width:26px; height:26px; }
 .logo-text {
   font-family: 'Share Tech Mono', monospace;
-  font-size: calc(.95rem * var(--font-scale));
+  font-size: .95rem;
   letter-spacing: .2em;
   color: var(--text-strong);
 }
@@ -108,7 +108,7 @@ canvas {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: calc(.72rem * var(--font-scale));
+  font-size: .72rem;
   color: var(--muted);
   letter-spacing: .04em;
 }
@@ -117,7 +117,7 @@ canvas {
   border-radius: 50%;
   border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center;
-  font-size: calc(.68rem * var(--font-scale));
+  font-size: .68rem;
   color: var(--muted2);
 }
 .page-steps .page-step.active { color: var(--text-strong); }
@@ -137,7 +137,7 @@ canvas {
 
 /* ── Headings ─────────────────────────────── */
 h1 {
-  font-size: calc(1.35rem * var(--font-scale));
+  font-size: 1.35rem;
   font-weight: 600;
   color: var(--text);
   text-align: center;
@@ -146,7 +146,7 @@ h1 {
 }
 .sub {
   text-align: center;
-  font-size: calc(.76rem * var(--font-scale));
+  font-size: .76rem;
   color: var(--muted);
   letter-spacing: .05em;
   margin-bottom: 18px;
@@ -154,7 +154,7 @@ h1 {
 
 /* ── Sections ─────────────────────────────── */
 .section-label {
-  font-size: calc(.68rem * var(--font-scale));
+  font-size: .68rem;
   color: var(--muted2);
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -166,7 +166,7 @@ h1 {
 .field { margin-bottom: 8px; position: relative; }
 .field label {
   display: block;
-  font-size: calc(.72rem * var(--font-scale));
+  font-size: .72rem;
   color: var(--muted2);
   margin-bottom: 5px;
   letter-spacing: .02em;
@@ -179,7 +179,7 @@ h1 {
   padding: 9px 14px;
   color: var(--text);
   font-family: 'Inter', sans-serif;
-  font-size: calc(.86rem * var(--font-scale));
+  font-size: .86rem;
   outline: none;
   transition: border-color .2s, background .2s;
 }
@@ -189,12 +189,12 @@ h1 {
   background: var(--input-bg-focus);
 }
 .field .hint {
-  font-size: calc(.68rem * var(--font-scale));
+  font-size: .68rem;
   color: var(--muted);
   margin-top: 5px;
 }
 .field .error-msg {
-  font-size: calc(.68rem * var(--font-scale));
+  font-size: .68rem;
   color: var(--error);
   margin-top: 5px;
   /* Altura sempre reservada -- visibility/opacity em vez de display,
@@ -302,13 +302,13 @@ h1 {
   border-color: var(--border-focus);
 }
 .plan-name {
-  font-size: calc(.82rem * var(--font-scale));
+  font-size: .82rem;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 3px;
 }
 .plan-desc {
-  font-size: calc(.66rem * var(--font-scale));
+  font-size: .66rem;
   color: var(--muted2);
 }
 
@@ -326,7 +326,7 @@ h1 {
   padding: 12px;
   color: var(--btn-text);
   font-family: 'Inter', sans-serif;
-  font-size: calc(.88rem * var(--font-scale));
+  font-size: .88rem;
   font-weight: 600;
   letter-spacing: .07em;
   cursor: pointer;
@@ -343,7 +343,7 @@ h1 {
 /* ── Feedback ─────────────────────────────── */
 #mensagemFeedback {
   text-align: center;
-  font-size: calc(.78rem * var(--font-scale));
+  font-size: .78rem;
   margin-top: 14px;
   min-height: 1em;
 }
@@ -355,7 +355,7 @@ h1 {
 .footer {
   text-align: center;
   margin-top: 20px;
-  font-size: calc(.76rem * var(--font-scale));
+  font-size: .76rem;
   color: var(--muted);
 }
 .footer a {
