@@ -106,9 +106,18 @@ ligarValidacaoEmTempoReal();
 
 // ── autopreenchimento ────────────────────────
 
+// Contador de consultas ativas por campo. Várias consultas (CNES -> CNPJ,
+// CEP, etc.) podem mexer no mesmo campo ao mesmo tempo; o spinner só
+// some quando a ÚLTIMA delas termina. Todo setFieldLoading(id, true)
+// precisa de um setFieldLoading(id, false) correspondente (no finally).
+const consultasAtivasPorCampo = {};
+
 function setFieldLoading(fieldId, isLoading) {
   const field = document.getElementById(fieldId).closest('.field');
-  field.classList.toggle('is-loading', isLoading);
+  const atual = consultasAtivasPorCampo[fieldId] || 0;
+  const novo = Math.max(0, atual + (isLoading ? 1 : -1));
+  consultasAtivasPorCampo[fieldId] = novo;
+  field.classList.toggle('is-loading', novo > 0);
 }
 
 // Formata o CEP puro-dígitos ("01311902" ou "27910000") para o mesmo
@@ -181,6 +190,7 @@ async function buscarDadosCnpj(cnpjLimpo) {
 
 async function buscarDadosCep(cepLimpo) {
   setFieldLoading('cep', true);
+  setFieldLoading('bairro', true);
   try {
     const resp = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
 
@@ -203,6 +213,7 @@ async function buscarDadosCep(cepLimpo) {
     console.error('Erro ao consultar CEP:', erro);
   } finally {
     setFieldLoading('cep', false);
+    setFieldLoading('bairro', false);
   }
 }
 
@@ -287,10 +298,11 @@ async function buscarDadosCnes(cnesLimpo) {
     // Falha de rede/CORS/parse não deve bloquear o cadastro.
     console.error('Erro ao consultar CNES:', erro);
   } finally {
-    if (idConsulta === consultaCnesAtual) {
-      setFieldLoading('cnes', false);
-      CAMPOS_AUTOPREENCHIDOS_POR_CNES.forEach((id) => setFieldLoading(id, false));
-    }
+    // Sempre libera o que ESTA consulta ligou (mesmo se ficou obsoleta):
+    // o contador por campo mantém o spinner ativo enquanto houver
+    // outra consulta em andamento.
+    setFieldLoading('cnes', false);
+    CAMPOS_AUTOPREENCHIDOS_POR_CNES.forEach((id) => setFieldLoading(id, false));
   }
 }
 

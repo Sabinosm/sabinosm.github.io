@@ -56,11 +56,13 @@
       <div class="field">
         <label for="nome_fantasia">Nome fantasia</label>
         <input type="text" id="nome_fantasia" name="nome_fantasia" placeholder="Nome comercial da empresa" maxlength="255" required/>
+        <div class="field-spinner" aria-hidden="true"></div>
         <div class="error-msg" id="err-nome_fantasia"></div>
       </div>
       <div class="field">
         <label for="razao_social">Razão social <span style="opacity:.6">(opcional)</span></label>
         <input type="text" id="razao_social" name="razao_social" placeholder="Preenchido automaticamente pelo CNPJ, se disponível" maxlength="255"/>
+        <div class="field-spinner" aria-hidden="true"></div>
         <div class="error-msg" id="err-razao_social"></div>
       </div>
     </div>
@@ -77,16 +79,19 @@
       <div class="field">
         <label for="bairro">Bairro</label>
         <input type="text" id="bairro" name="bairro" placeholder="Preenchido pelo CEP, se disponível" maxlength="100" required/>
+        <div class="field-spinner" aria-hidden="true"></div>
         <div class="error-msg" id="err-bairro"></div>
       </div>
       <div class="field">
         <label for="numero">Número</label>
         <input type="text" id="numero" name="numero" placeholder="000" inputmode="numeric" maxlength="10" required/>
+        <div class="field-spinner" aria-hidden="true"></div>
         <div class="error-msg" id="err-numero"></div>
       </div>
       <div class="field">
         <label for="complemento">Complemento <span style="opacity:.6">(opc.)</span></label>
         <input type="text" id="complemento" name="complemento" placeholder="Sala, bloco..." maxlength="150"/>
+        <div class="field-spinner" aria-hidden="true"></div>
       </div>
     </div>
 

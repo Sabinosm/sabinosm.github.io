@@ -267,6 +267,8 @@ h1 {
   display: none;
 }
 .field.is-loading .field-spinner { display: block; }
+/* Reserva espaço à direita para o texto não passar por baixo do spinner */
+.field.is-loading input { padding-right: 36px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Plano (radio cards) ──────────────────── */
