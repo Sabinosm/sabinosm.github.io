@@ -1,0 +1,219 @@
+/* ============================================
+   B-íon — Catálogo de Protocolos: base própria
+   Cópia independente das regras de layout que antes vinham
+   de adminProfissionais.css (centralização, toolbar, busca,
+   filtros, paginação). Mantida de propósito duplicada para o
+   catálogo não depender do CSS de outra página.
+   Carregar ANTES de adminCatalogos.css.
+   ============================================ */
+
+/* ===== Centralização do conteúdo ===== */
+.main {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
+    margin-right: auto;
+  }
+}
+
+/* ===== Barra de busca + filtros ===== */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: calc(14px * var(--font-scale, 1));
+  font-family: inherit;
+  padding: 11px 14px 11px 40px;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 3px 3px 8px var(--neu-shadow-dark),
+    inset -3px -3px 8px var(--neu-shadow-light);
+  transition: border-color 0.15s ease;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-filter:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-filter--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--status-bg);
+}
+
+.btn-filter-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* ===== Painel de filtros (expande abaixo da busca) ===== */
+.filter-panel {
+  display: none;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-top: 10px;
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
+}
+
+.filter-panel--visible {
+  display: flex;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.filter-field label {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.filter-field select,
+.filter-field input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-family: inherit;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.filter-panel-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ===== Paginação ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pagination-info {
+  font-size: calc(13px * var(--font-scale, 1));
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Ícones SVG sem tamanho (evita o círculo gigante) ===== */
+.catalog-empty-icon,
+.detalhe-estado svg {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 760px) {
+  .main { max-width: 100%; margin-left: 0; }
+  .toolbar-row { flex-wrap: wrap; }
+  .filter-panel-actions { margin-left: 0; width: 100%; }
+  .pagination { flex-direction: column; align-items: stretch; }
+}
