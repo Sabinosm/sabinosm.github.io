@@ -1,5 +1,8 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Garante que o atributo hidden sempre vença display: flex/grid de classes */
+[hidden] { display: none !important; }
+
 /* ── Tokens de paleta ─────────────────────────
    Cores cruas do tema atual ("tech-dark"). Ao trocar de tema, só
    este bloco muda — os tokens semânticos abaixo continuam iguais. */

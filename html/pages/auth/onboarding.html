@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Primeiro acesso — Bion</title>
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@400;500;700&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../../../css/pages/auth/auth.css"/>
+  <link rel="stylesheet" href="../../../css/shared/bion-core.css"/>
+  <link rel="stylesheet" href="../../../css/shared/bion-loader.css"/>
   <link rel="icon" type="image/svg+xml" href="../../../assets/imgs/favicon.svg">
 </head>
 <body>
@@ -19,7 +21,10 @@
     <span class="logo-text">B-íon</span>
   </div>
 
-  <section id="passo-senha">
+  <!-- hidden por padrão: o onboarding.js só mostra depois que o servidor
+       (/auth/status) confirmar que a senha ainda precisa ser definida.
+       Enquanto isso, o loader B-íon cobre a tela. -->
+  <section id="passo-senha" hidden>
     <h1>Defina sua senha</h1>
     <p class="sub">Primeiro passo para acessar sua conta</p>
     <form id="form-senha" method="post" action="#">
@@ -98,6 +103,9 @@
 
 </div>
 
+<!-- Loader B-íon (scripts clássicos: expõem window.Bion antes dos módulos abaixo) -->
+<script src="../../../js/shared/bion-core.js"></script>
+<script src="../../../js/shared/bion-loader.js"></script>
 <script type="module" src="/../../../js/shared/particles.js"></script>
 <script type="module" src="/../../../js/shared/feedback.js"></script>
 <script src="../../../js/sharedConfig/vendor/qrcode.min.js"></script>

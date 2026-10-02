@@ -74,6 +74,12 @@ const DESTINO_APOS_CONCLUIR = "../../../html/pages/auth/afterLogin.html";
 // decide de fato se ainda há algo a fazer aqui é o servidor,
 // consultado via /auth/status -- a mesma rota que afterLogin.js já
 // usa para decidir o estado da sessão.
+// Loader B-íon cobre a tela enquanto o servidor decide qual passo mostrar
+// (evita o flash do formulário de senha para quem já tem senha). Só é
+// escondido quando uma etapa é de fato exibida -- nos redirecionamentos
+// ele fica até a navegação acontecer.
+const esconderCarregando = window.Bion?.showLoading?.() ?? (() => {});
+
 await sincronizarPasso();
 
 async function sincronizarPasso() {
@@ -116,10 +122,16 @@ async function sincronizarPasso() {
         await concluirOnboarding();
         return;
       }
+      esconderCarregando();
       await irParaPasso2fa();
+    } else {
+      // Único caso em que o formulário de senha deve aparecer.
+      esconderCarregando();
+      passoSenha.hidden = false;
     }
   } catch (erro) {
     console.error("Erro ao verificar etapa do onboarding:", erro);
+    esconderCarregando();
     exibirMensagem("Não foi possível carregar seu progresso. Recarregue a página.", "erro");
   }
 }
