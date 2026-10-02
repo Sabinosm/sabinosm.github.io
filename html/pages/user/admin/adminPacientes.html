@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B-íon — Pacientes</title>
+<title data-i18n="pagina.pacientes.titulo">B-íon — Pacientes</title>
 <script src="../../../../js/sharedConfig/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
@@ -24,14 +24,14 @@
 
     <header class="main-header">
       <div>
-        <h1>Pacientes</h1>
-        <p class="main-subtitle">Todos os pacientes cadastrados na instituição</p>
+        <h1 data-i18n="pacientes.titulo">Pacientes</h1>
+        <p class="main-subtitle" data-i18n="pacientes.subtitulo">Todos os pacientes cadastrados na instituição</p>
       </div>
       <a href="adminPacientesCriacao.html" class="btn-primary">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
           <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Novo paciente
+        <span data-i18n="pacientes.novo">Novo paciente</span>
       </a>
     </header>
 
@@ -44,13 +44,13 @@
               <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
               <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
             </svg>
-            <input type="text" class="search-input" id="busca-paciente" placeholder="Buscar por nome ou CPF">
+            <input type="text" class="search-input" id="busca-paciente" placeholder="Buscar por nome ou CPF" data-i18n-placeholder="pacientes.busca_placeholder">
           </div>
           <button class="btn-filter" id="btn-toggle-filtros" type="button">
             <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Filtros
+            <span data-i18n="btn.filtros">Filtros</span>
           </button>
         </div>
 
@@ -60,20 +60,20 @@
              não existe filtro correspondente na API ainda. -->
         <div class="filter-panel" id="filter-panel">
           <div class="filter-field">
-            <label for="filtro-status">Status</label>
+            <label for="filtro-status" data-i18n="campo.status">Status</label>
             <select id="filtro-status">
-              <option value="">Todos</option>
-              <option value="ativo">Ativo</option>
-              <option value="inativo">Inativo</option>
-              <option value="obito">Óbito</option>
+              <option value="" data-i18n="filtro.todos">Todos</option>
+              <option value="ativo" data-i18n="status.ativo">Ativo</option>
+              <option value="inativo" data-i18n="status.inativo">Inativo</option>
+              <option value="obito" data-i18n="pacientes.filtro.obito">Óbito</option>
             </select>
           </div>
           <div class="filter-field">
-            <label for="filtro-sexo-biologico">Sexo biológico</label>
+            <label for="filtro-sexo-biologico" data-i18n="pacientes.filtro.sexo_biologico">Sexo biológico</label>
             <select id="filtro-sexo-biologico">
-              <option value="">Todos</option>
-              <option value="masculino">Masculino</option>
-              <option value="feminino">Feminino</option>
+              <option value="" data-i18n="filtro.todos">Todos</option>
+              <option value="masculino" data-i18n="pacientes.filtro.masculino">Masculino</option>
+              <option value="feminino" data-i18n="pacientes.filtro.feminino">Feminino</option>
             </select>
           </div>
           <!-- "Quem cadastrou": qualquer pessoa pode cadastrar um
@@ -82,11 +82,11 @@
                de quem cadastrou aparece no card. Fica como botão
                placeholder -- ver TODO em adminPacientesLista.js. -->
           <div class="filter-field filter-field--placeholder">
-            <label for="btn-filtro-cadastrado-por">Quem cadastrou</label>
-            <button class="btn-ghost" id="btn-filtro-cadastrado-por" type="button">Selecionar…</button>
+            <label for="btn-filtro-cadastrado-por" data-i18n="pacientes.filtro.quem_cadastrou">Quem cadastrou</label>
+            <button class="btn-ghost" id="btn-filtro-cadastrado-por" type="button" data-i18n="pacientes.filtro.selecionar">Selecionar…</button>
           </div>
           <div class="filter-panel-actions">
-            <button class="btn-ghost" id="btn-limpar-filtros" type="button">Limpar</button>
+            <button class="btn-ghost" id="btn-limpar-filtros" type="button" data-i18n="btn.limpar">Limpar</button>
           </div>
         </div>
       </div>

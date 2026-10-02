@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B-íon — Empresa</title>
+<title data-i18n="pagina.empresa.titulo">B-íon — Empresa</title>
 <script src="../../../../js/sharedConfig/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
@@ -23,8 +23,8 @@
 
     <header class="main-header">
       <div>
-        <h1>Empresa</h1>
-        <p class="main-subtitle">Dados institucionais e plano contratado</p>
+        <h1 data-i18n="empresa.titulo">Empresa</h1>
+        <p class="main-subtitle" data-i18n="empresa.subtitulo">Dados institucionais e plano contratado</p>
       </div>
       
     </header>
@@ -33,20 +33,20 @@
       <div class="panel-card">
         <div class="panel-header-row">
           <div>
-            <h2 class="panel-title">Empresa</h2>
-            <p class="panel-subtitle">CNPJ e razão social são fixos após o cadastro.</p>
+            <h2 class="panel-title" data-i18n="empresa.titulo">Empresa</h2>
+            <p class="panel-subtitle" data-i18n="empresa.cnpj_fixo_hint">CNPJ e razão social são fixos após o cadastro.</p>
           </div>
-          <button type="button" class="btn-secondary btn-secondary--sm" id="empresa-btn-alterar">Alterar</button>
+          <button type="button" class="btn-secondary btn-secondary--sm" id="empresa-btn-alterar" data-i18n="btn.alterar">Alterar</button>
         </div>
 
         <form id="form-empresa-editar">
 
-          <div class="section-label">Dados da empresa</div>
+          <div class="section-label" data-i18n="empresa.secao.dados">Dados da empresa</div>
 
           <div class="row-2">
             <!-- Fixo: exige alteração de registro (Receita) -- não editável aqui -->
             <div class="field-group field-group--locked">
-              <label class="field-label">Razão social</label>
+              <label class="field-label" data-i18n="empresa.razao_social">Razão social</label>
               <div class="field-locked" id="empresa-razao-social"></div>
             </div>
 
@@ -54,7 +54,7 @@
                  entrar em edição o valor atual vira placeholder, não fica
                  dentro do campo -- ver adminEmpresa.js. -->
             <div class="field-group field">
-              <label class="field-label" for="empresa-nome-fantasia">Nome fantasia</label>
+              <label class="field-label" for="empresa-nome-fantasia" data-i18n="empresa.nome_fantasia">Nome fantasia</label>
               <input class="field-input" type="text" id="empresa-nome-fantasia" data-track readonly>
               <p class="error-msg" id="err-empresa-nome-fantasia"></p>
             </div>
@@ -62,41 +62,41 @@
 
           <div class="row-2">
             <div class="field-group field-group--locked">
-              <label class="field-label">CNPJ</label>
+              <label class="field-label" data-i18n="empresa.cnpj">CNPJ</label>
               <div class="field-locked" id="empresa-cnpj"></div>
             </div>
 
             <div class="field-group field">
-              <label class="field-label" for="empresa-cnes">CNES</label>
+              <label class="field-label" for="empresa-cnes" data-i18n="empresa.cnes">CNES</label>
               <input class="field-input" type="text" id="empresa-cnes" data-track readonly>
               <p class="error-msg" id="err-empresa-cnes"></p>
             </div>
           </div>
 
-          <div class="section-label">Endereço</div>
+          <div class="section-label" data-i18n="empresa.secao.endereco">Endereço</div>
 
           <div class="row-endereco">
             <div class="field-group field">
-              <label class="field-label" for="empresa-cep">CEP</label>
+              <label class="field-label" for="empresa-cep" data-i18n="empresa.cep">CEP</label>
               <input class="field-input" type="text" id="empresa-cep" data-track readonly>
               <div class="field-spinner" aria-hidden="true"></div>
               <p class="error-msg" id="err-empresa-cep"></p>
             </div>
 
             <div class="field-group field">
-              <label class="field-label" for="empresa-bairro">Bairro</label>
+              <label class="field-label" for="empresa-bairro" data-i18n="empresa.bairro">Bairro</label>
               <input class="field-input" type="text" id="empresa-bairro" data-track readonly>
               <p class="error-msg" id="err-empresa-bairro"></p>
             </div>
 
             <div class="field-group field">
-              <label class="field-label" for="empresa-numero">Número</label>
+              <label class="field-label" for="empresa-numero" data-i18n="empresa.numero">Número</label>
               <input class="field-input" type="text" id="empresa-numero" data-track readonly>
               <p class="error-msg" id="err-empresa-numero"></p>
             </div>
 
             <div class="field-group field">
-              <label class="field-label" for="empresa-complemento">Complemento</label>
+              <label class="field-label" for="empresa-complemento" data-i18n="empresa.complemento">Complemento</label>
               <input class="field-input" type="text" id="empresa-complemento" data-track readonly>
               <p class="error-msg" id="err-empresa-complemento"></p>
             </div>
@@ -104,18 +104,18 @@
 
           <!-- Botões de ação -- escondidos até "Alterar" ser clicado -->
           <div class="form-actions" id="empresa-form-actions" hidden>
-            <button type="button" class="btn-ghost" id="empresa-btn-cancelar">Cancelar</button>
-            <button type="submit" class="btn-primary" id="empresa-btn-salvar">Salvar</button>
+            <button type="button" class="btn-ghost" id="empresa-btn-cancelar" data-i18n="btn.cancelar">Cancelar</button>
+            <button type="submit" class="btn-primary" id="empresa-btn-salvar" data-i18n="btn.salvar">Salvar</button>
           </div>
         </form>
 
         <div class="panel-divider"></div>
 
-        <h2 class="panel-title">Plano</h2>
-        <p class="panel-subtitle">Detalhes do plano contratado.</p>
+        <h2 class="panel-title" data-i18n="empresa.plano_titulo">Plano</h2>
+        <p class="panel-subtitle" data-i18n="empresa.plano_subtitulo">Detalhes do plano contratado.</p>
 
         <div class="field-group field-group--locked">
-          <label class="field-label">Plano atual</label>
+          <label class="field-label" data-i18n="empresa.plano_atual">Plano atual</label>
           <div class="field-locked" id="empresa-plano">
             <span id="empresa-plano-nome"></span>
             <span class="field-locked-tag" id="empresa-plano-status"></span>

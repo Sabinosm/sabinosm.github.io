@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>B-íon — Detalhe do Protocolo</title>
-<script src="../../../../js/sharedConfig/preferenciasLoader.js"></script>
+<title data-i18n="catalogos.detalhe.titulo">B-íon — Detalhe do Protocolo</title>
+<script src="../../../../js/sharedConfig/themeLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminCatalogos.css">
@@ -21,10 +21,10 @@
   <!-- ===== CONTEÚDO PRINCIPAL ===== -->
   <main class="main">
 
-    <a class="detalhe-voltar" id="btn-voltar" href="adminCatalogos.html">← Voltar ao catálogo</a>
+    <a class="detalhe-voltar" id="btn-voltar" href="adminCatalogos.html"><span data-i18n="catalogos.detalhe.voltar">← Voltar ao catálogo</span></a>
 
     <!-- Carregando / erro -->
-    <p class="detalhe-estado" id="detalhe-estado">Carregando protocolo…</p>
+    <p class="detalhe-estado" id="detalhe-estado" data-i18n="catalogos.detalhe.carregando">Carregando protocolo…</p>
 
     <div class="detalhe-conteudo" id="detalhe-conteudo" hidden>
 
@@ -45,62 +45,62 @@
            Pessoal: só médico/enfermeiro (o back manda favorito = null aos demais).
            Governança: só admin. Um médico-admin vê os dois. -->
       <section class="detalhe-bloco" id="config-pessoal" hidden>
-        <h2 class="detalhe-secao-titulo">Minha configuração</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.minha_config">Minha configuração</h2>
         <div id="config-pessoal-corpo"></div>
       </section>
 
       <section class="detalhe-bloco" id="config-admin" hidden>
-        <h2 class="detalhe-secao-titulo">Governança da instituição</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.governanca">Governança da instituição</h2>
         <div id="config-admin-corpo"></div>
       </section>
 
       <!-- Campos de entrada (via adaptador da família) -->
       <section id="secao-campos">
-        <h2 class="detalhe-secao-titulo">Campos de entrada</h2>
-        <div id="campos-corpo" class="detalhe-texto">Carregando campos…</div>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.campos_entrada">Campos de entrada</h2>
+        <div id="campos-corpo" class="detalhe-texto" data-i18n="catalogos.detalhe.carregando_campos">Carregando campos…</div>
       </section>
 
       <!-- Só protocolos compostos -->
       <section id="secao-composicao" hidden>
-        <h2 class="detalhe-secao-titulo">Composição</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.composicao">Composição</h2>
         <div id="composicao-corpo"></div>
       </section>
 
       <!-- Explicação -->
       <section id="secao-o-que-e" hidden>
-        <h2 class="detalhe-secao-titulo">O que é</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.o_que_e">O que é</h2>
         <p class="detalhe-texto" id="detalhe-o-que-e"></p>
       </section>
 
       <section id="secao-quando-usar" hidden>
-        <h2 class="detalhe-secao-titulo">Quando usar</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.quando_usar">Quando usar</h2>
         <p class="detalhe-texto" id="detalhe-quando-usar"></p>
       </section>
 
       <section id="secao-como-interpretar" hidden>
-        <h2 class="detalhe-secao-titulo">Como interpretar</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.como_interpretar">Como interpretar</h2>
         <p class="detalhe-texto" id="detalhe-como-interpretar"></p>
       </section>
 
       <!-- Referência e metadados -->
       <section id="secao-referencia" hidden>
-        <h2 class="detalhe-secao-titulo">Referência bibliográfica</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.referencia">Referência bibliográfica</h2>
         <p class="detalhe-texto" id="detalhe-referencia"></p>
       </section>
 
       <section>
-        <h2 class="detalhe-secao-titulo">Informações do protocolo</h2>
+        <h2 class="detalhe-secao-titulo" data-i18n="catalogos.detalhe.info_protocolo">Informações do protocolo</h2>
         <dl class="detalhe-meta">
           <div class="detalhe-meta-item">
-            <dt>Órgão emissor</dt>
+            <dt data-i18n="catalogos.detalhe.orgao_emissor">Órgão emissor</dt>
             <dd id="detalhe-orgao">—</dd>
           </div>
           <div class="detalhe-meta-item">
-            <dt>Em vigor desde</dt>
+            <dt data-i18n="catalogos.detalhe.vigor_desde">Em vigor desde</dt>
             <dd id="detalhe-vigencia">—</dd>
           </div>
           <div class="detalhe-meta-item" id="meta-vigencia-fim" hidden>
-            <dt>Vigência até</dt>
+            <dt data-i18n="catalogos.detalhe.vigencia_ate">Vigência até</dt>
             <dd id="detalhe-vigencia-fim">—</dd>
           </div>
         </dl>
