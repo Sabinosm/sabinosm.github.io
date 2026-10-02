@@ -31,7 +31,7 @@
   <h1>Criar administrador</h1>
   <p class="sub">Empresa cadastrada — agora configure a conta gestora</p>
 
-  <form id="form-admin" method="post" action="#" novalidate>
+  <form id="form-admin" method="post">
 
     <div class="section-label">Dados pessoais</div>
 
@@ -129,6 +129,7 @@
       <div class="field">
         <label for="rqe">RQE <span style="opacity:.6">(opcional)</span></label>
         <input type="text" id="rqe" name="rqe" placeholder="00000" inputmode="numeric" maxlength="10"/>
+        <div class="error-msg" id="err-rqe"></div>
       </div>
     </div>
 
