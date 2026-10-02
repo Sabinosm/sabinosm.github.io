@@ -38,15 +38,16 @@
 
     <div class="row-2">
       <div class="field">
-        <label for="cnpj">CNPJ</label>
-        <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" inputmode="numeric" maxlength="18" required/>
+        <label for="cnpj">CNPJ <span style="opacity:.6">(ou CNES)</span></label>
+        <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" inputmode="numeric" maxlength="18"/>
         <div class="field-spinner" aria-hidden="true"></div>
-        <div class="hint" id="hint-cnpj">Consultamos automaticamente a razão social pelo CNPJ</div>
+        <div class="hint" id="hint-cnpj">Informe o CNPJ ou o CNES — consultamos os dados automaticamente</div>
         <div class="error-msg" id="err-cnpj"></div>
       </div>
       <div class="field">
-        <label for="cnes">CNES <span style="opacity:.6">(opcional)</span></label>
+        <label for="cnes">CNES <span style="opacity:.6">(ou CNPJ)</span></label>
         <input type="text" id="cnes" name="cnes" placeholder="0000000" inputmode="numeric" maxlength="7"/>
+        <div class="field-spinner" aria-hidden="true"></div>
         <div class="error-msg" id="err-cnes"></div>
       </div>
     </div>

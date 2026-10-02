@@ -19,6 +19,7 @@ import {
   ligarValidacaoEmTempoReal,
   getTipoPapelSelecionado,
   aplicarErrosBackend,
+  aplicarErrosPorCampo,
   clearError,
 } from "./adminValidation.js";
 import { ativarTogglesSenha } from "../../../sharedConfig/passwordToggle.js";
@@ -38,6 +39,7 @@ const TTL_SESSION_EMPRESA_MS = 30 * 60 * 1000; // 30 minutos
 // um admin órfão (o backend também rejeitaria por faltar `empresa`
 // no corpo, mas o front não deveria nem oferecer a tela).
 let dadosEmpresa = null;
+let salvoEmEmpresa = null; // timestamp original, preservado se voltarmos ao passo 1
 try {
   const bruto = sessionStorage.getItem(CHAVE_SESSION_EMPRESA);
   const registro = bruto ? JSON.parse(bruto) : null;
@@ -48,6 +50,7 @@ try {
       sessionStorage.removeItem(CHAVE_SESSION_EMPRESA);
     } else {
       dadosEmpresa = registro.dados;
+      salvoEmEmpresa = registro.salvoEm;
     }
   }
 } catch (erro) {
@@ -65,11 +68,55 @@ if (!dadosEmpresa) {
 // tempo que ficam expostos. Cadastro concluído com sucesso também já
 // limpa explicitamente (ver bloco de envio).
 let cadastroConcluido = false;
+// Quando o servidor recusa algo da EMPRESA, voltamos ao passo 1 para
+// corrigir -- nesse caso os dados precisam sobreviver à navegação
+// (o passo 1 os restaura e já apaga do sessionStorage ao carregar).
+let voltandoParaCorrecao = false;
 window.addEventListener('pagehide', function () {
-  if (!cadastroConcluido) {
+  if (!cadastroConcluido && !voltandoParaCorrecao) {
     sessionStorage.removeItem(CHAVE_SESSION_EMPRESA);
   }
 });
+
+// ── erros do servidor que pertencem à EMPRESA ───────────────────
+//
+// O POST /create valida empresa e admin juntos. Erros de campo do admin
+// são pintados aqui (aplicarErrosBackend), mas erros da empresa não têm
+// input nesta página -- então são identificados aqui e o usuário é
+// devolvido ao passo 1, onde os campos são restaurados e pintados.
+//
+// Caminho principal: o backend manda `erros: { campo: mensagem }` no
+// corpo do json_error (ver BionException.erros), então não há
+// dependência do texto das mensagens.
+// Plano B (respostas sem `erros`, ex: backend ainda não atualizado):
+// parse do formato "campo: msg; campo2: msg2" na string `message`.
+const CAMPOS_EMPRESA = [
+  'cnpj', 'cnes', 'nome_fantasia', 'razao_social', 'cep', 'bairro',
+  'numero', 'complemento',
+];
+
+function separarErrosEmpresa(mensagem) {
+  const erros = {};
+  const restantes = [];
+
+  (mensagem || '').split(';').forEach((parte) => {
+    const trecho = parte.trim();
+    if (!trecho) return;
+
+    const idx = trecho.indexOf(':');
+    if (idx !== -1) {
+      const campo = trecho.slice(0, idx).trim();
+      if (CAMPOS_EMPRESA.includes(campo)) {
+        erros[campo] = trecho.slice(idx + 1).trim();
+        return;
+      }
+    }
+
+    restantes.push(trecho);
+  });
+
+  return { erros, restante: restantes.join('; ') };
+}
 
 // ── animação de fundo (partículas) ──────────
 // Movida para /js/pages/user/admin/animations/particles.js (mesmo
@@ -185,6 +232,7 @@ document.getElementById('form-admin').addEventListener('submit', async function 
 
   const botao = this.querySelector('.btn-primary');
   botao.disabled = true;
+  let redirecionando = false; // mantém o botão travado durante o redirecionamento
 
   try {
     const resp = await fetch(`${URL_BASE_API}/empresas/create`, {
@@ -203,8 +251,48 @@ document.getElementById('form-admin').addEventListener('submit', async function 
       // "campo: msg; campo2: msg2" -- ver _formatar_erros_pydantic no
       // service). O que sobra (erros de model_validator, sem campo
       // mapeável) vai para a mensagem geral.
-      const restante = aplicarErrosBackend(mensagem);
-      exibirMensagem(restante || 'Corrija os campos destacados.', 'erro');
+      let errosEmpresa = {};
+      let restante = '';
+
+      if (corpo?.erros && typeof corpo.erros === 'object') {
+        // Estruturado: { campo: mensagem }. Pinta o que é do admin e
+        // separa o que é da empresa; o resto vai para a mensagem geral.
+        const sobra = aplicarErrosPorCampo(corpo.erros);
+        const outros = [];
+        Object.entries(sobra).forEach(([campo, msg]) => {
+          if (CAMPOS_EMPRESA.includes(campo)) errosEmpresa[campo] = msg;
+          else outros.push(campo === '_geral' ? msg : `${campo}: ${msg}`);
+        });
+        restante = outros.join('; ');
+      } else {
+        // Plano B: parse do texto da mensagem.
+        const restanteAdmin = aplicarErrosBackend(mensagem);
+        ({ erros: errosEmpresa, restante } = separarErrosEmpresa(restanteAdmin));
+      }
+      const temErroEmpresa = Object.keys(errosEmpresa).length > 0;
+      const temErroAdminNoForm = !!document.querySelector('#form-admin .field.has-error');
+
+      // Só erro de empresa (nada do admin pendente nesta tela): volta ao
+      // passo 1 levando os dados e os erros para lá. Se também houver
+      // erro do admin, fica aqui -- o usuário corrige o admin e, se a
+      // empresa ainda for recusada, aí sim é redirecionado.
+      if (temErroEmpresa && !restante && !temErroAdminNoForm) {
+        voltandoParaCorrecao = true;
+        redirecionando = true;
+        sessionStorage.setItem(CHAVE_SESSION_EMPRESA, JSON.stringify({
+          dados: dadosEmpresa,
+          salvoEm: salvoEmEmpresa || Date.now(),
+          erros: errosEmpresa,
+        }));
+        exibirMensagem('Há dados da empresa para corrigir. Voltando ao passo 1...', 'erro');
+        setTimeout(() => {
+          window.location.href = '../../../../html/pages/enterprise/enterpriseRegistration.html';
+        }, 1500);
+        return;
+      }
+
+      const mensagens = [restante, ...Object.values(errosEmpresa)].filter(Boolean);
+      exibirMensagem(mensagens.join('; ') || 'Corrija os campos destacados.', 'erro');
       return;
     }
 
@@ -219,6 +307,6 @@ document.getElementById('form-admin').addEventListener('submit', async function 
     console.error('Erro ao enviar cadastro:', erro);
     exibirMensagem('Erro de conexão. Tente novamente.', 'erro');
   } finally {
-    botao.disabled = false;
+    if (!redirecionando) botao.disabled = false;
   }
 });
