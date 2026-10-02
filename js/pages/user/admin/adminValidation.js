@@ -75,12 +75,14 @@ function isValidCPF(cpf) {
 function isValidEmail(email) {
   // local-part e domínio com limites de tamanho + apenas caracteres
   // seguros (letras, números, . _ % + - @); bloqueia < > " ' ; ` etc.
-  return /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,}$/.test(email);
+  // permissivo de propósito: o backend (EmailStr) é a fonte da verdade
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
 function isValidNome(nome) {
   // só letras (com acentos) e espaços, sem números ou símbolos
-  return /^[A-Za-zÀ-ÖØ-öø-ÿ]+(\s[A-Za-zÀ-ÖØ-öø-ÿ]+)+$/.test(nome.trim());
+  // espelha valida_nome_completo (schema_usuario.py): partes com letras, ' ou -
+  return /^[A-Za-zÀ-ÖØ-öø-ÿ'-]+(\s+[A-Za-zÀ-ÖØ-öø-ÿ'-]+)+$/.test(nome.trim());
 }
 
 function isValidTelefone(telefone) {
@@ -92,7 +94,8 @@ function isValidTelefone(telefone) {
 function isValidLogin(login) {
   // letras, números, ponto, underline e hífen -- sem espaço e sem
   // caracteres de risco (< > " ' ; ` etc.)
-  return /^[A-Za-z0-9._-]+$/.test(login);
+  // espelha REGEX_LOGIN do schema_usuario.py (agora aceita @)
+  return /^[A-Za-z0-9._@-]{3,30}$/.test(login);
 }
 
 function isValidUF(uf) {
@@ -114,12 +117,12 @@ function validateNomeField() {
     setError('nome_completo', 'Informe o nome completo');
     return false;
   }
-  if (nome.length > 60) {
-    setError('nome_completo', 'Máximo de 60 caracteres');
+  if (nome.length < 3 || nome.length > 150) {
+    setError('nome_completo', 'Deve ter entre 3 e 150 caracteres');
     return false;
   }
   if (!isValidNome(nome)) {
-    setError('nome_completo', 'Use apenas letras e espaços, sem números ou símbolos');
+    setError('nome_completo', 'Use apenas letras, espaços, apóstrofo ou hífen (nome e sobrenome)');
     return false;
   }
   clearError('nome_completo');
@@ -175,8 +178,8 @@ function validateEmailField() {
 function validateLoginField() {
   const login = document.getElementById('user_login').value.trim();
 
-  if (login.length < 3 || login.length > 20) {
-    setError('user_login', 'Deve ter entre 3 e 20 caracteres');
+  if (login.length < 3 || login.length > 30) {
+    setError('user_login', 'Deve ter entre 3 e 30 caracteres');
     return false;
   }
   if (/\s/.test(login)) {
@@ -184,7 +187,7 @@ function validateLoginField() {
     return false;
   }
   if (!isValidLogin(login)) {
-    setError('user_login', 'Use apenas letras, números, ponto, hífen ou underline');
+    setError('user_login', 'Use apenas letras, números, ponto, hífen, underline ou @');
     return false;
   }
   clearError('user_login');

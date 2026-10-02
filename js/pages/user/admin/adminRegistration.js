@@ -95,7 +95,7 @@ document.getElementById('telefone').addEventListener('input', function (e) {
 ligarValidacaoEmTempoReal();
 
 // ── mostrar/ocultar senha (olhinho) ───────────────────────────
-ativarTogglesSenha(['#senha', '#confirmar_senha']);
+ativarTogglesSenha('#senha, #confirmar_senha');
 
 // ── função clínica: toggle dos campos de CRM/COREN ────────────
 // Espelha a regra cruzada de schema_usuario.py: só o bloco do

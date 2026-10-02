@@ -64,7 +64,11 @@ function resolverInputs(alvo) {
     return [alvo];
   }
   if (alvo && typeof alvo.length === 'number') {
-    return Array.from(alvo);
+    return Array.from(alvo).flatMap((item) =>
+      typeof item === 'string'
+        ? Array.from(document.querySelectorAll(item))
+        : [item]
+    );
   }
   return [];
 }

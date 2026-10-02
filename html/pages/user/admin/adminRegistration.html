@@ -31,13 +31,13 @@
   <h1>Criar administrador</h1>
   <p class="sub">Empresa cadastrada — agora configure a conta gestora</p>
 
-  <form id="form-admin" method="post">
+  <form id="form-admin" novalidate>
 
     <div class="section-label">Dados pessoais</div>
 
     <div class="field">
       <label for="nome_completo">Nome completo</label>
-      <input type="text" id="nome_completo" name="nome_completo" placeholder="Nome e sobrenome" autocomplete="name" maxlength="60" required/>
+      <input type="text" id="nome_completo" name="nome_completo" placeholder="Nome e sobrenome" autocomplete="name" maxlength="150" required/>
       <div class="error-msg" id="err-nome_completo"></div>
     </div>
 
@@ -64,7 +64,7 @@
 
     <div class="field">
       <label for="user_login">Usuário de login</label>
-      <input type="text" id="user_login" name="user_login" placeholder="usuario.login" autocomplete="username" minlength="3" maxlength="20" required/>
+      <input type="text" id="user_login" name="user_login" placeholder="usuario.login" autocomplete="username" minlength="3" maxlength="30" required/>
       <div class="hint">Usado para acessar o painel, pode ser diferente do e-mail</div>
       <div class="error-msg" id="err-user_login"></div>
     </div>
@@ -129,7 +129,6 @@
       <div class="field">
         <label for="rqe">RQE <span style="opacity:.6">(opcional)</span></label>
         <input type="text" id="rqe" name="rqe" placeholder="00000" inputmode="numeric" maxlength="10"/>
-        <div class="error-msg" id="err-rqe"></div>
       </div>
     </div>
 
