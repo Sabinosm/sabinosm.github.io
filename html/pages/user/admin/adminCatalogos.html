@@ -3,12 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="pagina.empresa.titulo">B-íon — Empresa</title>
-<script src="../../../../js/sharedConfig/preferenciasLoader.js"></script>
+<title data-i18n="pagina.catalogos.titulo">B-íon — Catálogo de Protocolos</title>
+<script src="../../../../js/sharedConfig/themeLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/user/admin/adminHomePage.css">
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
-<link rel="stylesheet" href="../../../../css/pages/enterprise/adminEmpresa.css">
-<link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
+<link rel="stylesheet" href="../../../../css/pages/user/admin/adminCatalogos.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
 </head>
 <body>
@@ -23,112 +22,91 @@
 
     <header class="main-header">
       <div>
-        <h1 data-i18n="empresa.titulo">Empresa</h1>
-        <p class="main-subtitle" data-i18n="empresa.subtitulo">Dados institucionais e plano contratado</p>
+        <h1 data-i18n="catalogos.titulo">Catálogo de Protocolos</h1>
+        <p class="main-subtitle" data-i18n="catalogos.subtitulo">Escores, árvores de triagem e PCDTs disponíveis para a instituição</p>
       </div>
-      
     </header>
 
-    <section class="section section--centered">
-      <div class="panel-card">
-        <div class="panel-header-row">
-          <div>
-            <h2 class="panel-title" data-i18n="empresa.titulo">Empresa</h2>
-            <p class="panel-subtitle" data-i18n="empresa.cnpj_fixo_hint">CNPJ e razão social são fixos após o cadastro.</p>
+    <section class="section">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="busca-protocolo" placeholder="Buscar por nome ou sigla" data-i18n-placeholder="catalogos.busca_placeholder">
           </div>
-          <button type="button" class="btn-secondary btn-secondary--sm" id="empresa-btn-alterar" data-i18n="btn.alterar">Alterar</button>
+          <button class="btn-filter" id="btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-i18n="btn.filtros">Filtros</span>
+          </button>
         </div>
 
-        <form id="form-empresa-editar">
-
-          <div class="section-label" data-i18n="empresa.secao.dados">Dados da empresa</div>
-
-          <div class="row-2">
-            <!-- Fixo: exige alteração de registro (Receita) -- não editável aqui -->
-            <div class="field-group field-group--locked">
-              <label class="field-label" data-i18n="empresa.razao_social">Razão social</label>
-              <div class="field-locked" id="empresa-razao-social"></div>
-            </div>
-
-            <!-- Editável: 1 input só, readonly fora do modo de edição. Ao
-                 entrar em edição o valor atual vira placeholder, não fica
-                 dentro do campo -- ver adminEmpresa.js. -->
-            <div class="field-group field">
-              <label class="field-label" for="empresa-nome-fantasia" data-i18n="empresa.nome_fantasia">Nome fantasia</label>
-              <input class="field-input" type="text" id="empresa-nome-fantasia" data-track readonly>
-              <p class="error-msg" id="err-empresa-nome-fantasia"></p>
-            </div>
+        <!-- Painel de filtros — espelha os query params reais do back:
+             ?tipo_protocolo=&escopo_populacao=&escopo_uso=&apenas_liberados= -->
+        <div class="filter-panel" id="filter-panel">
+          <div class="filter-field">
+            <label for="filtro-tipo-protocolo" data-i18n="catalogos.tipo_protocolo">Tipo de protocolo</label>
+            <select id="filtro-tipo-protocolo">
+              <option value="" data-i18n="filtro.todos">Todos</option>
+              <option value="escore-ponderado" data-i18n="catalogos.tipo.escore_ponderado">Escore ponderado</option>
+              <option value="arvore-decisao" data-i18n="catalogos.tipo.arvore_decisao">Árvore de decisão</option>
+              <option value="regra-categorica" data-i18n="catalogos.tipo.regra_categorica">Regra categórica</option>
+              <option value="protocolo-composto" data-i18n="catalogos.tipo.composicao_modulos">Composição de módulos</option>
+            </select>
           </div>
-
-          <div class="row-2">
-            <div class="field-group field-group--locked">
-              <label class="field-label" data-i18n="empresa.cnpj">CNPJ</label>
-              <div class="field-locked" id="empresa-cnpj"></div>
-            </div>
-
-            <div class="field-group field">
-              <label class="field-label" for="empresa-cnes" data-i18n="empresa.cnes">CNES</label>
-              <input class="field-input" type="text" id="empresa-cnes" data-track readonly>
-              <p class="error-msg" id="err-empresa-cnes"></p>
-            </div>
+          <div class="filter-field">
+            <label for="filtro-escopo-populacao" data-i18n="catalogos.populacao">População</label>
+            <select id="filtro-escopo-populacao">
+              <option value="" data-i18n="filtro.todas">Todas</option>
+              <option value="adulto" data-i18n="catalogos.populacao.adulto">Adulto</option>
+              <option value="pediatrico" data-i18n="catalogos.populacao.pediatrico">Pediátrico</option>
+              <option value="obstetrico" data-i18n="catalogos.populacao.obstetrico">Obstétrico</option>
+              <option value="neonatal" data-i18n="catalogos.populacao.neonatal">Neonatal</option>
+              <option value="universal" data-i18n="catalogos.populacao.universal">Universal</option>
+            </select>
           </div>
-
-          <div class="section-label" data-i18n="empresa.secao.endereco">Endereço</div>
-
-          <div class="row-endereco">
-            <div class="field-group field">
-              <label class="field-label" for="empresa-cep" data-i18n="empresa.cep">CEP</label>
-              <input class="field-input" type="text" id="empresa-cep" data-track readonly>
-              <div class="field-spinner" aria-hidden="true"></div>
-              <p class="error-msg" id="err-empresa-cep"></p>
-            </div>
-
-            <div class="field-group field">
-              <label class="field-label" for="empresa-bairro" data-i18n="empresa.bairro">Bairro</label>
-              <input class="field-input" type="text" id="empresa-bairro" data-track readonly>
-              <p class="error-msg" id="err-empresa-bairro"></p>
-            </div>
-
-            <div class="field-group field">
-              <label class="field-label" for="empresa-numero" data-i18n="empresa.numero">Número</label>
-              <input class="field-input" type="text" id="empresa-numero" data-track readonly>
-              <p class="error-msg" id="err-empresa-numero"></p>
-            </div>
-
-            <div class="field-group field">
-              <label class="field-label" for="empresa-complemento" data-i18n="empresa.complemento">Complemento</label>
-              <input class="field-input" type="text" id="empresa-complemento" data-track readonly>
-              <p class="error-msg" id="err-empresa-complemento"></p>
-            </div>
+          <div class="filter-field">
+            <label for="filtro-escopo-uso" data-i18n="catalogos.uso">Uso</label>
+            <select id="filtro-escopo-uso">
+              <option value="" data-i18n="filtro.todos">Todos</option>
+              <option value="triagem" data-i18n="catalogos.uso.triagem">Triagem</option>
+              <option value="consulta" data-i18n="catalogos.uso.consulta">Consulta</option>
+              <option value="ambos" data-i18n="catalogos.uso.ambos">Triagem e consulta</option>
+            </select>
           </div>
-
-          <!-- Botões de ação -- escondidos até "Alterar" ser clicado -->
-          <div class="form-actions" id="empresa-form-actions" hidden>
-            <button type="button" class="btn-ghost" id="empresa-btn-cancelar" data-i18n="btn.cancelar">Cancelar</button>
-            <button type="submit" class="btn-primary" id="empresa-btn-salvar" data-i18n="btn.salvar">Salvar</button>
+          <div class="filter-field filter-field--checkbox">
+            <input type="checkbox" id="filtro-apenas-liberados">
+            <label for="filtro-apenas-liberados" data-i18n="catalogos.somente_liberados">Somente liberados pela instituição</label>
           </div>
-        </form>
-
-        <div class="panel-divider"></div>
-
-        <h2 class="panel-title" data-i18n="empresa.plano_titulo">Plano</h2>
-        <p class="panel-subtitle" data-i18n="empresa.plano_subtitulo">Detalhes do plano contratado.</p>
-
-        <div class="field-group field-group--locked">
-          <label class="field-label" data-i18n="empresa.plano_atual">Plano atual</label>
-          <div class="field-locked" id="empresa-plano">
-            <span id="empresa-plano-nome"></span>
-            <span class="field-locked-tag" id="empresa-plano-status"></span>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="btn-limpar-filtros" type="button" data-i18n="btn.limpar">Limpar</button>
           </div>
         </div>
       </div>
+
+      <div class="catalog-list" id="lista-protocolos">
+        <!-- Preenchido dinamicamente por adminCatalogosLista.js -->
+      </div>
+
+      <div class="pagination" id="paginacao">
+        <!-- Preenchido dinamicamente por adminCatalogosLista.js -->
+      </div>
+
     </section>
 
   </main>
 </div>
 
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
 <script type="module" src="../../../../js/sharedConfig/settingsLoader.js"></script>
-<script type="module" src="../../../../js/pages/enterprise/adminEmpresa.js"></script>
+<script type="module" src="../../../../js/pages/user/admin/adminCatalogos/adminCatalogosLista.js"></script>
 <script type="module" src="../../../../js/sharedConfig/initHomePage.js"></script>
 <script src="../../../../js/sharedConfig/sidebarLoader.js"></script>
 </body>
