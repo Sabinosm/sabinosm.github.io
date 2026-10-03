@@ -30,7 +30,7 @@
 // 128 do backend) -- ver nota em passwordValidation.js sobre o risco
 // de dessincronia entre as cópias client-side e a fonte da verdade.
 
-import { validarSenha } from '../../../sharedConfig/passwordValidation.js';
+import { validarSenha } from '../../sharedConfig/passwordValidation.js';
 
 // ── UI: exibir / limpar erro ─────────────────────────────────
 function setError(fieldId, message) {
@@ -402,6 +402,24 @@ export function aplicarErrosBackend(mensagem) {
   });
 
   return partesRestantes.join('; ');
+}
+
+// Versão estruturada de aplicarErrosBackend: recebe o objeto
+// { campo: mensagem } que o backend manda em `erros` (json_error).
+// Pinta os campos do admin que existem no DOM e devolve o que sobrou
+// (campos de outro formulário, ex: empresa, ou "_geral") como objeto.
+export function aplicarErrosPorCampo(erros) {
+  const sobra = {};
+  if (!erros || typeof erros !== 'object') return sobra;
+
+  Object.entries(erros).forEach(([campo, msg]) => {
+    if (CAMPOS_FORMULARIO_ADMIN.includes(campo) && document.getElementById(campo)) {
+      setError(campo, String(msg));
+    } else {
+      sobra[campo] = String(msg);
+    }
+  });
+  return sobra;
 }
 
 // ── validação completa do formulário (portão antes da API) ───

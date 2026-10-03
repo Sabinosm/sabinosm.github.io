@@ -1,36 +1,116 @@
-// adminValidation.js
+// validation.js
 //
-// Módulo dedicado de validação para o formulário de criação do
-// administrador (form-admin). Responsável por:
+// Módulo dedicado de validação para o formulário de cadastro de empresa
+// (form-empresa). Responsável por:
 //   - validar formato, tamanho e caracteres permitidos de cada campo
 //   - exibir/ocultar as mensagens de erro em vermelho (.error-msg / .has-error)
-//   - expor uma função única (validarFormularioAdmin) que retorna
+//   - expor uma função única (validarFormularioEmpresa) que retorna
 //     true/false, para ser usada como "portão" antes de qualquer
 //     chamada à API
 //
 // Este arquivo não faz máscaras de input nem chamadas de API — apenas
-// validação. Import e uso típico em adminRegistration.js:
+// validação. Import e uso típico em enterpriseRegistration.js:
 //
-//   import { validarFormularioAdmin, ligarValidacaoEmTempoReal } from './adminValidation.js';
+//   import { validarFormularioEmpresa, ligarValidacaoEmTempoReal } from './validation.js';
 //
 //   ligarValidacaoEmTempoReal(); // opcional: valida enquanto o usuário digita
 //
 //   form.addEventListener('submit', async (e) => {
 //     e.preventDefault();
-//     if (!validarFormularioAdmin()) return; // bloqueia envio
+//     if (!validarFormularioEmpresa()) return; // bloqueia envio
 //     // ... segue para o fetch normalmente
 //   });
-//
-// ALTERADO: validação de força de senha (validateSenhaField) deixou de
-// ter regras próprias e passou a usar ../../../sharedConfig/passwordValidation.js
-// -- o mesmo validador usado em settingsSenha.js (troca de senha nas
-// configurações), que espelha validar_senha() do backend
-// (src/core/validacoes.py). Antes deste ajuste, este arquivo tinha uma
-// terceira cópia divergente das regras (máx. 50 caracteres, contra os
-// 128 do backend) -- ver nota em passwordValidation.js sobre o risco
-// de dessincronia entre as cópias client-side e a fonte da verdade.
 
-import { validarSenha } from '../../sharedConfig/passwordValidation.js';
+// ── Regras de cada campo ─────────────────────────────────────
+// regex: formato aceito (após trim). maxLength/minLength: limites de
+// tamanho. required: obrigatório ou não.
+const REGRAS = {
+  cnpj: {
+    label: 'o CNPJ',
+    required: false, // obrigatório só se o CNES estiver vazio (ver validarCnpjField)
+    // aceita tanto "00.000.000/0000-00" quanto só dígitos
+    regex: /^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/,
+    maxLength: 18,
+  },
+  cnes: {
+    label: 'o CNES',
+    required: false,
+    // CNES tem sempre 7 dígitos
+    regex: /^\d{7}$/,
+    maxLength: 7,
+  },
+  nome_fantasia: {
+    label: 'o nome fantasia',
+    required: true,
+    minLength: 2,
+    maxLength: 255,
+    // letras (com acentos), números, espaço e pontuação comum em nomes
+    // de empresa. Bloqueia < > { } ; ` e outros caracteres de risco
+    // (injeção de HTML/script) e símbolos sem uso legítimo no campo.
+    // Inclui "/" porque nomes vindos do CNES podem trazê-lo (ex: "A/B").
+    regex: /^[\p{L}\p{N}\s.,&\-'()/]+$/u,
+  },
+  razao_social: {
+    label: 'a razão social',
+    required: false,
+    minLength: 2,
+    maxLength: 255,
+    // inclui "/" para permitir formatos como "Empresa X S/A"
+    regex: /^[\p{L}\p{N}\s.,&\-'()/]+$/u,
+  },
+  cep: {
+    label: 'o CEP',
+    required: true,
+    regex: /^\d{5}-?\d{3}$/,
+    maxLength: 9,
+  },
+  bairro: {
+    label: 'o bairro',
+    required: true,
+    minLength: 2,
+    maxLength: 100,
+    regex: /^[\p{L}\p{N}\s.,\-'()]+$/u,
+  },
+  numero: {
+    label: 'o número',
+    required: true,
+    maxLength: 10,
+    // número do endereço: dígitos, opcionalmente com sufixo tipo "120A"
+    // ou "S/N" / "SN" (o CNES costuma devolver "SN"). Não aceita
+    // símbolos soltos.
+    regex: /^(\d{1,8}[A-Za-z]?|[sS]\/?[nN])$/,
+  },
+  complemento: {
+    label: 'o complemento',
+    required: false,
+    maxLength: 150,
+    regex: /^[\p{L}\p{N}\s.,\-'°ºª/]*$/u,
+  },
+};
+
+// Campos obrigatórios que possuem regra específica adicional além do
+// que está em REGRAS (ex: dígito verificador do CNPJ).
+function isValidCNPJ(cnpjValor) {
+  const digits = cnpjValor.replace(/\D/g, '');
+  if (digits.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(digits)) return false; // todos os dígitos iguais
+
+  const calcDigito = (base, pesos) => {
+    const soma = pesos.reduce((acc, peso, i) => acc + parseInt(base[i], 10) * peso, 0);
+    const resto = soma % 11;
+    return resto < 2 ? 0 : 11 - resto;
+  };
+
+  const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const digito1 = calcDigito(digits.slice(0, 12), pesos1);
+  if (digito1 !== parseInt(digits[12], 10)) return false;
+
+  const pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const digito2 = calcDigito(digits.slice(0, 13), pesos2);
+  if (digito2 !== parseInt(digits[13], 10)) return false;
+
+  return true;
+}
 
 // ── UI: exibir / limpar erro ─────────────────────────────────
 function setError(fieldId, message) {
@@ -51,329 +131,99 @@ function clearError(fieldId) {
   if (errEl) errEl.textContent = '';
 }
 
-// ── validações de formato por campo ──────────────────────────
-function isValidCPF(cpf) {
-  const digits = cpf.replace(/\D/g, '');
-  if (digits.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(digits)) return false; // todos os dígitos iguais
+// ── Validação genérica por regra ─────────────────────────────
+// Retorna true se válido; se inválido, já seta a mensagem de erro.
+function validarCampoPorRegra(fieldId) {
+  const regra = REGRAS[fieldId];
+  const input = document.getElementById(fieldId);
+  if (!regra || !input) return true;
 
-  let sum = 0;
-  for (let i = 0; i < 9; i++) sum += parseInt(digits[i], 10) * (10 - i);
-  let check1 = (sum * 10) % 11;
-  if (check1 === 10) check1 = 0;
-  if (check1 !== parseInt(digits[9], 10)) return false;
+  const valorBruto = input.value;
+  const valor = valorBruto.trim();
 
-  sum = 0;
-  for (let i = 0; i < 10; i++) sum += parseInt(digits[i], 10) * (11 - i);
-  let check2 = (sum * 10) % 11;
-  if (check2 === 10) check2 = 0;
-  if (check2 !== parseInt(digits[10], 10)) return false;
+  // vazio
+  if (valor.length === 0) {
+    if (regra.required) {
+      setError(fieldId, `Informe ${regra.label}`);
+      return false;
+    }
+    clearError(fieldId);
+    return true; // opcional e vazio: ok
+  }
 
+  // tamanho mínimo
+  if (regra.minLength && valor.length < regra.minLength) {
+    setError(fieldId, `Mínimo de ${regra.minLength} caracteres`);
+    return false;
+  }
+
+  // tamanho máximo
+  if (regra.maxLength && valor.length > regra.maxLength) {
+    setError(fieldId, `Máximo de ${regra.maxLength} caracteres`);
+    return false;
+  }
+
+  // formato / caracteres permitidos
+  if (regra.regex && !regra.regex.test(valor)) {
+    setError(fieldId, `Formato inválido em ${regra.label}`);
+    return false;
+  }
+
+  clearError(fieldId);
   return true;
 }
 
-function isValidEmail(email) {
-  // local-part e domínio com limites de tamanho + apenas caracteres
-  // seguros (letras, números, . _ % + - @); bloqueia < > " ' ; ` etc.
-  // permissivo de propósito: o backend (EmailStr) é a fonte da verdade
-  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
-}
-
-function isValidNome(nome) {
-  // só letras (com acentos) e espaços, sem números ou símbolos
-  // espelha valida_nome_completo (schema_usuario.py): partes com letras, ' ou -
-  return /^[A-Za-zÀ-ÖØ-öø-ÿ'-]+(\s+[A-Za-zÀ-ÖØ-öø-ÿ'-]+)+$/.test(nome.trim());
-}
-
-function isValidTelefone(telefone) {
-  const digits = telefone.replace(/\D/g, '');
-  // fixo (10) ou celular (11) com DDD, sem contar máscara
-  return digits.length === 10 || digits.length === 11;
-}
-
-function isValidLogin(login) {
-  // letras, números, ponto, underline e hífen -- sem espaço e sem
-  // caracteres de risco (< > " ' ; ` etc.)
-  // espelha REGEX_LOGIN do schema_usuario.py (agora aceita @)
-  return /^[A-Za-z0-9._@-]{3,30}$/.test(login);
-}
-
-function isValidUF(uf) {
-  // mesma regra de schema_usuario.py (REGEX_UF): 2 letras, maiúsculas
-  // ou não -- normalização de caixa é feita no backend.
-  return /^[A-Za-z]{2}$/.test(uf.trim());
-}
-
-function isValidNumeroRegistro(numero) {
-  // schema_usuario.py: só dígitos (CRM ou COREN)
-  return /^\d+$/.test(numero.trim());
-}
-
-// ── validação por campo (usadas no submit e em tempo real) ──
-function validateNomeField() {
-  const nome = document.getElementById('nome_completo').value.trim();
-
-  if (nome.length === 0) {
-    setError('nome_completo', 'Informe o nome completo');
-    return false;
-  }
-  if (nome.length < 3 || nome.length > 150) {
-    setError('nome_completo', 'Deve ter entre 3 e 150 caracteres');
-    return false;
-  }
-  if (!isValidNome(nome)) {
-    setError('nome_completo', 'Use apenas letras, espaços, apóstrofo ou hífen (nome e sobrenome)');
-    return false;
-  }
-  clearError('nome_completo');
-  return true;
-}
-
-function validateCpfField() {
-  const cpf = document.getElementById('cpf').value;
-
-  if (!isValidCPF(cpf)) {
-    setError('cpf', 'CPF inválido');
-    return false;
-  }
-  clearError('cpf');
-  return true;
-}
-
-function validateTelefoneField() {
-  const telefone = document.getElementById('telefone').value.trim();
-
-  // campo opcional -- vazio é válido
-  if (telefone.length === 0) {
-    clearError('telefone');
+// ── Validações específicas (além da regra genérica) ──────────
+function validarCnpjField() {
+  // CNPJ e CNES: pelo menos um dos dois precisa estar preenchido.
+  const valorCnpj = document.getElementById('cnpj').value.trim();
+  const valorCnes = document.getElementById('cnes').value.trim();
+  if (valorCnpj === '') {
+    if (valorCnes === '') {
+      setError('cnpj', 'Informe o CNPJ ou o CNES');
+      return false;
+    }
+    clearError('cnpj');
     return true;
   }
-  if (!isValidTelefone(telefone)) {
-    setError('telefone', 'Telefone inválido');
+
+  const okFormato = validarCampoPorRegra('cnpj');
+  if (!okFormato) return false;
+
+  const cnpj = document.getElementById('cnpj').value;
+  if (!isValidCNPJ(cnpj)) {
+    setError('cnpj', 'CNPJ inválido (dígito verificador não confere)');
     return false;
   }
-  clearError('telefone');
+  clearError('cnpj');
   return true;
 }
 
-function validateEmailField() {
-  const email = document.getElementById('email').value.trim();
+function validarCepField() {
+  const okFormato = validarCampoPorRegra('cep');
+  if (!okFormato) return false;
 
-  if (email.length === 0) {
-    setError('email', 'Informe o e-mail');
+  const cep = document.getElementById('cep').value.replace(/\D/g, '');
+  if (cep.length !== 8) {
+    setError('cep', 'CEP inválido');
     return false;
   }
-  if (email.length > 50) {
-    setError('email', 'Máximo de 50 caracteres');
-    return false;
-  }
-  if (!isValidEmail(email)) {
-    setError('email', 'E-mail inválido');
-    return false;
-  }
-  clearError('email');
+  clearError('cep');
   return true;
 }
 
-function validateLoginField() {
-  const login = document.getElementById('user_login').value.trim();
-
-  if (login.length < 3 || login.length > 30) {
-    setError('user_login', 'Deve ter entre 3 e 30 caracteres');
-    return false;
-  }
-  if (/\s/.test(login)) {
-    setError('user_login', 'Não pode conter espaços');
-    return false;
-  }
-  if (!isValidLogin(login)) {
-    setError('user_login', 'Use apenas letras, números, ponto, hífen, underline ou @');
-    return false;
-  }
-  clearError('user_login');
-  return true;
-}
-
-function validateSenhaField() {
-  const senha = document.getElementById('senha').value;
-  const { valida, mensagem } = validarSenha(senha);
-
-  if (!valida) {
-    setError('senha', mensagem);
-    return false;
-  }
-  clearError('senha');
-  return true;
-}
-
-// ── função clínica (médico/enfermeiro/nenhuma) ────────────────
-// Espelha a regra cruzada de schema_usuario.py (valida_campos_por_profissao):
-// cada tipo_papel exige seu próprio conjunto de campos, e nenhum dos
-// dois conjuntos deve ser preenchido quando tipo_papel é null.
-function getTipoPapelSelecionado() {
-  const marcado = document.querySelector('input[name="tipo_papel"]:checked');
-  return marcado && marcado.value ? marcado.value : null; // '' -> null
-}
-
-function validateCrmField() {
-  const numero = document.getElementById('numero_crm').value.trim();
-  const uf = document.getElementById('uf_crm').value.trim();
-  let ok = true;
-
-  if (numero.length === 0) {
-    setError('numero_crm', 'Informe o CRM');
-    ok = false;
-  } else if (!isValidNumeroRegistro(numero)) {
-    setError('numero_crm', 'CRM deve conter apenas números');
-    ok = false;
-  } else {
-    clearError('numero_crm');
-  }
-
-  if (uf.length === 0) {
-    setError('uf_crm', 'Informe a UF');
-    ok = false;
-  } else if (!isValidUF(uf)) {
-    setError('uf_crm', 'UF deve ter 2 letras');
-    ok = false;
-  } else {
-    clearError('uf_crm');
-  }
-
-  return ok;
-}
-
-function validateCorenField() {
-  const numero = document.getElementById('numero_coren').value.trim();
-  const uf = document.getElementById('uf_coren').value.trim();
-  const especialidade = document.getElementById('especialidade').value.trim();
-  let ok = true;
-
-  if (numero.length === 0) {
-    setError('numero_coren', 'Informe o COREN');
-    ok = false;
-  } else if (!isValidNumeroRegistro(numero)) {
-    setError('numero_coren', 'COREN deve conter apenas números');
-    ok = false;
-  } else {
-    clearError('numero_coren');
-  }
-
-  if (uf.length === 0) {
-    setError('uf_coren', 'Informe a UF');
-    ok = false;
-  } else if (!isValidUF(uf)) {
-    setError('uf_coren', 'UF deve ter 2 letras');
-    ok = false;
-  } else {
-    clearError('uf_coren');
-  }
-
-  if (especialidade.length < 2) {
-    setError('especialidade', 'Informe a especialidade');
-    ok = false;
-  } else {
-    clearError('especialidade');
-  }
-
-  return ok;
-}
-
-// Valida somente o bloco correspondente ao tipo_papel selecionado.
-// 'Nenhuma' não tem campos próprios para validar -- os campos do
-// bloco escondido já são limpos no toggle (ver adminRegistration.js),
-// então não há o que checar aqui.
-function validateFuncaoClinica() {
-  const tipo = getTipoPapelSelecionado();
-  if (tipo === 'medico') return validateCrmField();
-  if (tipo === 'enfermeiro') return validateCorenField();
-  return true;
-}
-
-// ── conferência de senha em tempo real ──────
-function checkPasswordsMatch() {
-  const senha = document.getElementById('senha').value;
-  const confirmar = document.getElementById('confirmar_senha').value;
-
-  if (confirmar.length === 0) {
-    clearError('confirmar_senha');
-    return;
-  }
-
-  if (confirmar !== senha) {
-    setError('confirmar_senha', 'As senhas não coincidem');
-  } else {
-    clearError('confirmar_senha');
-  }
-}
-
-// ── validação em tempo real (opcional) ───────────────────────
-// Liga listeners de 'input' para validar enquanto o usuário digita,
-// sem esperar o submit. Chamar uma vez, ao carregar a página.
-export function ligarValidacaoEmTempoReal() {
-  document.getElementById('nome_completo').addEventListener('input', function () {
-    if (this.closest('.field').classList.contains('has-error') || this.value.trim().length > 0) {
-      validateNomeField();
-    }
-  });
-
-  document.getElementById('cpf').addEventListener('input', validateCpfField);
-
-  document.getElementById('telefone').addEventListener('input', function () {
-    if (this.value.trim().length > 0) validateTelefoneField();
-    else clearError('telefone');
-  });
-
-  document.getElementById('email').addEventListener('input', function () {
-    if (this.value.trim().length > 0) validateEmailField();
-    else clearError('email');
-  });
-
-  document.getElementById('user_login').addEventListener('input', function () {
-    if (this.value.trim().length > 0) validateLoginField();
-    else clearError('user_login');
-  });
-
-  document.getElementById('senha').addEventListener('input', function () {
-    if (this.value.length > 0) validateSenhaField();
-    else clearError('senha');
-    checkPasswordsMatch();
-  });
-
-  document.getElementById('confirmar_senha').addEventListener('input', checkPasswordsMatch);
-
-  // Campos de CRM/COREN só existem escondidos no DOM (não removidos),
-  // então os listeners podem ser ligados de cara -- eles simplesmente
-  // não disparam nada relevante enquanto 'Nenhuma' estiver selecionado
-  // (o submit é o portão real; isso aqui só evita incomodar o usuário
-  // a cada tecla antes de já haver erro visível).
-  ['numero_crm', 'uf_crm'].forEach((id) => {
-    document.getElementById(id).addEventListener('input', function () {
-      if (this.closest('.field').classList.contains('has-error')) validateCrmField();
-    });
-  });
-
-  ['numero_coren', 'uf_coren', 'especialidade'].forEach((id) => {
-    document.getElementById(id).addEventListener('input', function () {
-      if (this.closest('.field').classList.contains('has-error')) validateCorenField();
-    });
-  });
+function validarPlano() {
+  const marcado = document.querySelector('input[name="plano"]:checked');
+  return !!marcado;
 }
 
 // ── aplicar erros vindos do backend nos campos correspondentes ──
-// O backend (_formatar_erros_pydantic) devolve mensagens no formato
-// "campo: msg; campo2: msg2" -- um segmento por erro de field_validator.
-// Aqui a gente faz o parse e chama setError no campo certo, em vez de
-// deixar tudo cair numa string só no #mensagemFeedback.
-//
-// Limitação conhecida: erros de model_validator (regra cruzada, ex:
-// "Médicos precisam preencher CRM e UF") chegam com campo "(corpo)"
-// -- não há como saber automaticamente em qual input pintar, então
-// esses seguem para a mensagem geral (valor de retorno desta função).
-const CAMPOS_FORMULARIO_ADMIN = [
-  'nome_completo', 'cpf', 'telefone', 'email', 'user_login', 'senha',
-  'confirmar_senha', 'numero_crm', 'uf_crm', 'numero_coren', 'uf_coren',
-  'especialidade',
+// Mesmo mecanismo do adminValidation.js -- ver comentário lá para o
+// racional completo e a limitação com erros de model_validator
+// (campo "(corpo)", sem input correspondente).
+const CAMPOS_FORMULARIO_EMPRESA = [
+  'cnpj', 'cnes', 'nome_fantasia', 'razao_social', 'cep', 'bairro',
+  'numero', 'complemento',
 ];
 
 export function aplicarErrosBackend(mensagem) {
@@ -394,7 +244,7 @@ export function aplicarErrosBackend(mensagem) {
     const campo = trecho.slice(0, idx).trim();
     const msg = trecho.slice(idx + 1).trim();
 
-    if (CAMPOS_FORMULARIO_ADMIN.includes(campo) && document.getElementById(campo)) {
+    if (CAMPOS_FORMULARIO_EMPRESA.includes(campo) && document.getElementById(campo)) {
       setError(campo, msg);
     } else {
       partesRestantes.push(trecho);
@@ -404,70 +254,94 @@ export function aplicarErrosBackend(mensagem) {
   return partesRestantes.join('; ');
 }
 
-// Versão estruturada de aplicarErrosBackend: recebe o objeto
-// { campo: mensagem } que o backend manda em `erros` (json_error).
-// Pinta os campos do admin que existem no DOM e devolve o que sobrou
-// (campos de outro formulário, ex: empresa, ou "_geral") como objeto.
-export function aplicarErrosPorCampo(erros) {
-  const sobra = {};
-  if (!erros || typeof erros !== 'object') return sobra;
+// ── Validação em tempo real (opcional) ───────────────────────
+// Liga listeners de 'input'/'blur' para validar enquanto o usuário
+// digita, sem esperar o submit. Chamar uma vez, ao carregar a página.
+export function ligarValidacaoEmTempoReal() {
+  const camposComRegraGenerica = [
+    'cnes',
+    'nome_fantasia',
+    'razao_social',
+    'bairro',
+    'numero',
+    'complemento',
+  ];
 
-  Object.entries(erros).forEach(([campo, msg]) => {
-    if (CAMPOS_FORMULARIO_ADMIN.includes(campo) && document.getElementById(campo)) {
-      setError(campo, String(msg));
-    } else {
-      sobra[campo] = String(msg);
-    }
+  camposComRegraGenerica.forEach((id) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    input.addEventListener('blur', () => validarCampoPorRegra(id));
+    input.addEventListener('input', () => {
+      // só revalida enquanto digita se já havia erro visível,
+      // para não incomodar o usuário a cada tecla
+      const field = input.closest('.field');
+      if (field && field.classList.contains('has-error')) {
+        validarCampoPorRegra(id);
+      }
+    });
   });
-  return sobra;
+
+  const cnpjInput = document.getElementById('cnpj');
+  if (cnpjInput) {
+    // No blur, só valida se houver algo digitado -- quem pulou o CNPJ
+    // para preencher o CNES não deve ver erro. O "informe um dos dois"
+    // fica para o submit.
+    cnpjInput.addEventListener('blur', () => {
+      if (cnpjInput.value.trim()) validarCnpjField();
+    });
+  }
+
+  const cnesInput = document.getElementById('cnes');
+  if (cnesInput) {
+    // Preencher o CNES resolve o erro "informe o CNPJ ou o CNES"
+    cnesInput.addEventListener('input', () => {
+      if (cnesInput.value.trim() && cnpjInput && !cnpjInput.value.trim()) {
+        clearError('cnpj');
+      }
+    });
+  }
+
+  const cepInput = document.getElementById('cep');
+  if (cepInput) {
+    cepInput.addEventListener('blur', validarCepField);
+  }
 }
 
-// ── validação completa do formulário (portão antes da API) ───
+// ── Validação completa do formulário (portão antes da API) ───
 // Retorna true somente se TODOS os campos passarem. Sempre exibe/
 // atualiza as mensagens de erro em vermelho correspondentes.
-export function validarFormularioAdmin() {
-  const nomeOk = validateNomeField();
-  const cpfOk = validateCpfField();
-  const telefoneOk = validateTelefoneField();
-  const emailOk = validateEmailField();
-  const loginOk = validateLoginField();
-  const senhaOk = validateSenhaField();
-  const funcaoClinicaOk = validateFuncaoClinica();
+export function validarFormularioEmpresa() {
+  const cnpjOk = validarCnpjField();
+  const cnesOk = validarCampoPorRegra('cnes');
+  const nomeFantasiaOk = validarCampoPorRegra('nome_fantasia');
+  const razaoSocialOk = validarCampoPorRegra('razao_social');
+  const cepOk = validarCepField();
+  const bairroOk = validarCampoPorRegra('bairro');
+  const numeroOk = validarCampoPorRegra('numero');
+  const complementoOk = validarCampoPorRegra('complemento');
+  const planoOk = validarPlano();
 
-  const confirmar = document.getElementById('confirmar_senha').value;
-  if (confirmar.length === 0) {
-    setError('confirmar_senha', 'Confirme a senha');
-  } else {
-    checkPasswordsMatch();
-  }
-  const confirmarOk = !document.getElementById('confirmar_senha')
-    .closest('.field').classList.contains('has-error');
+  const tudoValido =
+    cnpjOk &&
+    cnesOk &&
+    nomeFantasiaOk &&
+    razaoSocialOk &&
+    cepOk &&
+    bairroOk &&
+    numeroOk &&
+    complementoOk &&
+    planoOk;
 
-  return nomeOk && cpfOk && telefoneOk && emailOk && loginOk && senhaOk &&
-    funcaoClinicaOk && confirmarOk;
+  return tudoValido;
 }
 
 // Exporta também as validações individuais, caso seja necessário
-// reusar em outro contexto.
+// reusar em outro contexto (ex: passo 2 - adminRegistration).
 export {
-  isValidCPF,
-  isValidEmail,
-  isValidNome,
-  isValidTelefone,
-  isValidLogin,
-  isValidUF,
-  isValidNumeroRegistro,
-  validateNomeField,
-  validateCpfField,
-  validateTelefoneField,
-  validateEmailField,
-  validateLoginField,
-  validateSenhaField,
-  getTipoPapelSelecionado,
-  validateCrmField,
-  validateCorenField,
-  validateFuncaoClinica,
-  checkPasswordsMatch,
+  isValidCNPJ,
+  validarCampoPorRegra,
+  validarCnpjField,
+  validarCepField,
   setError,
   clearError,
 };
