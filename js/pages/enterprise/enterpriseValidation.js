@@ -30,7 +30,7 @@
 // 128 do backend) -- ver nota em passwordValidation.js sobre o risco
 // de dessincronia entre as cópias client-side e a fonte da verdade.
 
-import { validarSenha } from '../../../sharedConfig/passwordValidation.js';
+import { validarSenha } from '../../sharedConfig/passwordValidation.js';
 
 // ── UI: exibir / limpar erro ─────────────────────────────────
 function setError(fieldId, message) {
