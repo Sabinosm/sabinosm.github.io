@@ -45,7 +45,7 @@ const URL_SETTINGS_MODAL = new URL('../../../html/pages/user/settingsModal.html'
 // aponta para a URL deste arquivo JS, então o caminho relativo abaixo
 // é sempre resolvido a partir de js/sharedConfig/, onde este módulo
 // e vendor/qrcode.min.js realmente estão.
-const QRCODE_LIB_URL = new URL('../../vendor/qrcode.min.js', import.meta.url).href;
+const QRCODE_LIB_URL = new URL('../vendor/qrcode.min.js', import.meta.url).href;
 
 export const modalConfiguracoesPronto = carregarModalConfiguracoes();
 

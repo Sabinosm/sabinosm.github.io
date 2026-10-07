@@ -12,7 +12,7 @@ import { aplicarPermissoesSidebar } from '../sidebarPermissoes.js';
 // Resolvido a partir DESTE arquivo, não da página: continua valendo
 // quando uma página muda de pasta. O sidebar.html fica junto do
 // settingsModal.html; ajuste se for outro lugar.
-const URL_SIDEBAR = new URL('../../html/pages/user/sidebar.html', import.meta.url);
+const URL_SIDEBAR = new URL('../../../html/pages/user/sidebar.html', import.meta.url);
 
 async function carregarSidebar() {
   const slot = document.getElementById('sidebar-slot');
