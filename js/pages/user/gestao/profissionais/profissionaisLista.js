@@ -63,6 +63,7 @@
 
 import { ApiError, listarProfissionais } from "./profissionaisApi.js";
 import { abrirModalProfissional, abrirModalConvite } from "./profissionaisModal.js";
+import {iniciarPagina} from "../../../../sharedConfig/loaders/initPagina.js";
 
 const POR_PAGINA = 8;
 
@@ -82,6 +83,7 @@ let filtroStatus = '';
 let carregando = false; // trava contra requests de listagem sobrepostos
 
 document.addEventListener('DOMContentLoaded', () => {
+  iniciarPagina();
   configurarBusca();
   configurarFiltros();
   configurarBotaoConvidar();
