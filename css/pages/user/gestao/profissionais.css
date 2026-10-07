@@ -1,0 +1,551 @@
+/* ============================================
+   B-íon — Profissionais
+   Busca + filtros, paginação, modal de cadastro/edição.
+   Reusa os tokens de preferencias.css e os padrões de
+   homePage.css / settings.css (neumorfismo).
+   ============================================ */
+
+/* ===== Centralização do conteúdo ===== */
+.main {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* .sidebar é fixa (position: fixed), então .main precisa manter o
+   respiro à esquerda mesmo estando centralizado dentro do espaço
+   restante da tela. */
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
+    margin-right: auto;
+  }
+}
+
+/* ===== Status (herda .consult-status/.status-dot de homePage.css;
+   adiciona a variante "inativo" usada só nesta tela) ===== */
+.status--inativo {
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+}
+
+/* ===== Barra de busca + filtros ===== */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: calc(14px * var(--font-scale, 1));
+  font-family: inherit;
+  padding: 11px 14px 11px 40px;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 3px 3px 8px var(--neu-shadow-dark),
+    inset -3px -3px 8px var(--neu-shadow-light);
+  transition: border-color 0.15s ease;
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-filter:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-filter--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--status-bg);
+}
+
+.btn-filter-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--palette-white);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ===== Painel de filtros (expande abaixo da busca) ===== */
+.filter-panel {
+  display: none;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-top: 10px;
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
+}
+
+.filter-panel--visible {
+  display: flex;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.filter-field label {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.filter-field select,
+.filter-field input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-family: inherit;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.filter-panel-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ===== Paginação ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pagination-info {
+  font-size: calc(13px * var(--font-scale, 1));
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-btn--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--palette-white);
+}
+.page-btn--active:hover {
+  color: var(--palette-white);
+}
+
+.page-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Estado vazio ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding: 56px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 6px;
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: calc(14px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state-text {
+  font-size: calc(13px * var(--font-scale, 1));
+  max-width: 320px;
+}
+
+/* ===== Modal de Cadastrar/Editar profissional =====
+   Reusa .settings-overlay como base (mesmo overlay escurecido),
+   com um modal próprio menor, sem abas. */
+.prof-modal {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  max-height: 85vh;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* O <form> envolve header + body + footer (ver HTML), então ele
+   precisa ser, ele mesmo, um flex-column dentro do .prof-modal --
+   senão vira um bloco de altura livre que deixa o body crescer sem
+   limite e empurra o footer (com o botão Salvar/Enviar convite) pra
+   fora da área visível, já que .prof-modal tem overflow:hidden.
+   Essa era a causa do botão de salvar "sumir": ele não desaparecia,
+   ficava cortado abaixo do fim do modal. */
+#form-profissional {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.prof-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 28px 0;
+  flex-shrink: 0;
+}
+
+.prof-modal-body {
+  padding: 20px 28px 28px;
+  overflow-y: auto;
+  min-height: 0; /* essencial em flex: sem isso o body ignora o limite de altura e empurra o footer pra fora */
+}
+
+/* Hint do e-mail, movido do meio do formulário para o rodapé do
+   modal (fica logo acima da barra de botões, fora da área que rola
+   junto com os campos). */
+.prof-modal-footer-hint {
+  flex-shrink: 0;
+  padding: 12px 28px 18px;
+  margin: 0;
+}
+
+.prof-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 16px 28px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.prof-modal-footer-right {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.btn-danger {
+  background: transparent;
+  color: var(--danger, #e0625b);
+  border: 1px solid var(--danger, #e0625b);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-danger:hover {
+  background: var(--danger, #e0625b);
+  color: var(--palette-white-strong);
+}
+
+.btn-danger--ativar {
+  color: var(--status-fg);
+  border-color: var(--status-fg);
+}
+.btn-danger--ativar:hover {
+  background: var(--status-fg);
+  color: var(--palette-white-strong);
+}
+
+/* CORRIGIDO (múltiplos admins por empresa): #prof-modal-save é
+   escondido/mostrado via atributo [hidden] em JS (profissionaisModal.js),
+   mas botões dentro de .prof-modal-footer-right provavelmente herdam
+   `display: inline-flex` de uma regra genérica de .btn-primary/.btn-ghost
+   em settings.css ou homePage.css -- essa regra tem a mesma
+   especificidade (ou maior) que o UA stylesheet aplica a [hidden]
+   (que é só `display: none`), então o botão ficava visível mesmo com
+   hidden=true. Reforça aqui com !important para garantir que [hidden]
+   sempre vence, independente de outras folhas de estilo. */
+#prof-modal-save[hidden],
+.prof-modal-footer [hidden] {
+  display: none !important;
+}
+
+/* settings.css define .field-group { max-width: 420px } pensando no
+   modal de configurações (mais largo). Aqui no modal de profissional
+   isso faz os campos fora de .field-row (telefone, tipo, RQE,
+   especialidade) ficarem mais estreitos que os de dentro de
+   .field-row (que já zeram esse max-width logo abaixo) -- resultado:
+   inputs com larguras diferentes e desalinhados entre si. Como todo
+   campo aqui já vive dentro de um .prof-modal-body mais estreito que
+   420px, zeramos o limite pra todo .field-group deste modal, não só
+   os de dentro de .field-row. */
+#form-profissional .field-group {
+  max-width: none;
+}
+
+.field-row {
+  display: flex;
+  gap: 14px;
+}
+.field-row .field-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-group--sm {
+  flex: 0 0 76px;
+}
+
+.field-optional {
+  font-weight: 400;
+  color: var(--text-muted);
+  text-transform: none;
+}
+
+/* ===== Validação de formulário (modal de profissional) ===== */
+.field-error {
+  font-size: calc(12px * var(--font-scale, 1));
+  color: var(--danger, #e0625b);
+  margin-top: 6px;
+  min-height: 0;
+  display: none;
+}
+
+.field-input--invalid {
+  border-color: var(--danger, #e0625b);
+}
+
+.field-group--has-error .field-error {
+  display: block;
+}
+
+.prof-form-feedback {
+  font-size: calc(13px * var(--font-scale, 1));
+  border-radius: var(--radius-sm);
+  padding: 0;
+  margin-bottom: 0;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.15s ease, opacity 0.15s ease, margin-bottom 0.15s ease, padding 0.15s ease;
+}
+
+.prof-form-feedback.erro,
+.prof-form-feedback.sucesso,
+.prof-form-feedback.info {
+  max-height: 80px;
+  opacity: 1;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+}
+
+.prof-form-feedback.erro {
+  background: rgba(224, 98, 91, 0.12);
+  color: var(--danger, #e0625b);
+  border: 1px solid rgba(224, 98, 91, 0.3);
+}
+
+.prof-form-feedback.sucesso {
+  background: var(--status-bg);
+  color: var(--status-fg);
+  border: 1px solid rgba(127, 216, 138, 0.3);
+}
+
+.prof-form-feedback.info {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* ===== Bloco condicional (CRM x COREN, conforme tipo) ===== */
+.prof-conditional-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+.prof-conditional-block[hidden] {
+  display: none;
+}
+
+/* ===== Checkbox "É administrador" (criação) =====
+   Junto ao select de tipo de profissional -- ver
+   profissionaisModal.js (checkboxAdmin). */
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.field-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.field-checkbox label {
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+/* ===== RESPONSIVO =====
+   Modal mais largo (720px) em telas médias/grandes; abaixo de 820px
+   (largura do modal + respiro lateral) ainda cabe cair para 100% de
+   largura da tela, sem exigir o breakpoint mobile completo. */
+@media (max-width: 820px) {
+  .prof-modal { max-width: calc(100vw - 32px); }
+}
+
+@media (max-width: 760px) {
+  .main { max-width: 100%; margin-left: 0; }
+  .toolbar-row { flex-wrap: wrap; }
+  .filter-panel-actions { margin-left: 0; width: 100%; }
+  .pagination { flex-direction: column; align-items: stretch; }
+  .prof-modal { max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
+  .field-row { flex-direction: column; gap: 0; }
+}
+
+/* ============================================
+   CORREÇÃO: reordena hint e footer no modal
+   ============================================ */
+
+/* O hint deve aparecer DEPOIS (abaixo) dos botões de ação */
+.prof-modal-footer {
+  order: 1;
+}
+
+.prof-modal-footer-hint {
+  order: 2;
+  /* mantém a separação visual que antes era feita pela border-top do footer */
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
+/* ===== Ações administrativas (resetar senha / 2FA / tudo) =====
+   Bloco próprio dentro do modal de edição, visível só para admin
+   (ver profissionaisModal.js). Os 3 botões reusam .btn-ghost e
+   .btn-danger já existentes -- só o wrapper flex é novo. */
+.prof-modal-acoes-botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.prof-modal-acoes-botoes .btn-ghost,
+.prof-modal-acoes-botoes .btn-danger {
+  flex: 1 1 auto;
+  min-width: 140px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .prof-modal-acoes-botoes {
+    flex-direction: column;
+  }
+}

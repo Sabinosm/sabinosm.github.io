@@ -1,13 +1,13 @@
 // preencherEmpresa.js
 //
-// Preenche a UI da página Empresa (adminEmpresa.html) com os dados
+// Preenche a UI da página Empresa (empresa.html) com os dados
 // retornados por GET /empresas/ -> to_dict():
 //   { uuid, nome_fantasia, razao_social, cnpj, cnes, status_plano,
 //     plano, criado_em, endereco: { cep, bairro, numero, complemento } }
 //
 // Cada campo editável é UM único <input readonly>, com o valor atual
 // dentro dele (não um par display/input). O modo de edição (esvaziar +
-// usar o valor como placeholder) é responsabilidade de adminEmpresa.js,
+// usar o valor como placeholder) é responsabilidade de empresa.js,
 // que já tem o controle de entrar/sair da edição -- aqui só preenchemos
 // o estado inicial "de leitura".
 //
@@ -61,7 +61,7 @@ function preencherPlano(empresa) {
  * Lê os campos editáveis do formulário e monta o payload para o PUT.
  * Um campo deixado vazio pelo usuário (placeholder ainda visível, nada
  * digitado) mantém o valor original -- ver getValorEfetivo em
- * adminEmpresa.js, que resolve isso antes de chamar esta função.
+ * empresa.js, que resolve isso antes de chamar esta função.
  */
 export function lerFormularioEmpresa() {
   const valor = (id) => document.getElementById(id)?.value.trim() ?? '';

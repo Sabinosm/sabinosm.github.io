@@ -5,14 +5,14 @@
 //
 // oauth.py não manda o estado da sessão na URL -- ele fica no cookie
 // httpOnly. Por isso, o primeiro passo aqui é sempre consultar
-// /auth/status (via sessionStatus.js) para saber o que fazer em seguida:
+// /auth/status_completo (via sessionStatus.js) para saber o que fazer em seguida:
 //   - "mfa_pendente"       -> pedir confirmação. ALTERADO (2FA sempre
 //                              obrigatório -- ver mfa.py/login.py/
 //                              oauth.py no backend): agora ocorre
 //                              também vindo de login por Google, não
 //                              só por senha.
 //                              ALTERADO 2 (escolha de método -- ver
-//                              status.py::status_sessao,
+//                              status.py::status_completo,
 //                              mfa.py::metodos_2fa_disponiveis): o
 //                              backend agora manda `metodosDisponiveis`
 //                              (lista completa), não só um `metodo`
@@ -37,29 +37,17 @@ import { exibirMensagem } from "../../shared/feedback.js";
 import { consultarStatusSessao } from "./sessionStatus.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 import { definirDadosUsuarioCache } from "../../sharedConfig/userCache.js";
+import { derivarPermissoes } from "../../sharedConfig/userCacheHelpers/userCachePermissoes.js";
+import { homePara } from "../../sharedConfig/loaders/rotas.js";
 
-// Destino por papel -- centralizado aqui porque é o único lugar que
+// Destino pós-login -- centralizado aqui porque é o único lugar que
 // decide navegação inicial pós-login. watchSession.js (rodando dentro
 // das homes) nunca precisa disso, só sabe voltar pro login.
 //
-// ALTERADO (assertivo, sem alias): tipo_usuario saiu do payload de
-// /me -- is_admin (bool) e funcao_clinica ('medico' | 'enfermeiro' |
-// null) entram no lugar, e são ortogonais (um médico-admin tem
-// is_admin=True e funcao_clinica='medico' ao mesmo tempo).
-//
-// ALTERADO 2 (adminMedicHomePage): admin NÃO tem mais prioridade cega
-// sobre função clínica -- um médico-admin agora cai numa terceira home
-// dedicada (DESTINO_ADMIN_MEDICO), que combina os dois contextos.
-// Só entra em DESTINO_ADMIN "puro" quem é admin sem função clínica
-// nenhuma (ou, na Opção A abaixo, admin + função clínica que não seja
-// 'medico' -- ver decidirDestino()).
-const DESTINO_POR_FUNCAO_CLINICA = {
-  medico: "../../../html/pages/user/standartUser/medicHomePage.html",
-  enfermeiro: "../../../html/pages/user/standartUser/medicHomePage.html",
-};
-const DESTINO_ADMIN = "../../../html/pages/user/admin/adminHomePage.html";
-const DESTINO_ADMIN_MEDICO = "../../../html/pages/user/admin/adminMedicHomePage.html";
-
+// A decisão usa CAPACIDADES (gerenciar / atenderClinicamente /
+// avaliarMedicamente), derivadas de is_admin + funcao_clinica em
+// userCachePermissoes.js -- duas dimensões ortogonais (um médico-admin
+// tem is_admin=True e funcao_clinica='medico' ao mesmo tempo).
 const ROTA_LOGIN = "../../../html/pages/auth/login.html";
 
 const botaoTentarNovamente = document.getElementById("btn-tentar-novamente");
@@ -70,7 +58,7 @@ const btnMfaEscolherWebauthn = document.getElementById("btn-mfa-escolher-webauth
 const btnMfaEscolherTotp = document.getElementById("btn-mfa-escolher-totp");
 
 // Guarda a última lista de métodos disponíveis recebida de
-// /auth/status -- usada pelo botão "tentar novamente" (que não tem
+// /auth/status_completo -- usada pelo botão "tentar novamente" (que não tem
 // acesso ao `resultado` original de tratarPosLogin) e pelo fallback
 // por erro do WebAuthn (para saber se vale tentar TOTP em seguida).
 let ultimosMetodosDisponiveis = [];
@@ -158,35 +146,16 @@ async function tratarPosLogin() {
 }
 
 /**
- * Decide o destino pós-login com base em is_admin + funcao_clinica.
+ * Decide o destino pós-login a partir das CAPACIDADES, delegando a
+ * escolha da home a homePara() (rotas.js) -- a mesma regra que a
+ * sidebar usa pro link de início. As homes diferem SÓ no HTML: o JS e
+ * o CSS são compartilhados (ver initHomePage.js).
  *
- * Três ramos reais (não dá mais para expressar isso num ternário só,
- * ver histórico do arquivo):
- *   1. admin + função clínica 'medico'  -> home combinada dedicada.
- *   2. admin (sem função clínica, OU com função clínica diferente de
- *      'medico' -- ver nota abaixo)     -> home de admin padrão.
- *   3. só função clínica, sem admin     -> home clínica padrão.
- *
- * NOTA (Opção A vs B, decisão de produto pendente de confirmação):
- * hoje só 'medico'-admin ganha a home combinada. Um enfermeiro-admin
- * cai em DESTINO_ADMIN puro (ramo 2), não em DESTINO_ADMIN_MEDICO.
- * Se o produto decidir que QUALQUER função clínica + admin deveria
- * cair na home combinada, troque a condição do primeiro `if` por só
- * `if (ehAdmin && funcaoClinica)` (remove o `=== "medico"`).
- *
- * @returns {string|undefined} undefined = nenhum destino mapeado
+ * @returns {string|undefined} undefined = nenhuma capacidade
  *   (estado inconsistente) -- quem chama deve tratar como erro.
  */
-function decidirDestino(ehAdmin, funcaoClinica) {
-  if (ehAdmin && funcaoClinica === "medico") {
-    return DESTINO_ADMIN_MEDICO;
-  }
-
-  if (ehAdmin) {
-    return DESTINO_ADMIN;
-  }
-
-  return DESTINO_POR_FUNCAO_CLINICA[funcaoClinica];
+function decidirDestino(p) {
+  return homePara(p);
 }
 
 /**
@@ -224,15 +193,15 @@ async function irParaHomeDoUsuario() {
     return;
   }
 
-  const ehAdmin = Boolean(payload?.usuario?.is_admin);
-  const funcaoClinica = payload?.usuario?.funcao_clinica;
-
-  const destino = decidirDestino(ehAdmin, funcaoClinica);
+  // O cache ainda NÃO foi gravado neste ponto (definirDadosUsuarioCache
+  // vem abaixo), por isso derivarPermissoes(usuario) e não getPermissoes().
+  const permissoes = derivarPermissoes(payload?.usuario);
+  const destino = decidirDestino(permissoes);
 
   if (!destino) {
-    // Nem admin, nem função clínica mapeada -- mais seguro travar
-    // aqui do que adivinhar uma home genérica pra um perfil desconhecido.
-    console.error("Usuário sem destino mapeado (is_admin/funcao_clinica):", { ehAdmin, funcaoClinica });
+    // Nem gerenciar nem atenderClinicamente -- mais seguro travar aqui
+    // do que adivinhar uma home genérica pra um perfil desconhecido.
+    console.error("Usuário sem capacidade mapeada (is_admin/funcao_clinica):", permissoes);
     window.location.href = ROTA_LOGIN;
     return;
   }
@@ -340,7 +309,7 @@ async function iniciarFluxoTotpLogin() {
       // Não deveria ocorrer se metodosDisponiveis disse que tinha TOTP
       // -- mas trata explicitamente em vez de mascarar como outro
       // tipo de bloqueio silencioso.
-      console.error("Backend indicou TOTP disponível em /auth/status mas /totp/2fa/iniciar recusou.");
+      console.error("Backend indicou TOTP disponível em /auth/status_completo mas /totp/2fa/iniciar recusou.");
       mostrarBloqueio();
       return;
     }

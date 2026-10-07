@@ -8,7 +8,7 @@
 //      (GET /empresas/existe-cnpj/<cnpj> e /empresas/existe-cnes/<cnes>).
 //      Basta informar CNPJ OU CNES -- pelo menos um é obrigatório.
 //   3. se estiver livre, guarda os dados da empresa em sessionStorage
-//      e navega para adminRegistration.html
+//      e navega para adminRegistration.js
 //   4. o passo 2 lê os dados da empresa do sessionStorage e, ao
 //      concluir, envia tudo junto (empresa + admin) para POST /create
 //
@@ -417,7 +417,7 @@ document.getElementById('form-empresa').addEventListener('submit', async functio
       salvoEm: Date.now(),
     }));
 
-    window.location.href = '../../../html/pages/user/admin/adminRegistration.html';
+    window.location.href = '../../../html/pages/enterprise/adminRegistration.html';
   } finally {
     botao.disabled = false;
   }

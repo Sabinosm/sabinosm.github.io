@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pagina.auditoria.titulo">B-íon — Auditoria</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/homePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/gestao/auditoria.css">
+<link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1 data-i18n="auditoria.titulo">Auditoria</h1>
+        <p class="main-subtitle" data-i18n="auditoria.subtitulo">Trilha de acessos e alterações da equipe</p>
+      </div>
+    </header>
+
+    <!-- ============================================
+         VIEW 1 — RESUMO POR PROFISSIONAL
+         (GET /profissionais/resumo, offset/limit)
+         ============================================ -->
+    <section class="section" id="view-resumo">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="aud-busca" placeholder="Buscar profissional por nome" data-i18n-placeholder="auditoria.busca_placeholder">
+          </div>
+          <button class="btn-filter" id="aud-btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-i18n="btn.filtros">Filtros</span>
+          </button>
+        </div>
+
+        <div class="filter-panel" id="aud-filter-panel">
+          <div class="filter-field">
+            <label for="aud-filtro-funcao" data-i18n="auditoria.funcao_clinica">Função clínica</label>
+            <select id="aud-filtro-funcao">
+              <option value="" data-i18n="filtro.todas">Todas</option>
+              <option value="medico" data-i18n="papel.medico">Médico</option>
+              <option value="enfermeiro" data-i18n="papel.enfermeiro">Enfermeiro</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="aud-filtro-admin" data-i18n="auditoria.filtro.administrador">Administrador</label>
+            <select id="aud-filtro-admin">
+              <option value="" data-i18n="filtro.todos">Todos</option>
+              <option value="true" data-i18n="auditoria.filtro.sim">Sim</option>
+              <option value="false" data-i18n="auditoria.filtro.nao">Não</option>
+            </select>
+          </div>
+          <div class="filter-field filter-field--grow">
+            <label for="aud-filtro-acao" data-i18n="auditoria.filtro.acao_label">Ação (ex: editar_paciente)</label>
+            <input type="text" id="aud-filtro-acao" placeholder="Filtrar por ação" data-i18n-placeholder="auditoria.filtro.acao_placeholder">
+          </div>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="aud-btn-limpar-filtros" type="button" data-i18n="btn.limpar">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-list" id="aud-lista-resumo">
+        <!-- Preenchido dinamicamente por auditoriaResumo.js -->
+      </div>
+
+      <div class="pagination" id="aud-paginacao-resumo">
+        <span class="pagination-info" id="aud-paginacao-info"></span>
+        <div class="pagination-controls" id="aud-paginacao-controles"></div>
+        <div class="pagination-limit">
+          <label for="aud-limite" data-i18n="auditoria.itens_por_pagina">Itens por página</label>
+          <select id="aud-limite" class="field-input field-input--sm">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================
+         VIEW 2 — DETALHE DO PROFISSIONAL
+         (GET /profissionais/<uuid>/detalhe, cursor por data)
+         ============================================ -->
+    <section class="section" id="view-detalhe" hidden>
+
+      <div class="detalhe-header">
+        <button class="btn-ghost detalhe-btn-voltar" id="aud-btn-voltar" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+            <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span data-i18n="btn.voltar">Voltar</span>
+        </button>
+        <div>
+          <h2 class="detalhe-nome" id="aud-detalhe-nome"></h2>
+          <p class="detalhe-sub" data-i18n="auditoria.historico">Histórico de acessos e alterações</p>
+        </div>
+      </div>
+
+      <div class="detalhe-filtros">
+        <div class="segmented" role="tablist" aria-label="Tipo de registro" id="aud-filtro-tipo">
+          <button type="button" class="segmented-item segmented-item--active" data-tipo="ambos" data-i18n="auditoria.tipo.ambos">Ambos</button>
+          <button type="button" class="segmented-item" data-tipo="acessos" data-i18n="auditoria.tipo.acessos">Acessos</button>
+          <button type="button" class="segmented-item" data-tipo="alteracoes" data-i18n="auditoria.tipo.alteracoes">Alterações</button>
+        </div>
+
+        <div class="detalhe-filtros-campos">
+          <input type="date" id="aud-data-inicio" class="field-input field-input--sm" aria-label="Data inicial">
+          <span class="detalhe-filtros-sep"><span data-i18n="auditoria.ate">até</span></span>
+          <input type="date" id="aud-data-fim" class="field-input field-input--sm" aria-label="Data final">
+          <input type="text" id="aud-detalhe-acao" class="field-input field-input--grow" placeholder="Ação (ex: editar_paciente)" data-i18n-placeholder="auditoria.filtro.acao_placeholder">
+          <select id="aud-detalhe-operacao-acesso" class="field-input field-input--sm" aria-label="Operação de acesso">
+            <option value="" data-i18n="auditoria.operacao.todas">Operação (acessos): todas</option>
+            <option value="leitura" data-i18n="auditoria.operacao.leitura">Leitura</option>
+            <option value="escrita" data-i18n="auditoria.operacao.escrita">Escrita</option>
+            <option value="exclusao-logica" data-i18n="auditoria.operacao.exclusao_logica">Exclusão lógica</option>
+            <option value="exportacao" data-i18n="auditoria.operacao.exportacao">Exportação</option>
+          </select>
+          <button class="btn-primary btn-primary--sm" id="aud-btn-aplicar-filtros" type="button" data-i18n="btn.aplicar">Aplicar</button>
+          <button class="btn-ghost" id="aud-btn-limpar-detalhe" type="button" data-i18n="btn.limpar">Limpar</button>
+        </div>
+
+        <p class="field-hint" data-i18n="auditoria.periodo_hint">Período máximo de consulta: 7 dias. Sem período definido, mostra os registros mais recentes.</p>
+      </div>
+
+      <div class="aud-feedback" id="aud-detalhe-feedback" role="alert" aria-live="polite"></div>
+
+      <div class="detalhe-blocos">
+        <section class="log-bloco" id="bloco-acessos" aria-label="Acessos">
+          <h3 class="log-bloco-titulo" data-i18n="auditoria.bloco.acessos">Acessos</h3>
+          <div class="log-lista" id="aud-lista-acessos"></div>
+          <button class="btn-ghost" id="aud-carregar-acessos" type="button" hidden data-i18n="auditoria.carregar_mais">Carregar mais</button>
+        </section>
+        <section class="log-bloco" id="bloco-alteracoes" aria-label="Alterações">
+          <h3 class="log-bloco-titulo" data-i18n="auditoria.bloco.alteracoes">Alterações</h3>
+          <div class="log-lista" id="aud-lista-alteracoes"></div>
+          <button class="btn-ghost" id="aud-carregar-alteracoes" type="button" hidden data-i18n="auditoria.carregar_mais">Carregar mais</button>
+        </section>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
+<script type="module" src="../../../../js/pages/user/gestao/auditoria/auditoria.js"></script>
+<script type="module" src="../../../../js/sharedConfig/loaders/initPagina.js"></script>
+</body>
+</html>

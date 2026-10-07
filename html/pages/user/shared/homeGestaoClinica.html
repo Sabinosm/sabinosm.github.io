@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Gerenciamento</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/homePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- Acesso desta home: declarado aqui, lido por iniciarPagina() -->
+<body data-requer-todas="gerenciar,atenderClinicamente">
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1 data-i18n="nav.gerenciamento">Gerenciamento</h1>
+        <p class="main-subtitle">Visão geral da instituição e seus atendimentos</p>
+      </div>
+    </header>
+
+    <!-- ── Seção de GESTÃO (módulo: gestao em initPagina.js) ── -->
+    <section class="metrics" data-home-secao="gestao">
+      <div class="metric-card">
+        <div class="metric-value" id="metric-profissionais-ativos">—</div>
+        <div class="metric-label" data-i18n="home.metric.profissionais_ativos">Profissionais ativos</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-pacientes-cadastrados">—</div>
+        <div class="metric-label" data-i18n="home.metric.pacientes_cadastrados">Pacientes cadastrados</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-consultas-hoje">—</div>
+        <div class="metric-label" data-i18n="home.metric.consultas_hoje">Consultas hoje</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-convites-pendentes">—</div>
+        <div class="metric-label metric-label--accent status--aguardando-medico" data-i18n="home.metric.convites_pendentes">Convites pendentes</div>
+      </div>
+    </section>
+
+    <h2 class="section-title" data-i18n="home.secao.desempenho_ia">Desempenho e IA</h2>
+    <section class="metrics">
+      <div class="metric-card">
+        <div class="metric-value" id="metric-taxa-conclusao">—</div>
+        <div class="metric-label" data-i18n="home.metric.taxa_conclusao">Taxa de conclusão (30d)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-confianca-ia">—</div>
+        <div class="metric-label" data-i18n="home.metric.confianca_ia">Confiança média da IA (30d)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-versao-ia">—</div>
+        <div class="metric-label" id="metric-versao-ia-label" data-i18n="home.metric.versao_ia">Versão de IA predominante</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-efetivo-detalhe">—</div>
+        <div class="metric-label" id="metric-efetivo-detalhe-label" data-i18n="home.metric.efetivo_papel">Efetivo por papel</div>
+      </div>
+    </section>
+
+    <!-- ── Seção CLÍNICA (módulo: clinica em initHomePage.js) ──
+         PLACEHOLDER: o conteúdo ainda não foi definido. Textos sem
+         data-i18n de propósito (as chaves ainda não existem). -->
+    <h2 class="section-title">Meus atendimentos</h2>
+    <section class="metrics" data-home-secao="clinica">
+      <div class="metric-card">
+        <div class="metric-value">—</div>
+        <div class="metric-label">Seção clínica em construção</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Um único script: initHomePage -> initPagina (importa settingsLoader e
+     sidebarLoader) -> seções registradas. -->
+<script type="module" src="../../../../js/sharedConfig/loaders/initHomePage.js"></script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 import { URL_BASE_API } from '../urlConfig.js';
 import { pedirConfirmacao, ConfirmacaoCanceladaError } from '../stepup.js';
 import { exibirFeedbackSucessoTemporario } from './settingsFeedback.js';
-import { ativarTogglesSenha } from '../passwordToggle.js';
-import { validarSenha } from '../passwordValidation.js';
+import { ativarTogglesSenha } from '../passwordManagement/passwordToggle.js';
+import { validarSenha } from '../passwordManagement/passwordValidation.js';
 
 // ============================================
 // Modal de Alterar Senha (#senha-modal-overlay, ver settingsModal.html)
@@ -104,7 +104,7 @@ senhaForm?.addEventListener('submit', async (e) => {
   mostrarErroSenha('');
 
   // Pré-filtro client-side espelhando validar_senha() do backend (ver
-  // ../sharedConfig/passwordValidation.js) -- só para feedback rápido. A
+  // ../sharedConfig/passwordManagement/passwordValidation.js) -- só para feedback rápido. A
   // validação real e definitiva é sempre revalidada pelo backend (ver
   // validar_senha em schema_usuario.py), e qualquer erro que ele
   // devolver é mostrado cru no modal (bloco try/catch do fetch abaixo).

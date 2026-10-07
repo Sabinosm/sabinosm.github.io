@@ -10,14 +10,33 @@
     pasta ou de nome, só este arquivo precisa ser atualizado -- o
     oauth.py nunca muda.
 
-    Preserva a querystring (?erro=..., se vier de algum caso de erro
-    tratado aqui no futuro) ao repassar para o destino real.
+    Dois comportamentos (mesmo padrão de stepup_callback.html):
+      - Aberto como popup por login.js (window.opener presente): avisa
+        a janela original via postMessage e se fecha.
+      - Aberto direto (popup bloqueado -> redirect normal): segue para
+        afterLogin.html, preservando a querystring.
   -->
 </head>
 <body>
-  <script>
-    const destino = "./afterLogin.html" + window.location.search;
-    window.location.replace(destino);
+  <script type="module">
+    import { FRONT_ORIGIN } from "../../../js/sharedConfig/urlConfig.js";
+
+    const erro = new URLSearchParams(window.location.search).get("erro");
+
+    if (window.opener && !window.opener.closed) {
+      try {
+        window.opener.postMessage({ tipo: "oauth_concluido", erro: erro }, FRONT_ORIGIN);
+        document.body.textContent = "Você já pode fechar esta janela.";
+        window.close();
+      } catch (e) {
+        console.error("oauth_callback: falha ao avisar a janela original", e);
+        document.body.textContent = "Não foi possível concluir. Feche esta janela e tente novamente.";
+      }
+    } else if (erro) {
+      window.location.replace("./login.html?erro=" + encodeURIComponent(erro));
+    } else {
+      window.location.replace("./afterLogin.html" + window.location.search);
+    }
   </script>
   <noscript>
     JavaScript é necessário. <a href="./afterLogin.html">Continuar</a>

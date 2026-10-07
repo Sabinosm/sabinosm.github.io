@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Início</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/homePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- Acesso desta home: declarado aqui, lido por iniciarPagina() -->
+<body data-requer="atenderClinicamente">
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1 data-i18n="nav.gerenciamento">Gerenciamento</h1>
+        <p class="main-subtitle">Seus atendimentos</p>
+      </div>
+    </header>
+
+    <!-- ── Seção CLÍNICA (módulo: clinica em initHomePage.js) ──
+         PLACEHOLDER: o conteúdo ainda não foi definido. Textos sem
+         data-i18n de propósito (as chaves ainda não existem). -->
+    <h2 class="section-title">Meus atendimentos</h2>
+    <section class="metrics" data-home-secao="clinica">
+      <div class="metric-card">
+        <div class="metric-value">—</div>
+        <div class="metric-label">Seção clínica em construção</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Um único script: initHomePage -> initPagina (importa settingsLoader e
+     sidebarLoader) -> seções registradas. -->
+<script type="module" src="../../../../js/sharedConfig/loaders/initHomePage.js"></script>
+</body>
+</html>

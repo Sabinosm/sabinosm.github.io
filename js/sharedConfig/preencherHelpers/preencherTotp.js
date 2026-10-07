@@ -18,7 +18,16 @@ import {
 } from '../../pages/auth/totp.js';
 import { atualizarTotpCache } from '../userCache.js';
 import { atualizarAvisoUnicoFator } from './preencherAvisos.js';
-import { abrirModalTotp, fecharModalTotp, refsFormTotp } from '../settings.js';
+
+// settings.js NÃO pode ser importado estaticamente aqui: ele (e os
+// helpers dele) fazem getElementById no escopo do módulo e assumem que
+// o settingsModal.html já foi injetado. Este arquivo entra no grafo do
+// initPagina, que avalia ANTES da injeção -- um import estático
+// quebraria com "Cannot read properties of null". O settingsLoader.js
+// já importa settings.js no momento certo; aqui só pegamos o módulo já
+// avaliado (import() devolve o mesmo, do cache), sempre depois de
+// modalConfiguracoesPronto (preencherPainelPerfil aguarda).
+const carregarApiModalTotp = () => import('../settings.js');
 
 /**
  * Alterna entre os estados "não configurado" / "configurado" da seção
@@ -41,6 +50,7 @@ export function preencherTotp(totp) {
 
   configurarBotaoConfigurarTotp();
   configurarBotaoRemoverTotp();
+  ligarListenerFormularioTotp();
 }
 
 function configurarBotaoConfigurarTotp() {
@@ -48,8 +58,13 @@ function configurarBotaoConfigurarTotp() {
   if (!botao || botao.dataset.listenerAtivo) return;
   botao.dataset.listenerAtivo = 'true';
 
-  botao.addEventListener('click', () => {
-    abrirModalTotp(iniciarCadastroTOTP, extrairMensagemErroInicial);
+  botao.addEventListener('click', async () => {
+    try {
+      const { abrirModalTotp } = await carregarApiModalTotp();
+      abrirModalTotp(iniciarCadastroTOTP, extrairMensagemErroInicial);
+    } catch (erro) {
+      console.error('TOTP: não foi possível abrir o modal de cadastro', erro);
+    }
   });
 }
 
@@ -73,6 +88,7 @@ function extrairMensagemErroInicial(erro) {
  */
 async function tratarSubmitConfirmarTOTP(event) {
   event.preventDefault();
+  const { fecharModalTotp, refsFormTotp } = await carregarApiModalTotp();
   const { inputCodigo, erroEl } = refsFormTotp();
   const codigo = inputCodigo.value.trim();
   if (!codigo) return;
@@ -127,14 +143,20 @@ async function tratarCliqueRemoverTotp(botao) {
   }
 }
 
-// Liga o listener do form de confirmação uma única vez -- o form em si
-// (#totp-form-confirmar) vive dentro do mesmo settingsModal.html que
-// #settings-overlay, então já está garantido no DOM neste ponto (mesmo
-// raciocínio de settings.js: settingsLoader.js só importa módulos que
-// dependem desse HTML depois de injetá-lo).
-ligarListenerFormularioTotp();
-
-function ligarListenerFormularioTotp() {
-  const { form } = refsFormTotp();
-  form?.addEventListener('submit', tratarSubmitConfirmarTOTP);
+// Liga o listener do form de confirmação uma única vez. NÃO roda no
+// escopo do módulo: nesse momento o settingsModal.html (onde vive o
+// #totp-form-confirmar) ainda não foi injetado. É chamada por
+// preencherTotp(), que o preencherPainelPerfil executa depois de
+// modalConfiguracoesPronto. Idempotente (preencherTotp roda de novo
+// após confirmar/remover).
+async function ligarListenerFormularioTotp() {
+  try {
+    const { refsFormTotp } = await carregarApiModalTotp();
+    const { form } = refsFormTotp();
+    if (!form || form.dataset.listenerAtivo) return;
+    form.dataset.listenerAtivo = 'true';
+    form.addEventListener('submit', tratarSubmitConfirmarTOTP);
+  } catch (erro) {
+    console.error('TOTP: não foi possível ligar o formulário de confirmação', erro);
+  }
 }

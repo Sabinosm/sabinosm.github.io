@@ -10,7 +10,7 @@
 // formato de /me mudar, só este arquivo (e userCacheCore.js) precisam
 // saber.
 
-import { atualizarDadosUsuarioCache } from './userCacheCore.js';
+import { atualizarDadosUsuarioCache, lerDadosUsuarioCache } from './userCacheCore.js';
 
 /**
  * Atualiza campos de dados.usuario (nome, telefone, etc). Aceita um
@@ -20,4 +20,13 @@ import { atualizarDadosUsuarioCache } from './userCacheCore.js';
  */
 export function atualizarUsuarioCache(patchUsuario) {
   return atualizarDadosUsuarioCache({ usuario: patchUsuario });
+}
+
+/**
+ * uuid do usuário logado, ou null se não houver snapshot. É
+ * IDENTIDADE (ex: "este profissional da lista sou eu"), não
+ * permissão -- por isso não mora em userCachePermissoes.js.
+ */
+export function lerUuidUsuarioCache() {
+  return lerDadosUsuarioCache()?.usuario?.uuid ?? null;
 }

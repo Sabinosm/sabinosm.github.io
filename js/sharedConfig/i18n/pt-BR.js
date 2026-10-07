@@ -117,7 +117,7 @@ export default {
   'pagina.paciente_detalhe.titulo': 'B-íon — Ficha do Paciente',
   'pagina.admin_registro.titulo': 'B-íon — Criar administrador',
 
-  // ---- campos compartilhados (adminProfissionais / ficha / registro) ----
+  // ---- campos compartilhados (profissionais / ficha / registro) ----
   'campo.nome_completo': 'Nome completo',
   'campo.opcional': '(opcional)',
   'campo.especialidade': 'Especialidade',
@@ -129,7 +129,7 @@ export default {
   'papel.medico': 'Médico',
   'papel.enfermeiro': 'Enfermeiro',
 
-  // ---- adminProfissionais.html ----
+  // ---- profissionais.html ----
   'profissionais.subtitulo': 'Equipe médica da instituição',
   'profissionais.convidar': 'Convidar profissional',
   'profissionais.busca_placeholder': 'Buscar por nome, CRM ou especialidade',
@@ -154,7 +154,7 @@ export default {
   'profissionais.modal.resetar_tudo': 'Resetar tudo',
   'profissionais.modal.footer_hint': 'Este e-mail será usado pelo profissional para entrar com a Conta Google. A senha de acesso é definida por ele mesmo, num fluxo próprio de ativação — o cadastro não pede senha aqui. Confira o e-mail com atenção: um endereço incorreto envia o convite de acesso para a pessoa errada, e a responsabilidade por isso é de quem está cadastrando.',
 
-  // ---- adminPacientesDetalhe.html ----
+  // ---- pacientesDetalhe.html ----
   'paciente.voltar': 'Voltar para Pacientes',
   'paciente.carregando': 'Carregando ficha do paciente…',
   'paciente.erro_titulo': 'Não foi possível abrir a ficha',
@@ -202,7 +202,7 @@ export default {
   'status.ativo': 'Ativo',
   'status.inativo': 'Inativo',
 
-  // ---- adminPacientesCriacao.html ----
+  // ---- pacientesCriacao.html ----
   'criacao.titulo': 'Novo paciente',
   'criacao.subtitulo': 'Dados pessoais do paciente. Alergias, medicamentos, doenças crônicas e consentimento LGPD são registrados durante a consulta.',
   'criacao.secao.identificacao': 'Identificação',
@@ -231,7 +231,7 @@ export default {
   'criacao.salvar_consulta': 'Salvar e iniciar consulta',
   'criacao.rg': 'RG',
 
-  // ---- adminPacientes.html ----
+  // ---- pacientes.html ----
   'pacientes.titulo': 'Pacientes',
   'pacientes.subtitulo': 'Todos os pacientes cadastrados na instituição',
   'pacientes.novo': 'Novo paciente',
@@ -243,7 +243,7 @@ export default {
   'pacientes.filtro.quem_cadastrou': 'Quem cadastrou',
   'pacientes.filtro.selecionar': 'Selecionar…',
 
-  // ---- adminHomePage.html ----
+  // ---- homePage.html ----
   'home.subtitulo': 'Visão geral da instituição',
   'home.metric.profissionais_ativos': 'Profissionais ativos',
   'home.metric.pacientes_cadastrados': 'Pacientes cadastrados',
@@ -255,7 +255,7 @@ export default {
   'home.metric.versao_ia': 'Versão de IA predominante',
   'home.metric.efetivo_papel': 'Efetivo por papel',
 
-  // ---- adminEstatisticas.html ----
+  // ---- estatisticas.html ----
   'estatisticas.titulo': 'Estatísticas',
   'estatisticas.subtitulo': 'Desempenho, epidemiologia e uso do sistema',
   'estatisticas.resumo_executivo': 'Resumo executivo',
@@ -266,7 +266,7 @@ export default {
   'estatisticas.aba.medicamentos': 'Medicamentos e alergias',
   'estatisticas.aba.pacientes': 'Perfil de pacientes',
 
-  // ---- adminEmpresa.html ----
+  // ---- empresa.html ----
   'empresa.titulo': 'Empresa',
   'empresa.subtitulo': 'Dados institucionais e plano contratado',
   'empresa.cnpj_fixo_hint': 'CNPJ e razão social são fixos após o cadastro.',
@@ -284,7 +284,7 @@ export default {
   'empresa.plano_subtitulo': 'Detalhes do plano contratado.',
   'empresa.plano_atual': 'Plano atual',
 
-  // ---- adminCatalogos.html / adminCatalogosDetalhe.html ----
+  // ---- catalogos.html / catalogosDetalhe.html ----
   'catalogos.titulo': 'Catálogo de Protocolos',
   'catalogos.subtitulo': 'Escores, árvores de triagem e PCDTs disponíveis para a instituição',
   'catalogos.busca_placeholder': 'Buscar por nome ou sigla',
@@ -321,7 +321,7 @@ export default {
   'catalogos.detalhe.vigor_desde': 'Em vigor desde',
   'catalogos.detalhe.vigencia_ate': 'Vigência até',
 
-  // ---- adminAuditoria.html ----
+  // ---- auditoria.html ----
   'auditoria.titulo': 'Auditoria',
   'auditoria.subtitulo': 'Trilha de acessos e alterações da equipe',
   'auditoria.busca_placeholder': 'Buscar profissional por nome',

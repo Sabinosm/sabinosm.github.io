@@ -336,7 +336,7 @@ export function validarFormularioEmpresa() {
 }
 
 // Exporta também as validações individuais, caso seja necessário
-// reusar em outro contexto (ex: passo 2 - adminRegistration).
+// reusar em outro contexto (ex: passo 2 - adminR).
 export {
   isValidCNPJ,
   validarCampoPorRegra,

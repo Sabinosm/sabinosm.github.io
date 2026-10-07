@@ -4,8 +4,23 @@
 // payload (sessionStorage, ver USER_CACHE_KEY em userCache.js -- este
 // payload É o snapshot de /me, não um fetch novo).
 
-import { definirValorInicial } from '../settingsHelpers/settingsPaineis.js';
 import { aplicarIdioma } from '../i18n/aplicarIdioma.js';
+
+// settingsPaineis.js NÃO pode ser importado estaticamente aqui: no
+// escopo do módulo ele faz getElementById (#btn-cancel, #btn-save...) e
+// assume que o settingsModal.html já foi injetado. Este arquivo entra
+// no grafo do initPagina, que avalia ANTES da injeção -- um import
+// estático derrubava a página com "Cannot read properties of null".
+// preencherPreferencias() só roda depois de modalConfiguracoesPronto,
+// quando o módulo já foi avaliado (import() devolve o do cache).
+async function definirValorInicialNoModal(elemento, valor) {
+  try {
+    const { definirValorInicial } = await import('../settingsHelpers/settingsPaineis.js');
+    definirValorInicial(elemento, valor);
+  } catch (erro) {
+    console.error('preencherPreferencias: não foi possível ajustar o valor inicial', erro);
+  }
+}
 
 const THEME_STORAGE_KEY = 'bion-theme';
 const FONT_STORAGE_KEY = 'bion-font-size';
@@ -87,7 +102,7 @@ function sincronizarSliderDoModal(tamanho) {
   if (indice === -1) return;
 
   slider.value = indice;
-  definirValorInicial(slider, String(indice));
+  definirValorInicialNoModal(slider, String(indice));
 }
 
 function sincronizarSelectDoModal(idioma) {
@@ -95,5 +110,5 @@ function sincronizarSelectDoModal(idioma) {
   if (!select) return;
 
   select.value = idioma;
-  definirValorInicial(select, idioma);
+  definirValorInicialNoModal(select, idioma);
 }

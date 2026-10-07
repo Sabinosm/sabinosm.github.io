@@ -17,10 +17,11 @@
 
 import { exibirMensagem } from "../../shared/feedback.js";
 import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
+import { consultarStatusSessao } from "./sessionStatus.js";
 import { registrarNovoDispositivo, ErroRegistroDispositivo } from "./webauthn.js";
 import { iniciarCadastroTOTP, confirmarCadastroTOTP, ErroCadastroTOTP } from "./totp.js";
-import { validarSenha } from "../../sharedConfig/passwordValidation.js";
-import { ativarTogglesSenha } from "../../sharedConfig/passwordToggle.js";
+import { validarSenha } from "../../sharedConfig/passwordManagement/passwordValidation.js";
+import { ativarTogglesSenha } from "../../sharedConfig/passwordManagement/passwordToggle.js";
 
 const passoSenha = document.getElementById("passo-senha");
 const passoTwoFa = document.getElementById("passo-2fa");
@@ -72,8 +73,8 @@ const DESTINO_APOS_CONCLUIR = "../../../html/pages/auth/afterLogin.html";
 // A URL (?senha_definida=) é só um hint de UX vindo do afterLogin.js,
 // não a fonte de verdade -- o usuário pode editá-la livremente. Quem
 // decide de fato se ainda há algo a fazer aqui é o servidor,
-// consultado via /auth/status -- a mesma rota que afterLogin.js já
-// usa para decidir o estado da sessão.
+// consultado via consultarStatusSessao({ completo: false }) (/auth/status,
+// a versão enxuta: aqui só importa o estado, não o `usuario`).
 // Loader B-íon cobre a tela enquanto o servidor decide qual passo mostrar
 // (evita o flash do formulário de senha para quem já tem senha). Só é
 // escondido quando uma etapa é de fato exibida -- nos redirecionamentos
@@ -84,28 +85,25 @@ await sincronizarPasso();
 
 async function sincronizarPasso() {
   try {
-    const resp = await fetch(`${URL_BASE_API}/auth/status`, {
-      method: "GET",
-      credentials: "include",
-    });
+    // Lança só em falha de rede/5xx (cai no catch abaixo, que pede para
+    // recarregar). 401 NÃO lança: vem como { ok: false }.
+    const resultado = await consultarStatusSessao({ completo: false });
 
-    if (!resp.ok) {
+    if (!resultado.ok && resultado.motivo === "nao_autenticado") {
       // Sessão inválida/expirada -- volta para o login.
       window.location.href = "../../../html/pages/auth/login.html";
       return;
     }
 
-    const dados = await resp.json();
-
-    if (dados.status !== "onboarding_pendente") {
+    if (!resultado.ok || resultado.status !== "onboarding_pendente") {
       // Sessão não está mais em onboarding (ex.: concluído em outra
-      // aba, ou já completa) -- deixa o afterLogin decidir o destino
-      // certo em vez de assumir aqui.
+      // aba, ou já completa) ou status desconhecido -- deixa o
+      // afterLogin decidir o destino certo em vez de assumir aqui.
       window.location.href = "../../../html/pages/auth/afterLogin.html";
       return;
     }
 
-    if (dados.senha_definida) {
+    if (resultado.senhaDefinida) {
       // CORRIGIDO: antes pulava direto para a TELA de 2FA sem checar
       // se já havia um método confirmado. Isso podia acontecer mesmo
       // com um TOTP/WebAuthn já funcionando -- por exemplo, se
@@ -170,7 +168,7 @@ formSenha.addEventListener("submit", async (event) => {
   const confirmarSenha = inputConfirmarSenha.value;
 
   // Pré-filtro client-side espelhando validar_senha() do backend (ver
-  // ../../sharedConfig/passwordValidation.js) -- só para feedback rápido.
+  // ../../sharedConfig/passwordManagement/passwordValidation.js) -- só para feedback rápido.
   // A validação real e definitiva continua sendo do backend (ver
   // catch abaixo, que mostra cru o motivo devolvido por
   // /onboarding/definir-senha quando ele reprovar algo que passou

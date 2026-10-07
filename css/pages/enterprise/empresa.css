@@ -1,0 +1,153 @@
+/* empresa.css
+ *
+ * Estilos específicos da página Empresa (empresa.html).
+ * Reaproveita os tokens de tema já definidos em preferencias.css (importado
+ * via homePage.css) -- não redefine cor nenhuma aqui, só compõe
+ * layout e a mesma receita neumórfica do .consult-card (borda sólida +
+ * sombra dupla suave, para o contorno se manter legível mesmo que a
+ * sombra não renderize bem em impressão/alto contraste).
+ */
+
+.section--centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* ocupa a altura visível abaixo do header da página, para o card
+     centralizar de verdade na tela, não só na largura */
+   min-height: calc(100vh - 200px);
+}
+
+.panel-card {
+  width: 100%;
+  max-width: 820px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 28px 32px;
+  box-shadow:
+    5px 5px 12px var(--neu-shadow-dark),
+    -5px -5px 12px var(--neu-shadow-light);
+}
+
+.panel-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+/* Mesma organização de seção/linha do form de cadastro
+   (registration.css): título de seção + campos em grade, para os dois
+   formulários lerem como a mesma família visual. */
+.section-label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin: 20px 0 18px;
+}
+
+.section-label:first-of-type {
+  margin-top: 4px;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.row-endereco {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 0.8fr 1fr;
+  gap: 14px;
+}
+
+/* Reservado para campos que precisam ocupar a linha inteira (fora do
+   row-2). Razão social e nome fantasia agora ficam lado a lado em vez
+   de usar isso -- ver .row-2 acima. */
+.field-group--full,
+.field--full {
+  width: 100%;
+}
+
+/* Se mesmo com a linha inteira o nome ainda estourar a largura do
+   campo, trunca com reticências em vez de cortar o texto de forma
+   abrupta. */
+.field-locked,
+.field-input {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+
+@media (max-width: 560px) {
+  .row-2,
+  .row-endereco {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Placeholder do valor antigo durante edição: mais apagado que texto
+   digitado, para não parecer valor já preenchido pronto pra apagar. */
+#form-empresa-editar input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+
+/* Spinner de carregamento durante a consulta de CEP (mesma ideia
+   visual do field-spinner usado no cadastro em registration.css --
+   reimplementado aqui de forma autocontida, já que esta página usa
+   settings.css/homePage.css, não registration.css). Escondido por
+   padrão; .field.is-loading revela e ativa a rotação. */
+.field {
+  position: relative;
+}
+
+.field-spinner {
+  display: none;
+  position: absolute;
+  right: 12px;
+  top: 34px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+}
+
+.field.is-loading .field-spinner {
+  display: block;
+  animation: empresa-spin 0.7s linear infinite;
+}
+
+@keyframes empresa-spin {
+  to { transform: rotate(360deg); }
+}
+/* Mensagem de erro por campo -- vermelho e fonte discreta, para marcar
+   problema sem competir visualmente com o resto do form (mesmo
+   princípio de parcimônia de cor das notas de design: vermelho aqui
+   é sinal real de erro, não decoração). */
+.error-msg {
+  color: var(--status-danger-fg, #e5484d);
+  font-size: 12px;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+@media (max-width: 760px) {
+  .panel-card {
+    padding: 22px 20px;
+  }
+}

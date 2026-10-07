@@ -117,7 +117,7 @@ export default {
   'pagina.paciente_detalhe.titulo': 'B-íon — Patient Record',
   'pagina.admin_registro.titulo': 'B-íon — Create administrator',
 
-  // ---- campos compartilhados (adminProfissionais / ficha / registro) ----
+  // ---- campos compartilhados (profissionais / ficha / registro) ----
   'campo.nome_completo': 'Full name',
   'campo.opcional': '(optional)',
   'campo.especialidade': 'Specialty',
@@ -129,7 +129,7 @@ export default {
   'papel.medico': 'Doctor',
   'papel.enfermeiro': 'Nurse',
 
-  // ---- adminProfissionais.html ----
+  // ---- profissionais.html ----
   'profissionais.subtitulo': 'Institution\'s medical team',
   'profissionais.convidar': 'Invite professional',
   'profissionais.busca_placeholder': 'Search by name, CRM or specialty',
@@ -152,9 +152,9 @@ export default {
   'profissionais.modal.resetar_senha': 'Reset password',
   'profissionais.modal.resetar_2fa': 'Reset 2FA',
   'profissionais.modal.resetar_tudo': 'Reset everything',
-  'profissionais.modal.footer_hint': 'This email will be used by the professional to sign in with their Google Account. The access password is set by the professional through a separate activation flow — registration does not ask for a password here. Check the email carefully: an incorrect address sends the access invitation to the wrong person, and the responsibility for that lies with whoever is registering.',
+  'profissionais.modal.footer_hint': 'This email will be used by the professional to sign in with their Google Account. The access password is set by the professional through a separate activation flow — adminR does not ask for a password here. Check the email carefully: an incorrect address sends the access invitation to the wrong person, and the responsibility for that lies with whoever is registering.',
 
-  // ---- adminPacientesDetalhe.html ----
+  // ---- pacientesDetalhe.html ----
   'paciente.voltar': 'Back to Patients',
   'paciente.carregando': 'Loading patient record…',
   'paciente.erro_titulo': 'Could not open the record',
@@ -202,7 +202,7 @@ export default {
   'status.ativo': 'Active',
   'status.inativo': 'Inactive',
 
-  // ---- adminPacientesCriacao.html ----
+  // ---- pacientesCriacao.html ----
   'criacao.titulo': 'New patient',
   'criacao.subtitulo': 'Personal data of the patient. Allergies, medications, chronic conditions and LGPD consent are recorded during the appointment.',
   'criacao.secao.identificacao': 'Identification',
@@ -231,7 +231,7 @@ export default {
   'criacao.salvar_consulta': 'Save and start appointment',
   'criacao.rg': 'ID document (RG)',
 
-  // ---- adminPacientes.html ----
+  // ---- pacientes.html ----
   'pacientes.titulo': 'Patients',
   'pacientes.subtitulo': 'All patients registered at the institution',
   'pacientes.novo': 'New patient',
@@ -243,7 +243,7 @@ export default {
   'pacientes.filtro.quem_cadastrou': 'Who registered',
   'pacientes.filtro.selecionar': 'Select…',
 
-  // ---- adminHomePage.html ----
+  // ---- homePage.html ----
   'home.subtitulo': 'Overview of the institution',
   'home.metric.profissionais_ativos': 'Active professionals',
   'home.metric.pacientes_cadastrados': 'Registered patients',
@@ -255,7 +255,7 @@ export default {
   'home.metric.versao_ia': 'Predominant AI version',
   'home.metric.efetivo_papel': 'Headcount by role',
 
-  // ---- adminEstatisticas.html ----
+  // ---- estatisticas.html ----
   'estatisticas.titulo': 'Statistics',
   'estatisticas.subtitulo': 'Performance, epidemiology and system usage',
   'estatisticas.resumo_executivo': 'Executive summary',
@@ -266,10 +266,10 @@ export default {
   'estatisticas.aba.medicamentos': 'Medications and allergies',
   'estatisticas.aba.pacientes': 'Patient profile',
 
-  // ---- adminEmpresa.html ----
+  // ---- empresa.html ----
   'empresa.titulo': 'Company',
   'empresa.subtitulo': 'Institutional data and contracted plan',
-  'empresa.cnpj_fixo_hint': 'Company ID and legal name are fixed after registration.',
+  'empresa.cnpj_fixo_hint': 'Company ID and legal name are fixed after adminR.',
   'empresa.secao.dados': 'Company data',
   'empresa.razao_social': 'Legal name',
   'empresa.nome_fantasia': 'Trade name',
@@ -284,7 +284,7 @@ export default {
   'empresa.plano_subtitulo': 'Details of the contracted plan.',
   'empresa.plano_atual': 'Current plan',
 
-  // ---- adminCatalogos.html / adminCatalogosDetalhe.html ----
+  // ---- catalogos.html / catalogosDetalhe.html ----
   'catalogos.titulo': 'Protocol Catalog',
   'catalogos.subtitulo': 'Scores, triage trees and clinical protocols available to the institution',
   'catalogos.busca_placeholder': 'Search by name or abbreviation',
@@ -321,7 +321,7 @@ export default {
   'catalogos.detalhe.vigor_desde': 'In effect since',
   'catalogos.detalhe.vigencia_ate': 'Valid until',
 
-  // ---- adminAuditoria.html ----
+  // ---- auditoria.html ----
   'auditoria.titulo': 'Audit',
   'auditoria.subtitulo': 'Trail of the team\'s accesses and changes',
   'auditoria.busca_placeholder': 'Search professional by name',

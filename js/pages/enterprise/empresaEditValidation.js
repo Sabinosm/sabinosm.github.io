@@ -1,7 +1,7 @@
 // empresaEditValidation.js
 //
 // Validação do formulário de edição de empresa (form-empresa-editar,
-// em adminEmpresa.html). Mesmo padrão de enterpriseValidation.js
+// em empresa.html). Mesmo padrão de enterpriseValidation.js
 // (cadastro no fluxo "Junte-se a nós"): REGRAS por campo + validação
 // genérica + validação específica onde necessário, e uma função única
 // (validarFormularioEdicaoEmpresa) usada como portão antes do PUT.
@@ -15,7 +15,7 @@
 // Forçar o usuário a redigitar um dado que já existe só porque o campo
 // é obrigatório na tela de cadastro não faz sentido na tela de edição
 // -- exigir preenchimento faz sentido para dado novo, não para reafirmar
-// um dado que já está salvo. adminEmpresa.js resolve o fallback para o
+// um dado que já está salvo. empresa.js resolve o fallback para o
 // valor original antes de montar o payload do PUT.
 
 const REGRAS = {
