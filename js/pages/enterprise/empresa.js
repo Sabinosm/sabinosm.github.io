@@ -24,6 +24,7 @@
 import { preencherPainelEmpresa } from './preencherEmpresa.js';
 import { ligarValidacaoEmTempoReal, validarFormularioEdicaoEmpresa, limparErros } from './empresaEditValidation.js';
 import { URL_BASE_API } from '../../sharedConfig/urlConfig.js';
+import { iniciarPagina } from '../../sharedConfig/loaders/initPagina.js';
 // ALTERADO (múltiplos admins por empresa): edição de empresa passou a
 // ser restrita ao super admin no backend -- reaproveita o mesmo
 // helper de sessão já usado na tela de Profissionais, em vez de
@@ -267,6 +268,9 @@ async function iniciar() {
   } catch (erro) {
     console.error('Erro ao carregar dados da empresa:', erro);
   }
+
+  const ctx = await iniciarPagina();
+  if (!ctx) return;
 }
 
 document.addEventListener('DOMContentLoaded', iniciar);
