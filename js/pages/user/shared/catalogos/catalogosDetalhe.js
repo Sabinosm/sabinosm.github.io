@@ -25,6 +25,7 @@ import { criarListaCampos } from "./catalogosCampos.js";
 import { renderizarConfigAdmin, renderizarConfigPessoal } from "./catalogosConfig.js";
 import { criarBadge, criarBadgesProtocolo, criarReferencia } from "./catalogosUi.js";
 import { adaptadorDe } from "./familias/index.js";
+import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 
 let resumo = null;          // mesmo formato do card; mutado in-place pelas ações
 let tipoResultado = null;   // só existe no detalhe -- entra nos badges
@@ -32,6 +33,7 @@ let tipoResultado = null;   // só existe no detalhe -- entra nos badges
 document.addEventListener('DOMContentLoaded', iniciar);
 
 async function iniciar() {
+  iniciarPagina();
   configurarVoltar();
 
   const uuid = new URLSearchParams(location.search).get('uuid');

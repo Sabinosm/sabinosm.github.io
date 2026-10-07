@@ -15,8 +15,10 @@
 
 import { ApiError, buscarDetalhePessoal } from "./pacientesApi.js";
 import { ConfirmacaoCanceladaError } from "../../../../sharedConfig/stepup.js";
+import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+  iniciarPagina();
   const uuid = new URLSearchParams(window.location.search).get('uuid');
 
   if (!uuid) {

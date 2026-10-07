@@ -20,10 +20,12 @@ import { ApiError, criarPacientePessoal } from "./pacientesApi.js";
 import { validarEssencial } from "./pacientesCriacaoValidacoes.js";
 import { souProfissionalDeSaude } from "../../gestao/profissionais/profissionaisSessao.js";
 import { exibirMensagem } from "/js/shared/feedback.js";
+import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 
 let enviando = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+  iniciarPagina();
   if (souProfissionalDeSaude()) {
     document.getElementById('btn-salvar-consulta').hidden = false;
   }

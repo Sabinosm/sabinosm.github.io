@@ -49,6 +49,7 @@ import { ApiError, listarProtocolos } from "./catalogosApi.js";
 import { EVENTO_ATUALIZADO, alternarFavorito } from "./catalogosAcoes.js";
 import { regrasEstrela } from "./catalogosRegras.js";
 import { comTrava, criarBadgesProtocolo } from "./catalogosUi.js";
+import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 
 const POR_PAGINA = 20;
 
@@ -63,6 +64,7 @@ let filtroApenasLiberados = false;
 let carregando = false; // trava contra requests de listagem sobrepostos
 
 document.addEventListener('DOMContentLoaded', () => {
+  iniciarPagina(); // checa acesso, preenche perfil, etc. (ver initPagina.js)
   configurarBusca();
   configurarFiltros();
   restaurarEstadoDaUrl();

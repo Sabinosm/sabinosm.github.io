@@ -18,3 +18,8 @@
 
 import "./auditoriaResumo.js";
 import "./auditoriaDetalhe.js";
+import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
+
+document.addEventListener("DOMContentLoaded", async () => {
+  iniciarPagina();
+});

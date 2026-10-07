@@ -41,6 +41,7 @@
 // em profissionais.
 // ============================================
 
+import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 import { ApiError, listarPacientes } from "./pacientesApi.js";
 
 const POR_PAGINA = 8;
@@ -57,6 +58,7 @@ let filtroSexoBiologico = '';
 let carregando = false;
 
 document.addEventListener('DOMContentLoaded', () => {
+  iniciarPagina();
   configurarBusca();
   configurarFiltros();
   carregarERenderizar();
