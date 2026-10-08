@@ -36,7 +36,7 @@ import {
   resetarCompletoProfissional,
   ApiError,
 } from "./profissionaisApi.js";
-import { validarFormularioProfissional } from "./profissionaisValidacoes.js";
+import { validarFormularioProfissional } from "./profissionaisValidation.js";
 import { recarregarLista } from "./profissionaisLista.js";
 import { souSuperAdmin, souAdmin, meuUuid } from "./profissionaisSessao.js";
 
