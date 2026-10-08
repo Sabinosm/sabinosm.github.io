@@ -1,238 +1,132 @@
-// pacientesCriacaoValidacoes.js
+// profissionaisValidacoes.js  (SUBSTITUI o arquivo antigo)
 //
-// Validações do formulário de criação de paciente (passo Essencial).
-// CPF, telefone e nome usam os MESMOS algoritmos já usados no
-// cadastro de profissionais (mesma regra que o backend valida) -- ver
-// profissionaisValidacoes.js, de onde os três foram copiados.
-// Se a regra mudar lá (ou aqui), replicar a mudança no outro arquivo
-// também até existir um módulo verdadeiramente compartilhado entre os
-// dois fluxos de cadastro.
-
-const REGEX_NOME = /^[A-Za-zÀ-ÖØ-öø-ÿ'-]+$/;
-
-const DDDS_VALIDOS = new Set([
-  11, 12, 13, 14, 15, 16, 17, 18, 19,
-  21, 22, 24,
-  27, 28,
-  31, 32, 33, 34, 35, 37, 38,
-  41, 42, 43, 44, 45, 46,
-  47, 48, 49,
-  51, 53, 54, 55,
-  61,
-  62, 64,
-  63,
-  65, 66,
-  67,
-  68,
-  69,
-  71, 73, 74, 75, 77,
-  79,
-  81, 87,
-  82,
-  83,
-  84,
-  85, 88,
-  86, 89,
-  91, 93, 94,
-  92, 97,
-  95,
-  96,
-  98, 99,
-]);
-
-function limparDigitos(valor) {
-  if (valor === null || valor === undefined) return '';
-  return String(valor).replace(/\D/g, '');
-}
-
-export function validarCpf(valor) {
-  const cpf = limparDigitos(valor);
-  if (cpf.length !== 11) return false;
-  if (cpf === cpf[0].repeat(11)) return false;
-
-  let soma = 0;
-  for (let i = 0; i < 9; i++) soma += parseInt(cpf[i], 10) * (10 - i);
-  let resto = (soma * 10) % 11;
-  const d1 = resto < 10 ? resto : 0;
-  if (d1 !== parseInt(cpf[9], 10)) return false;
-
-  soma = 0;
-  for (let i = 0; i < 10; i++) soma += parseInt(cpf[i], 10) * (11 - i);
-  resto = (soma * 10) % 11;
-  const d2 = resto < 10 ? resto : 0;
-  if (d2 !== parseInt(cpf[10], 10)) return false;
-
-  return true;
-}
-
-export function validarTelefoneBr(valor) {
-  const tel = limparDigitos(valor);
-  if (tel.length !== 10 && tel.length !== 11) return false;
-
-  const ddd = parseInt(tel.slice(0, 2), 10);
-  if (!DDDS_VALIDOS.has(ddd)) return false;
-
-  if (tel.length === 11 && tel[2] !== '9') return false;
-  if (tel.length === 10 && !'2345'.includes(tel[2])) return false;
-
-  const numero = tel.slice(2);
-  if (numero === numero[0].repeat(numero.length)) return false;
-
-  return true;
-}
-
-export function validarNomeCompleto(valor) {
-  const partes = valor.trim().split(/\s+/);
-  if (partes.length < 2) return 'Informe nome e sobrenome.';
-  if (!partes.every(p => REGEX_NOME.test(p))) return 'Nome completo contém caracteres inválidos.';
-  return null;
-}
-
-/**
- * Data de nascimento: precisa ser uma data real, não pode ser no
- * futuro, e (checagem de bom senso, não uma regra de negócio formal)
- * não pode implicar uma idade maior que 130 anos -- só para pegar
- * erro de digitação óbvio (ex: ano trocado), não é uma validação
- * médica.
- */
-export function validarDataNascimento(valor) {
-  if (!valor) return 'Informe a data de nascimento.';
-  const data = new Date(`${valor}T00:00:00`);
-  if (Number.isNaN(data.getTime())) return 'Data de nascimento inválida.';
-  const hoje = new Date();
-  if (data > hoje) return 'Data de nascimento não pode ser no futuro.';
-  const idadeAproximada = hoje.getFullYear() - data.getFullYear();
-  if (idadeAproximada > 130) return 'Data de nascimento inválida.';
-  return null;
-}
-
-export function validarSexoBiologico(valor) {
-  if (!['F', 'M', 'I'].includes(valor)) return 'Selecione o sexo biológico.';
-  return null;
-}
-
-// ── tradução de erro do backend para o formato de erros local ───
-// Mesmo mecanismo de profissionaisValidacoes.js -- ver comentário
-// lá para o racional completo.
+// Validação do formulário de cadastro/edição de profissional (médico /
+// enfermeiro). Não tem mais regras próprias: traduz os campos do modal
+// (pf-nome, pf-cpf...) para o payload do back e delega a
+// validarCadastroUsuario / validarAtualizacaoUsuario (espelho de
+// schema_usuario.py). Depois traduz os erros de volta para os ids pf-*.
 //
-// Cobre só os campos que já têm validação/chave de erro própria neste
-// módulo (nome, cpf, telefone, sexo, nascimento). Os campos opcionais
-// do formulário completo (email, cep, logradouro, contato de
-// emergência, rg, tipo_sanguineo, data_primeiro_atendimento, bairro)
-// entram no payload mas não têm um 'pac-*' correspondente hoje -- um
-// erro do backend sobre eles cai no residual, mostrado como mensagem
-// geral, até que esses campos ganhem validação/exibição própria aqui.
-const CAMPOS_BACKEND_PARA_CHAVE = {
-  nome_completo: 'pac-nome',
-  cpf: 'pac-cpf',
-  telefone: 'pac-telefone',
-  sexo_biologico: 'pac-sexo',
-  data_nascimento: 'pac-nascimento',
+// Fica só aqui o que é exclusivo da tela: confirmação de e-mail e a
+// semântica do seletor de tipo ('' = não escolheu, 'nenhum' = sem função
+// clínica, só admin).
+//
+// Contrato mantido: validarFormularioProfissional(campos, editando)
+//   -> { payload, erros: { 'pf-...': mensagem } }
+// `campos.isAdmin` é opcional (ver nota abaixo).
+
+import { validarCadastroUsuario, validarAtualizacaoUsuario } from "../../../../sharedConfig/validacoes/usuarioValidation.js";
+import { setErro } from "../../../../sharedConfig/validacoes/generalValidation.js";
+import { parseMensagemBackend } from "../../../../sharedConfig/validacoes/domErros.js";
+
+// Reexportados para quem importava daqui.
+export { validarCpf, validarTelefoneBr } from "../../../../sharedConfig/validacoes/generalValidation.js";
+
+// campo do schema (back) -> id do input no modal
+const CAMPO_PARA_CHAVE = {
+  nome_completo: "pf-nome",
+  cpf: "pf-cpf",
+  user_login: "pf-login",
+  telefone: "pf-telefone",
+  email: "pf-email",
+  tipo_papel: "pf-tipo",
+  numero_crm: "pf-crm",
+  uf_crm: "pf-uf-crm",
+  rqe: "pf-rqe",
+  numero_coren: "pf-coren",
+  uf_coren: "pf-uf-coren",
+  especialidade: "pf-especialidade",
+  // Regras cruzadas sem campo (_geral) envolvem papel/admin: pintam no seletor de tipo.
+  _geral: "pf-tipo",
 };
 
-export function mapearErrosBackendPaciente(mensagem) {
+const chaveDe = (campo) => CAMPO_PARA_CHAVE[campo.replace(/-/g, "_")];
+
+/**
+ * Erros estruturados do back { campo: msg } -> { erros: {pf-id: msg}, residual }.
+ * `residual` = o que não tem input correspondente.
+ */
+export function mapearErrosPorCampoProfissional(porCampo) {
   const erros = {};
-  const partesRestantes = [];
-  if (!mensagem) return { erros, residual: '' };
+  const sobra = [];
+  for (const [campo, msg] of Object.entries(porCampo || {})) {
+    const chave = chaveDe(campo);
+    if (chave) setErro(erros, chave, String(msg));
+    else sobra.push(`${campo}: ${msg}`);
+  }
+  return { erros, residual: sobra.join("; ") };
+}
 
-  mensagem.split(';').forEach((parte) => {
-    const trecho = parte.trim();
-    if (!trecho) return;
-
-    const idx = trecho.indexOf(':');
-    if (idx === -1) {
-      partesRestantes.push(trecho);
-      return;
-    }
-
-    const campo = trecho.slice(0, idx).trim();
-    const msg = trecho.slice(idx + 1).trim();
-    const chave = CAMPOS_BACKEND_PARA_CHAVE[campo];
-
-    if (chave) {
-      erros[chave] = msg;
-    } else {
-      partesRestantes.push(trecho);
-    }
-  });
-
-  return { erros, residual: partesRestantes.join('; ') };
+/** Plano B (texto "campo: msg; campo2: msg2"). */
+export function mapearErrosBackendProfissional(mensagem) {
+  const { erros: porCampo, restantes } = parseMensagemBackend(mensagem);
+  const r = mapearErrosPorCampoProfissional(porCampo);
+  return { erros: r.erros, residual: [...restantes, r.residual].filter(Boolean).join("; ") };
 }
 
 /**
- * Valida o passo "Essencial" do formulário de criação de paciente.
- *
- * @param {object} campos - valores brutos lidos do formulário
+ * @param {object} campos - valores brutos do formulário (lerCamposFormulario)
+ * @param {boolean} editando - true = update parcial (campo vazio = não altera)
  * @returns {{ payload: object, erros: Record<string,string> }}
+ *
+ * Nota sobre admin: o back exige "admin OU tipo_papel" no cadastro. O modal só
+ * decide is_admin depois de validar, então, se `campos.isAdmin` não vier,
+ * tipo 'nenhum' é tratado como "admin possível" (quem decide é o back). Para a
+ * checagem exata, inclua `isAdmin: Boolean(checkboxAdmin?.checked)` em
+ * lerCamposFormulario.
  */
-export function validarEssencial(campos) {
+export function validarFormularioProfissional(campos, editando) {
+  // 1) campos do modal -> payload do back (vazio = chave ausente)
+  const entrada = {};
+  const put = (chave, valor) => {
+    const v = typeof valor === "string" ? valor.trim() : valor;
+    if (v) entrada[chave] = v;
+  };
+  put("nome_completo", campos.nome);
+  put("cpf", campos.cpf);
+  put("user_login", campos.login);
+  put("telefone", campos.telefone);
+  put("email", campos.email);
+
+  const tipo = campos.tipo && campos.tipo !== "nenhum" ? campos.tipo : null;
+  if (tipo) entrada.tipo_papel = tipo;
+  if (tipo === "medico") {
+    put("numero_crm", campos.crm);
+    put("uf_crm", campos.ufCrm);
+    put("rqe", campos.rqe);
+  } else if (tipo === "enfermeiro") {
+    put("numero_coren", campos.coren);
+    put("uf_coren", campos.ufCoren);
+    put("especialidade", campos.especialidade);
+  }
+
+  // 2) validação compartilhada (mesmas regras do back)
   const erros = {};
+  if (!editando && !campos.tipo) setErro(erros, "pf-tipo", "Selecione o tipo de profissional.");
+
+  const resultado = editando
+    ? validarAtualizacaoUsuario(entrada)
+    : validarCadastroUsuario({ ...entrada, is_admin: Boolean(campos.isAdmin ?? campos.tipo === "nenhum") });
+
+  const traduzidos = mapearErrosPorCampoProfissional(resultado.erros);
+  for (const [chave, msg] of Object.entries(traduzidos.erros)) setErro(erros, chave, msg);
+  if (traduzidos.residual) setErro(erros, "pf-tipo", traduzidos.residual);
+
+  // 3) confirmação de e-mail (só do front)
+  const email = (campos.email || "").trim();
+  const confirma = (campos.emailConfirma || "").trim();
+  if (email || confirma || !editando) {
+    if (!email) setErro(erros, "pf-email", "Informe o e-mail.");
+    if (!confirma) setErro(erros, "pf-email-confirma", "Confirme o e-mail.");
+    else if (email && !erros["pf-email"] && email.toLowerCase() !== confirma.toLowerCase()) {
+      setErro(erros, "pf-email-confirma", "Os e-mails não coincidem.");
+    }
+  }
+
+  // 4) payload final: normalizado, sem nulos e sem is_admin (o modal decide)
   const payload = {};
-
-  if (campos.nome) {
-    const erro = validarNomeCompleto(campos.nome);
-    if (erro) erros['pac-nome'] = erro;
-    else payload.nome_completo = campos.nome.trim();
-  } else {
-    erros['pac-nome'] = 'Informe o nome completo.';
+  for (const [k, v] of Object.entries(resultado.dados ?? entrada)) {
+    if (v !== null && v !== undefined && k !== "is_admin") payload[k] = v;
   }
-
-  if (campos.cpf) {
-    if (!validarCpf(campos.cpf)) erros['pac-cpf'] = 'O CPF está incorreto.';
-    else payload.cpf = limparDigitos(campos.cpf);
-  } else {
-    erros['pac-cpf'] = 'Informe o CPF.';
-  }
-
-  if (campos.telefone) {
-    if (!validarTelefoneBr(campos.telefone)) erros['pac-telefone'] = 'Telefone com formato inválido.';
-    else payload.telefone = limparDigitos(campos.telefone);
-  } else {
-    erros['pac-telefone'] = 'Informe o telefone.';
-  }
-
-  if (campos.sexoBiologico) {
-    const erro = validarSexoBiologico(campos.sexoBiologico);
-    if (erro) erros['pac-sexo'] = erro;
-    else payload.sexo_biologico = campos.sexoBiologico;
-  } else {
-    erros['pac-sexo'] = 'Selecione o sexo biológico.';
-  }
-
-  if (campos.dataNascimento) {
-    const erro = validarDataNascimento(campos.dataNascimento);
-    if (erro) erros['pac-nascimento'] = erro;
-    else payload.data_nascimento = campos.dataNascimento;
-  } else {
-    erros['pac-nascimento'] = 'Informe a data de nascimento.';
-  }
-
-  // ---- campos opcionais do formulário completo (endereço, e-mail,
-  // contato de emergência, tipo sanguíneo, primeiro atendimento) --
-  // não fazem parte do "mínimo", mas se preenchidos, entram no mesmo
-  // payload de POST /pacientes/pessoal/ (PacienteCriarSchema aceita
-  // todos eles diretamente na criação -- confirmado contra o schema
-  // real do backend).
-  if (campos.email) payload.email = campos.email.trim().toLowerCase();
-  if (campos.logradouro) payload.logradouro = campos.logradouro.trim();
-  if (campos.numeroResidencia) payload.numero_residencia = campos.numeroResidencia.trim();
-  if (campos.cep) payload.cep = limparDigitos(campos.cep);
-  if (campos.contatoEmergenciaNome) payload.contato_emergencia_nome = campos.contatoEmergenciaNome.trim();
-  if (campos.contatoEmergenciaTelefone) {
-    payload.contato_emergencia_telefone = limparDigitos(campos.contatoEmergenciaTelefone);
-  }
-  if (campos.rg) payload.rg = campos.rg.trim();
-  // tipo_sanguineo: PacienteCriarSchema aceita isso direto no payload
-  // de criação -- por decisão confirmada, este é o ÚNICO caminho para
-  // definir o tipo sanguíneo neste formulário (não existe mais um
-  // POST separado para isso no fluxo de criação; o bloco "Dados
-  // clínicos" do passo 4 cobre só alergias/medicamentos/doenças).
-  if (campos.tipoSanguineo) payload.tipo_sanguineo = campos.tipoSanguineo;
-  if (campos.dataPrimeiroAtendimento) payload.data_primeiro_atendimento = campos.dataPrimeiroAtendimento;
-  // bairro: aceito pelo schema com prioridade sobre o valor resolvido
-  // automaticamente a partir do CEP pelo CepService -- só sobrescreve
-  // o automático quando informado; ausente, o backend resolve sozinho.
-  if (campos.bairro) payload.bairro = campos.bairro.trim();
-
+  // `dados` vem nulo quando há erro; nesse caso o payload não é usado (modal aborta).
   return { payload, erros };
 }

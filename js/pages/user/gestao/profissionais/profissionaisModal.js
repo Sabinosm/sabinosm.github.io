@@ -382,6 +382,7 @@ function lerCamposFormulario() {
     coren: document.getElementById('pf-coren').value,
     ufCoren: document.getElementById('pf-uf-coren').value,
     especialidade: document.getElementById('pf-especialidade').value,
+    isAdmin: Boolean(checkboxAdmin && !checkboxAdminGroup?.hidden && checkboxAdmin.checked),
   };
 }
 
