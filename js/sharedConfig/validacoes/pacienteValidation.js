@@ -1,21 +1,23 @@
 /**
- * paciente_validation.js
+ * pacienteValidation.js
  * Espelho de schema_paciente.py (PacienteCriarSchema,
  * PacienteAtualizarPessoalSchema, PacienteAtualizarClinicoSchema).
  *
  * Diferenças de contrato em relação aos schemas de usuário/empresa:
- *  - Estes schemas do back NÃO têm extra="forbid": campo desconhecido é
- *    ignorado, não é erro (ex.: id_regiao_geografica, status/falecido no
+ *  - Criação e atualização pessoal NÃO têm extra="forbid": campo desconhecido
+ *    é ignorado, não é erro (ex.: id_regiao_geografica, status/falecido no
  *    cadastro). Aqui também são descartados em silêncio.
+ *  - Atualização clínica TEM extra="forbid": só `status` (ativo|inativo);
+ *    falecido/data_obito dão erro no próprio campo.
  *  - `dados` equivale ao campos_informados() do back: só o que foi enviado,
  *    sem nulos. Só cep é normalizado (dígitos); cpf, telefone e e-mail
  *    seguem como o usuário digitou, igual ao back.
  *  - Datas são strings "AAAA-MM-DD".
  */
 import {
-  setErro, resultado, tam, vazio, validarCpf, validarTelefoneBr, validarEmail,
+  setErro, resultado, tam, vazio, checarCamposExtras, validarCpf, validarTelefoneBr, validarEmail,
   validarEDevolverCep, dataIsoValida, dataFutura,
-} from "./validacoes_gerais.js";
+} from "./generalValidation.js";
 
 const informado = (v) => v !== undefined && v !== null;
 
@@ -101,26 +103,23 @@ export function validarAtualizarPacientePessoal(payload) {
   return resultado(out, erros);
 }
 
-const STATUS = ["ativo", "inativo", "obito"];
+const STATUS = ["ativo", "inativo"];
 
-/** PATCH dados clínicos. falecido=true força status="obito". */
+/**
+ * PATCH do eixo clínico: só `status`, e só entre "ativo" e "inativo".
+ * Óbito (status="obito", falecido, data_obito) tem operações próprias no
+ * back (marcar_obito / reverter_obito). Aqui o schema é extra="forbid":
+ * falecido/data_obito (ou qualquer outro campo) viram erro no campo.
+ */
 export function validarAtualizarPacienteClinico(payload) {
   const erros = {};
   const out = {};
-  const src = soPermitidos(payload, new Set(["status", "falecido", "data_obito"]));
+  checarCamposExtras(payload, new Set(["status"]), erros);
 
-  if (informado(src.status)) {
-    if (!STATUS.includes(src.status)) setErro(erros, "status", `Deve ser um de: ${STATUS.join(", ")}.`);
-    else gravar(out, "status", src.status);
+  if (informado(payload.status)) {
+    if (!STATUS.includes(payload.status)) setErro(erros, "status", `Deve ser um de: ${STATUS.join(", ")}.`);
+    else gravar(out, "status", payload.status);
   }
-  if (informado(src.falecido)) {
-    if (typeof src.falecido !== "boolean") setErro(erros, "falecido", "Deve ser verdadeiro ou falso.");
-    else gravar(out, "falecido", src.falecido);
-  }
-  gravar(out, "data_obito", lerData(src, "data_obito", erros));
-
-  // model_validator: só roda se os campos individuais passaram
-  if (Object.keys(erros).length === 0 && out.falecido === true) out.status = "obito";
   return resultado(out, erros);
 }
 
