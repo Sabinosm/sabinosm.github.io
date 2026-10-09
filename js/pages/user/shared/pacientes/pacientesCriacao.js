@@ -17,7 +17,7 @@
 //     outros papéis (ex: admin) nunca veem esse botão.
 
 import { ApiError, criarPacientePessoal } from "./pacientesApi.js";
-import { validarEssencial } from "./pacientesCriacaoValidacoes.js";
+import { validarEssencial, IDS_CAMPOS_PACIENTE } from "./pacientesCriacaoValidacoes.js";
 import { souProfissionalDeSaude } from "../../gestao/profissionais/profissionaisSessao.js";
 import { exibirMensagem } from "/js/shared/feedback.js";
 import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
@@ -65,7 +65,7 @@ async function salvar(destino) {
   if (enviando) return;
 
   const { payload, erros } = validarEssencial(lerCamposEssencial());
-  limparErros(['pac-nome', 'pac-cpf', 'pac-telefone', 'pac-sexo', 'pac-nascimento']);
+  limparErros(IDS_CAMPOS_PACIENTE);
 
   if (Object.keys(erros).length > 0) {
     aplicarErros(erros);

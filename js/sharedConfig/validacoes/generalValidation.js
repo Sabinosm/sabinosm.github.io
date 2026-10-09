@@ -1,5 +1,5 @@
 /**
- * validacoes_gerais.js
+ * generalValidation.js
  * Espelho de src/core/validacoes.py + erros_pydantic.py.
  * O BACKEND é a verdade; aqui é só feedback rápido na UI.
  *
@@ -127,3 +127,31 @@ export function validarEmail(email) {
 // Delegado ao utilitário compartilhado do front (espelha validar_senha do back).
 // Retorna { valida: boolean, mensagem: string }. Ajuste o caminho conforme seu projeto.
 export { validarSenha } from "../passwordManagement/passwordValidation.js";
+
+// ------------------------------------------------------------- cep / datas
+
+/** Porte de validar_e_devolver_cep: só dígitos se válido, senão null. */
+export function validarEDevolverCep(cep) {
+  const limpo = limparDigitos(cep);
+  return validarCep(limpo) ? limpo : null;
+}
+
+/** "AAAA-MM-DD" e data real do calendário (rejeita 2024-02-31). */
+export function dataIsoValida(v) {
+  if (typeof v !== "string") return false;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (!m) return false;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === mo - 1 && dt.getUTCDate() === d;
+}
+
+/** Hoje (fuso local do navegador) em "AAAA-MM-DD". */
+export function hojeIso() {
+  const t = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}`;
+}
+
+/** Equivalente a `v > date.today()` do back (data ISO já validada). */
+export const dataFutura = (v) => v > hojeIso();
