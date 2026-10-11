@@ -1,0 +1,168 @@
+/* ============================================
+   B-íon — Detalhe da consulta
+   Carregado JUNTO com consulta.css (que já traz o layout do .main,
+   modais, campos de formulário, feedback e badges). Aqui só o que é
+   próprio desta página.
+   ============================================ */
+
+/* ===== Voltar ===== */
+.cons-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.cons-voltar:hover {
+  color: var(--accent);
+}
+
+.cons-det-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#cons-det-nome.cons-nome--especial {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* ===== Painéis ===== */
+.cons-panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow:
+    4px 4px 10px var(--neu-shadow-dark),
+    -4px -4px 10px var(--neu-shadow-light);
+}
+
+.cons-panel[hidden],
+.cons-panel-acoes[hidden],
+.cons-banner-encerrada[hidden],
+#cons-det-conteudo[hidden],
+#cons-det-erro[hidden] {
+  display: none !important;
+}
+
+.cons-panel-titulo {
+  margin: 0 0 14px;
+  font-size: calc(14px * var(--font-scale, 1));
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+/* ===== Resumo (lista de definições) ===== */
+.cons-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+}
+.cons-info > div[hidden] {
+  display: none;
+}
+.cons-info dt {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.cons-info dd {
+  margin: 0;
+  font-size: calc(14px * var(--font-scale, 1));
+  color: var(--text);
+}
+
+/* ===== Consentimento ===== */
+.cons-consent-linha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.cons-consent-linha .field-hint {
+  margin: 0;
+  flex: 1 1 260px;
+}
+
+/* ===== Botões de ação dos painéis ===== */
+.cons-panel-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.cons-panel button:disabled,
+.cons-btn-link[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* <a> com aparência de .btn-primary */
+.cons-btn-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* .btn-danger vem de profissionais.css, que esta página não carrega */
+.btn-danger {
+  background: transparent;
+  color: var(--danger, #e0625b);
+  border: 1px solid var(--danger, #e0625b);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger, #e0625b);
+  color: var(--palette-white-strong);
+}
+
+/* ===== Banner de consulta encerrada ===== */
+.cons-banner-encerrada {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: calc(13px * var(--font-scale, 1));
+}
+.cons-banner-encerrada strong {
+  color: var(--text);
+}
+
+/* ===== Modais deste formulário =====
+   consulta.css só conserta o <form> do modal de nova consulta; aqui
+   vale para todo form dentro de .cons-modal (mesma razão: o form
+   envolve header + body + footer e precisa ser flex-column). */
+.cons-modal > form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 760px) {
+  .cons-panel { padding: 16px; }
+  .cons-panel-acoes > * { flex: 1 1 100%; justify-content: center; text-align: center; }
+}

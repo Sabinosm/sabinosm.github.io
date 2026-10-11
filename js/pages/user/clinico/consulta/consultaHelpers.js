@@ -7,6 +7,15 @@
 // Página de detalhe da consulta (a criar). Fica numa constante só para
 // trocar o caminho em um lugar quando a página existir.
 const PAGINA_DETALHE = "./consultaDetalhe.html";
+// Página de atendimento (a criar, Bloco 2); recebe o uuid da consulta.
+const PAGINA_ATENDIMENTO = "./atendimento.html";
+const PAGINA_LISTA = "./consulta.html";
+
+/** Evento disparado quando algo mudou na consulta (consentimento, encerramento...) e o detalhe precisa recarregar. */
+export const EVENTO_CONSULTA_ALTERADA = "consulta:alterada";
+
+/** Classe que mostra um .settings-overlay (mesmo padrão do modal de profissionais). */
+export const CLASSE_OVERLAY_VISIVEL = "settings-overlay--visible";
 
 export const STATUS_LABELS = {
   "aguardando-triagem": "Aguardando triagem",
@@ -47,6 +56,15 @@ export function urlDetalhe(uuid, foco) {
   if (foco) params.set("foco", foco);
   return `${PAGINA_DETALHE}?${params.toString()}`;
 }
+
+export const urlAtendimento = (uuidConsulta) => `${PAGINA_ATENDIMENTO}?consulta=${encodeURIComponent(uuidConsulta)}`;
+export const urlLista = () => PAGINA_LISTA;
+
+/** uuid da consulta aberta na página de detalhe (?uuid=...). */
+export const uuidDaUrl = () => new URLSearchParams(window.location.search).get("uuid");
+
+/** Dica de foco vinda da lista (?foco=encerrar). */
+export const focoDaUrl = () => new URLSearchParams(window.location.search).get("foco");
 
 /** O backend serializa em UTC com offset; exibe no fuso do navegador. */
 export function formatarDataHora(iso) {
@@ -129,4 +147,12 @@ export function criarEstadoVazio(titulo, texto) {
 
   div.append(icon, h, p);
   return div;
+}
+
+/** Mensagem no topo da página de detalhe (#cons-det-feedback). tipo: "erro" | "sucesso" | "info" | "" (limpa). */
+export function exibirAviso(texto, tipo = "info") {
+  const el = document.getElementById("cons-det-feedback");
+  if (!el) return;
+  el.textContent = tipo ? texto : "";
+  el.className = tipo ? `cons-feedback ${tipo}` : "cons-feedback";
 }

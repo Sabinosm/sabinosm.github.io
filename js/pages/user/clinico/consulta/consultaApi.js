@@ -7,6 +7,10 @@
 //   GET  /consultas/?abertas=true          -> listarConsultas({ abertas })
 //   GET  /consultas/<uuid>                 -> buscarConsulta(uuid)
 //   POST /consultas/                       -> abrirConsulta(payload)
+//   POST /consultas/<uuid>/encerrar        -> encerrarConsulta(uuid, payload)
+//   POST /consultas/<uuid>/evadir          -> evadirConsulta(uuid, payload)
+//   GET  /consultas/<uuid>/consentimento   -> situacaoConsentimento(uuid)
+//   POST /consultas/<uuid>/consentimento/dispensar -> dispensarConsentimento(uuid, payload)
 //   GET  /pacientes/pessoal/resumo         -> listarPacientesResumo({ q, pagina })
 //
 // Resposta do backend (json_success / json_error):
@@ -15,8 +19,8 @@
 //   `erros` (opcional) traz o erro por campo; a chave "_geral" é erro
 //   sem campo definido. Fica em ApiError.erros.
 //
-// As rotas de encerrar, evadir e consentimento entram quando for feita
-// a página de detalhe (elas usam step-up).
+// Encerrar e evadir usam acesso_auditado no back: só registram a ação,
+// não exigem step-up (nada de X-Stepup-Token aqui).
 //
 // IMPORTANTE: assume o blueprint de consultas registrado em
 // "/consultas" e o de pacientes em "/pacientes/pessoal" (URL_BASE_API
@@ -93,6 +97,33 @@ export function buscarConsulta(uuid) {
  */
 export function abrirConsulta(payload) {
   return requisitar(BASE_CONSULTAS, "/", { method: "POST", body: JSON.stringify(payload) });
+}
+
+/**
+ * POST /consultas/<uuid>/encerrar — encerra com desfecho.
+ * Corpo: { desfecho_final, justificativa? }. 409 se há Atendimento em
+ * andamento (finalize-o antes) ou se a consulta já está encerrada.
+ */
+export function encerrarConsulta(uuid, payload) {
+  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/encerrar`, { method: "POST", body: JSON.stringify(payload) });
+}
+
+/**
+ * POST /consultas/<uuid>/evadir — evasão: cancela os Atendimentos em
+ * andamento e encerra com desfecho "evasao". Corpo: { justificativa? }.
+ */
+export function evadirConsulta(uuid, payload = {}) {
+  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/evadir`, { method: "POST", body: JSON.stringify(payload) });
+}
+
+/** GET /consultas/<uuid>/consentimento — data: { valido: boolean, situacao: "ativo" | "dispensado_emergencia" | null }. */
+export function situacaoConsentimento(uuid) {
+  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/consentimento`, { method: "GET" });
+}
+
+/** POST /consultas/<uuid>/consentimento/dispensar — dispensa por emergência. Corpo: { motivo }. */
+export function dispensarConsentimento(uuid, payload) {
+  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/consentimento/dispensar`, { method: "POST", body: JSON.stringify(payload) });
 }
 
 /**

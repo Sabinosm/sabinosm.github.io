@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pagina.consulta_detalhe.titulo">B-íon — Consulta</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/homePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/consulta/consulta.css">
+<link rel="stylesheet" href="../../../../css/pages/user/consulta/consultaDetalhe.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- data-requer: capacidade de userCachePermissoes.js (médico ou enfermeiro) -->
+<body data-requer="atenderClinicamente">
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <a class="cons-voltar" href="./consulta.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span data-i18n="consulta.detalhe.voltar">Consultas</span>
+    </a>
+
+    <div id="cons-det-feedback" class="cons-feedback" role="alert" aria-live="polite"></div>
+
+    <!-- Erro ao carregar (consulta inexistente, outra empresa, falha de rede) -->
+    <div id="cons-det-erro" hidden></div>
+
+    <div id="cons-det-conteudo" hidden>
+
+      <header class="main-header">
+        <div>
+          <h1 id="cons-det-nome"></h1>
+          <p class="main-subtitle" id="cons-det-subtitulo"></p>
+        </div>
+        <div class="cons-det-chips">
+          <span id="cons-det-status"></span>
+        </div>
+      </header>
+
+      <!-- Consulta encerrada: só leitura -->
+      <div class="cons-banner-encerrada" id="cons-banner-encerrada" hidden>
+        <strong data-i18n="consulta.detalhe.encerrada">Consulta encerrada.</strong>
+        <span id="cons-banner-encerrada-texto"></span>
+      </div>
+
+      <!-- ===== RESUMO ===== -->
+      <section class="cons-panel">
+        <h2 class="cons-panel-titulo" data-i18n="consulta.detalhe.resumo">Resumo</h2>
+        <dl class="cons-info">
+          <div>
+            <dt data-i18n="consulta.detalhe.inicio">Início</dt>
+            <dd id="cons-det-inicio"></dd>
+          </div>
+          <div>
+            <dt data-i18n="consulta.modal.origem">Origem do encaminhamento</dt>
+            <dd id="cons-det-origem"></dd>
+          </div>
+          <div id="cons-det-fim-bloco" hidden>
+            <dt data-i18n="consulta.detalhe.fim">Encerrada em</dt>
+            <dd id="cons-det-fim"></dd>
+          </div>
+          <div id="cons-det-desfecho-bloco" hidden>
+            <dt data-i18n="consulta.detalhe.desfecho">Desfecho</dt>
+            <dd id="cons-det-desfecho"></dd>
+          </div>
+        </dl>
+      </section>
+
+      <!-- ===== CONSENTIMENTO LGPD ===== -->
+      <section class="cons-panel">
+        <h2 class="cons-panel-titulo" data-i18n="consulta.detalhe.consentimento">Consentimento LGPD</h2>
+        <div class="cons-consent-linha">
+          <span id="cons-consent-badge"></span>
+          <p class="field-hint" id="cons-consent-texto"></p>
+        </div>
+        <div class="cons-panel-acoes" id="cons-consent-acoes" hidden>
+          <!-- Coleta do termo por QR code: próxima etapa -->
+          <button type="button" class="btn-primary" id="cons-btn-coletar-termo" disabled title="Disponível na próxima etapa" data-i18n="consulta.consentimento.coletar">Coletar assinatura (QR code)</button>
+          <button type="button" class="btn-ghost" id="cons-btn-dispensar" data-i18n="consulta.consentimento.dispensar">Dispensar por emergência</button>
+        </div>
+      </section>
+
+      <!-- ===== ATENDIMENTOS ===== -->
+      <section class="cons-panel">
+        <h2 class="cons-panel-titulo" data-i18n="consulta.detalhe.atendimentos">Atendimentos</h2>
+        <p class="field-hint" id="cons-atend-aviso"></p>
+        <div class="cons-panel-acoes" id="cons-atend-acoes" hidden>
+          <a class="btn-primary cons-btn-link" id="cons-ir-atendimento" href="#" data-i18n="consulta.detalhe.ir_atendimento">Ir para atendimento</a>
+        </div>
+      </section>
+
+      <!-- ===== AÇÕES DA CONSULTA (só enquanto aberta) ===== -->
+      <section class="cons-panel" id="cons-painel-acoes" hidden>
+        <h2 class="cons-panel-titulo" data-i18n="consulta.detalhe.acoes">Ações da consulta</h2>
+        <p class="field-hint" data-i18n="consulta.detalhe.acoes_hint">
+          Encerrar exige que não haja atendimento em andamento. A evasão cancela os atendimentos em andamento e encerra a consulta.
+        </p>
+        <div class="cons-panel-acoes">
+          <button type="button" class="btn-ghost" id="cons-btn-encerrar" data-i18n="consulta.detalhe.encerrar">Encerrar consulta</button>
+          <button type="button" class="btn-danger" id="cons-btn-evadir" data-i18n="consulta.detalhe.evadir">Registrar evasão</button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== MODAL: DISPENSAR CONSENTIMENTO ===== -->
+<div class="settings-overlay" id="cons-disp-overlay">
+  <div class="cons-modal cons-modal--sm" role="dialog" aria-modal="true" aria-labelledby="cons-disp-titulo">
+    <form id="form-dispensar" novalidate>
+      <div class="cons-modal-header">
+        <h2 class="panel-title" id="cons-disp-titulo" data-i18n="consulta.consentimento.dispensar_titulo">Dispensar consentimento por emergência</h2>
+        <button type="button" class="settings-close" id="cons-disp-close" aria-label="Fechar" style="position: static;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="cons-modal-body">
+        <div id="cons-disp-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
+        <p class="field-hint" data-i18n="consulta.consentimento.dispensar_hint">
+          A dispensa vale apenas para esta consulta (LGPD, art. 11, II, “f”) e fica registrada com o motivo.
+        </p>
+        <div class="field-group">
+          <label class="field-label" for="cons-disp-motivo" data-i18n="consulta.consentimento.motivo">Motivo</label>
+          <textarea class="field-input" id="cons-disp-motivo" rows="3"></textarea>
+          <p class="field-error" id="cons-disp-motivo-error"></p>
+        </div>
+      </div>
+      <div class="cons-modal-footer">
+        <div class="cons-modal-footer-right">
+          <button type="button" class="btn-ghost" id="cons-disp-cancel" data-i18n="btn.cancelar">Cancelar</button>
+          <button type="submit" class="btn-primary" id="cons-disp-save" data-i18n="consulta.consentimento.dispensar_confirmar">Dispensar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: ENCERRAR CONSULTA ===== -->
+<div class="settings-overlay" id="cons-enc-overlay">
+  <div class="cons-modal cons-modal--sm" role="dialog" aria-modal="true" aria-labelledby="cons-enc-titulo">
+    <form id="form-encerrar" novalidate>
+      <div class="cons-modal-header">
+        <h2 class="panel-title" id="cons-enc-titulo" data-i18n="consulta.detalhe.encerrar">Encerrar consulta</h2>
+        <button type="button" class="settings-close" id="cons-enc-close" aria-label="Fechar" style="position: static;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="cons-modal-body">
+        <div id="cons-enc-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
+        <div class="field-group">
+          <label class="field-label" for="cons-enc-desfecho" data-i18n="consulta.detalhe.desfecho">Desfecho</label>
+          <select class="field-input" id="cons-enc-desfecho">
+            <option value="" data-i18n="profissionais.modal.tipo_selecione">Selecione</option>
+            <option value="alta" data-i18n="consulta.desfecho.alta">Alta</option>
+            <option value="internacao" data-i18n="consulta.desfecho.internacao">Internação</option>
+            <option value="transferencia" data-i18n="consulta.desfecho.transferencia">Transferência</option>
+            <option value="obito" data-i18n="consulta.desfecho.obito">Óbito</option>
+          </select>
+          <p class="field-error" id="cons-enc-desfecho-error"></p>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="cons-enc-justificativa"><span data-i18n="consulta.detalhe.justificativa">Justificativa</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
+          <textarea class="field-input" id="cons-enc-justificativa" rows="3"></textarea>
+          <p class="field-error" id="cons-enc-justificativa-error"></p>
+        </div>
+      </div>
+      <div class="cons-modal-footer">
+        <div class="cons-modal-footer-right">
+          <button type="button" class="btn-ghost" id="cons-enc-cancel" data-i18n="btn.cancelar">Cancelar</button>
+          <button type="submit" class="btn-primary" id="cons-enc-save" data-i18n="consulta.detalhe.encerrar_confirmar">Encerrar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===== MODAL: EVASÃO ===== -->
+<div class="settings-overlay" id="cons-eva-overlay">
+  <div class="cons-modal cons-modal--sm" role="alertdialog" aria-modal="true" aria-labelledby="cons-eva-titulo">
+    <form id="form-evadir" novalidate>
+      <div class="cons-modal-header">
+        <h2 class="panel-title" id="cons-eva-titulo" data-i18n="consulta.detalhe.evadir">Registrar evasão</h2>
+        <button type="button" class="settings-close" id="cons-eva-close" aria-label="Fechar" style="position: static;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="cons-modal-body">
+        <div id="cons-eva-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
+        <p class="field-hint" data-i18n="consulta.detalhe.evadir_hint">
+          O paciente deixou o serviço sem alta. Os atendimentos em andamento serão cancelados e a consulta será encerrada com desfecho “evasão”. Não dá para desfazer.
+        </p>
+        <div class="field-group">
+          <label class="field-label" for="cons-eva-justificativa"><span data-i18n="consulta.detalhe.justificativa">Justificativa</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
+          <textarea class="field-input" id="cons-eva-justificativa" rows="3"></textarea>
+          <p class="field-error" id="cons-eva-justificativa-error"></p>
+        </div>
+      </div>
+      <div class="cons-modal-footer">
+        <div class="cons-modal-footer-right">
+          <button type="button" class="btn-ghost" id="cons-eva-cancel" data-i18n="btn.cancelar">Cancelar</button>
+          <button type="submit" class="btn-danger" id="cons-eva-save" data-i18n="consulta.detalhe.evadir_confirmar">Registrar evasão</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
+<!-- Entry point: carrega a consulta e importa consultaConsentimento.js e consultaAcoes.js -->
+<script type="module" src="../../../../js/pages/user/consulta/consultaDetalhe.js"></script>
+</body>
+</html>
