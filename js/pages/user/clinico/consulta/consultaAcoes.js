@@ -22,7 +22,7 @@
 
 import { ApiError, encerrarConsulta, evadirConsulta } from "./consultaApi.js";
 import { validarEncerramentoConsulta, validarEvasaoConsulta } from "./consultaValidation.js";
-import { CAMPO_GERAL } from "./generalValidation.js";
+import { CAMPO_GERAL } from "../../../../sharedConfig/validacoes/generalValidation.js";
 import {
   CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, exibirAviso, uuidDaUrl,
 } from "./consultaHelpers.js";
