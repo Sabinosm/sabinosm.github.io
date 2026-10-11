@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pagina.consulta.titulo">B-íon — Consultas</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/homePage.css">
+<link rel="stylesheet" href="../../../../css/pages/user/settings.css">
+<link rel="stylesheet" href="../../../../css/pages/user/consulta/consulta.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- data-requer: capacidade de userCachePermissoes.js (médico ou enfermeiro) -->
+<body data-requer="atenderClinicamente">
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1 data-i18n="nav.consultas">Consultas</h1>
+        <p class="main-subtitle" data-i18n="consulta.subtitulo">Episódios de cuidado dos pacientes da instituição</p>
+      </div>
+      <button class="btn-primary" id="btn-nova-consulta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span data-i18n="consulta.nova">Nova consulta</span>
+      </button>
+    </header>
+
+    <section class="section">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="cons-busca" placeholder="Buscar por paciente" data-i18n-placeholder="consulta.busca_placeholder">
+          </div>
+          <button class="btn-filter" id="cons-btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-i18n="consulta.filtros">Filtros</span>
+          </button>
+        </div>
+
+        <!-- Painel de filtros — filtros adicionais serão definidos depois -->
+        <div class="filter-panel" id="cons-filter-panel">
+          <div class="filter-field">
+            <label for="cons-filtro-situacao" data-i18n="consulta.filtro.situacao">Situação</label>
+            <select id="cons-filtro-situacao">
+              <option value="abertas" data-i18n="consulta.filtro.abertas">Somente abertas</option>
+              <option value="todas" data-i18n="consulta.filtro.todas">Todas</option>
+              <option value="encerradas" data-i18n="consulta.filtro.encerradas">Somente encerradas</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="cons-filtro-status" data-i18n="campo.status">Status</label>
+            <select id="cons-filtro-status">
+              <option value="" data-i18n="consulta.filtro.todos">Todos</option>
+              <option value="aguardando-triagem" data-i18n="consulta.status.aguardando_triagem">Aguardando triagem</option>
+              <option value="em-triagem" data-i18n="consulta.status.em_triagem">Em triagem</option>
+              <option value="aguardando-medico" data-i18n="consulta.status.aguardando_medico">Aguardando médico</option>
+              <option value="em-atendimento" data-i18n="consulta.status.em_atendimento">Em atendimento</option>
+              <option value="em-observacao" data-i18n="consulta.status.em_observacao">Em observação</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="cons-filtro-consentimento" data-i18n="consulta.filtro.consentimento">Consentimento</label>
+            <select id="cons-filtro-consentimento">
+              <option value="" data-i18n="consulta.filtro.todos">Todos</option>
+              <option value="pendente" data-i18n="consulta.consentimento.pendente">Pendente</option>
+              <option value="ativo" data-i18n="consulta.consentimento.ativo">Registrado</option>
+              <option value="dispensado_emergencia" data-i18n="consulta.consentimento.dispensado">Dispensado (emergência)</option>
+            </select>
+          </div>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="cons-btn-limpar-filtros" type="button" data-i18n="consulta.limpar">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="cons-feedback-lista" class="cons-feedback" role="alert" aria-live="polite"></div>
+
+      <div class="card-list" id="cons-lista">
+        <!-- Preenchido dinamicamente por consultaLista.js -->
+      </div>
+
+      <div class="pagination" id="cons-paginacao">
+        <span class="pagination-info" id="cons-paginacao-info"></span>
+        <div class="pagination-controls" id="cons-paginacao-controles"></div>
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== MODAL: NOVA CONSULTA ===== -->
+<div class="settings-overlay" id="cons-modal-overlay">
+  <div class="cons-modal" role="dialog" aria-modal="true" aria-labelledby="cons-modal-title">
+
+    <form id="form-nova-consulta" novalidate>
+      <div class="cons-modal-header">
+        <h2 class="panel-title" id="cons-modal-title" data-i18n="consulta.modal.titulo">Nova consulta</h2>
+        <button type="button" class="settings-close" id="cons-modal-close" aria-label="Fechar" style="position: static;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cons-modal-body">
+
+        <!-- Uma aba por forma do corpo de POST /consultas/ -->
+        <div class="segmented" id="cons-nova-abas" role="tablist">
+          <button type="button" class="segmented-item segmented-item--active" data-forma="cadastrado" role="tab" data-i18n="consulta.aba.cadastrado">Paciente cadastrado</button>
+          <button type="button" class="segmented-item" data-forma="novo" role="tab" data-i18n="consulta.aba.novo">Novo paciente</button>
+          <button type="button" class="segmented-item" data-forma="emergencia" role="tab" data-i18n="consulta.aba.emergencia">Emergência</button>
+        </div>
+
+        <div id="mensagemFeedbackConsulta" class="cons-form-feedback" role="alert" aria-live="polite"></div>
+
+        <div class="field-group">
+          <label class="field-label" for="cons-origem" data-i18n="consulta.modal.origem">Origem do encaminhamento</label>
+          <select class="field-input" id="cons-origem">
+            <option value="espontanea" data-i18n="consulta.origem.espontanea">Espontânea</option>
+            <option value="SAMU" data-i18n="consulta.origem.samu">SAMU</option>
+            <option value="transferencia" data-i18n="consulta.origem.transferencia">Transferência</option>
+            <option value="regulacao" data-i18n="consulta.origem.regulacao">Regulação</option>
+          </select>
+          <p class="field-error" id="cons-origem-error"></p>
+        </div>
+
+        <!-- ABA 1 — { uuid_paciente } -->
+        <div class="cons-aba" id="cons-aba-cadastrado">
+          <div class="field-group">
+            <label class="field-label" for="cons-paciente-busca" data-i18n="consulta.modal.buscar_paciente">Buscar paciente</label>
+            <input class="field-input" type="text" id="cons-paciente-busca" placeholder="Nome ou CPF completo" data-i18n-placeholder="consulta.modal.buscar_placeholder" autocomplete="off">
+            <p class="field-error" id="cons-paciente-busca-error"></p>
+          </div>
+          <div class="cons-resultados" id="cons-paciente-resultados" role="listbox">
+            <!-- Resultados da busca (consultaNova.js) -->
+          </div>
+          <div class="cons-paciente-selecionado" id="cons-paciente-selecionado" hidden>
+            <span class="field-label" data-i18n="consulta.modal.paciente_selecionado">Paciente selecionado</span>
+            <div class="cons-paciente-selecionado-linha">
+              <span id="cons-paciente-selecionado-nome"></span>
+              <button type="button" class="btn-ghost" id="cons-paciente-trocar" data-i18n="consulta.modal.trocar">Trocar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 2 — { paciente: {...} } -->
+        <div class="cons-aba" id="cons-aba-novo" hidden>
+          <div class="field-group">
+            <label class="field-label" for="cons-pac-nome" data-i18n="campo.nome_completo">Nome completo</label>
+            <input class="field-input" type="text" id="cons-pac-nome" autocomplete="off">
+            <p class="field-error" id="cons-pac-nome-error"></p>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="cons-pac-sexo" data-i18n="consulta.modal.sexo_biologico">Sexo biológico</label>
+              <select class="field-input" id="cons-pac-sexo">
+                <option value="" data-i18n="profissionais.modal.tipo_selecione">Selecione</option>
+                <option value="M" data-i18n="consulta.sexo.m">Masculino</option>
+                <option value="F" data-i18n="consulta.sexo.f">Feminino</option>
+                <option value="I" data-i18n="consulta.sexo.i">Indeterminado</option>
+              </select>
+              <p class="field-error" id="cons-pac-sexo-error"></p>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="cons-pac-nascimento" data-i18n="consulta.modal.data_nascimento">Data de nascimento</label>
+              <input class="field-input" type="date" id="cons-pac-nascimento">
+              <p class="field-error" id="cons-pac-nascimento-error"></p>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label" for="cons-pac-cpf">CPF</label>
+              <input class="field-input" type="text" id="cons-pac-cpf" placeholder="000.000.000-00" inputmode="numeric" autocomplete="off">
+              <p class="field-error" id="cons-pac-cpf-error"></p>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="cons-pac-telefone"><span data-i18n="settings.user.telefone">Telefone</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
+              <input class="field-input" type="tel" id="cons-pac-telefone" placeholder="(00) 00000-0000" autocomplete="off">
+              <p class="field-error" id="cons-pac-telefone-error"></p>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="cons-pac-email"><span data-i18n="settings.user.email">E-mail</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
+            <input class="field-input" type="email" id="cons-pac-email" autocomplete="off">
+            <p class="field-error" id="cons-pac-email-error"></p>
+          </div>
+
+          <p class="field-hint" data-i18n="consulta.modal.novo_hint">
+            Os dados pessoais são guardados cifrados. Endereço, RG e contato de emergência podem ser completados depois.
+          </p>
+        </div>
+
+        <!-- ABA 3 — { paciente_nao_identificado: true, motivo_emergencia } -->
+        <div class="cons-aba" id="cons-aba-emergencia" hidden>
+          <div class="field-group">
+            <label class="field-label" for="cons-motivo-emergencia" data-i18n="consulta.modal.motivo_emergencia">Motivo da emergência</label>
+            <textarea class="field-input" id="cons-motivo-emergencia" rows="3"></textarea>
+            <p class="field-error" id="cons-motivo-emergencia-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="cons-sexo-emergencia"><span data-i18n="consulta.modal.sexo_biologico">Sexo biológico</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
+            <select class="field-input" id="cons-sexo-emergencia">
+              <option value="" data-i18n="consulta.modal.nao_informado">Não informado</option>
+              <option value="M" data-i18n="consulta.sexo.m">Masculino</option>
+              <option value="F" data-i18n="consulta.sexo.f">Feminino</option>
+              <option value="I" data-i18n="consulta.sexo.i">Indeterminado</option>
+            </select>
+            <p class="field-error" id="cons-sexo-emergencia-error"></p>
+          </div>
+          <p class="field-hint" data-i18n="consulta.modal.emergencia_hint">
+            O paciente é registrado sem identificação e o consentimento LGPD fica dispensado por emergência. Os dados podem ser completados depois, sem duplicar o cadastro.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="cons-modal-footer">
+        <button type="button" class="btn-ghost" id="cons-modal-cancel" data-i18n="btn.cancelar">Cancelar</button>
+        <button type="submit" class="btn-primary" id="cons-modal-save" data-i18n="consulta.modal.abrir">Abrir consulta</button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<!-- ===== MODAL: JÁ EXISTE CONSULTA ABERTA (resposta 409) ===== -->
+<div class="settings-overlay" id="cons-duplicada-overlay">
+  <div class="cons-modal cons-modal--sm" role="alertdialog" aria-modal="true" aria-labelledby="cons-duplicada-title">
+    <div class="cons-modal-header">
+      <h2 class="panel-title" id="cons-duplicada-title" data-i18n="consulta.duplicada.titulo">Este paciente já tem uma consulta aberta</h2>
+    </div>
+    <div class="cons-modal-body">
+      <p class="field-hint" id="cons-duplicada-mensagem"></p>
+      <p class="field-hint" data-i18n="consulta.duplicada.orientacao">
+        Continue a consulta existente para registrar um novo atendimento, ou abra-a para encerrá-la.
+      </p>
+    </div>
+    <div class="cons-modal-footer">
+      <button type="button" class="btn-ghost" id="cons-duplicada-fechar" data-i18n="btn.fechar">Fechar</button>
+      <div class="cons-modal-footer-right">
+        <button type="button" class="btn-ghost" id="cons-duplicada-encerrar" data-i18n="consulta.duplicada.encerrar">Ver para encerrar</button>
+        <button type="button" class="btn-primary" id="cons-duplicada-continuar" data-i18n="consulta.duplicada.continuar">Continuar consulta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
+<!-- Entry point: importa consultaLista.js e consultaNova.js e chama iniciarPagina(),
+     mesmo padrão de auditoria.js -->
+<script type="module" src="../../../../js/pages/user/consulta/consulta.js"></script>
+</body>
+</html>
