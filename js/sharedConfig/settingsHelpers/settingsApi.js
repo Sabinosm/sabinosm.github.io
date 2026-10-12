@@ -4,7 +4,7 @@
 
 import { URL_BASE_API } from '../urlConfig.js';
 
-const CONFIGURACAO_API_URL = URL_BASE_API + '/configuracoes/';
+const CONFIGURACAO_API_URL = URL_BASE_API + '/configuracoes';
 
 // ============================================
 // Mapeamento entre os elementos [data-track] do painel Preferências
