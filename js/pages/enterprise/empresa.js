@@ -31,7 +31,7 @@ import { iniciarPagina } from '../../sharedConfig/loaders/initPagina.js';
 // duplicar a leitura de sessionStorage aqui.
 import { souSuperAdmin } from '../user/gestao/profissionais/profissionaisSessao.js';
 
-const URL_BASE = `${URL_BASE_API}/empresas/`;
+const URL_BASE = `${URL_BASE_API}/empresas`;
 
 const CAMPOS_EDITAVEIS = [
   'empresa-nome-fantasia',
