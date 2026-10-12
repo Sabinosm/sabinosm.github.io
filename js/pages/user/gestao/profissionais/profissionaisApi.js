@@ -118,7 +118,7 @@ export function listarProfissionais({ pagina = 0, status, especialidade } = {}) 
   if (status) params.set('status', status);
   if (especialidade) params.set('especialidade', especialidade);
 
-  return requisitar(`/?${params.toString()}`, { method: 'GET' });
+  return requisitar(`?${params.toString()}`, { method: 'GET' });
 }
 
 /** GET /<uuid> — detalhe de um usuário específico.
@@ -144,7 +144,7 @@ export function buscarProfissional(uuid) {
  * erro.message).
  */
 export function criarProfissional(payload) {
-  return requisitar('/', {
+  return requisitar(URL_BASE_API, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
