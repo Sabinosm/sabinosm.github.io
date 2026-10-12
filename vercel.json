@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/v1/api:path*",
-      "destination": "https://bion.onrender.com/v1/api:path*"
+      "source": "/v1/api/:path*",
+      "destination": "https://bion.onrender.com/v1/api/:path*"
     }
   ]
 }
