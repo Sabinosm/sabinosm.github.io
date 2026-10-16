@@ -101,6 +101,10 @@
   margin-top: 16px;
 }
 
+.cons-panel-acoes [hidden] {
+  display: none !important;
+}
+
 .cons-panel button:disabled,
 .cons-btn-link[aria-disabled="true"] {
   opacity: 0.5;
@@ -131,6 +135,52 @@
 .btn-danger:hover:not(:disabled) {
   background: var(--danger, #e0625b);
   color: var(--palette-white-strong);
+}
+
+/* ===== Modal de assinatura por QR code ===== */
+.cons-qr-painel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.cons-qr-painel[hidden] {
+  display: none !important;
+}
+
+.cons-qr-paciente {
+  margin: 0;
+  font-size: calc(14px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* QR em preto sobre branco, em qualquer tema, para os leitores de câmera */
+.cons-qr-code {
+  display: inline-flex;
+  padding: 12px;
+  background: #fff;
+  border-radius: var(--radius-sm);
+}
+.cons-qr-code:empty {
+  display: none;
+}
+
+.cons-qr-texto {
+  margin: 0;
+}
+
+.cons-qr-link-grupo {
+  width: 100%;
+  text-align: left;
+}
+
+.cons-qr-titulo-estado {
+  margin: 0;
+  font-size: calc(15px * var(--font-scale, 1));
+  font-weight: 700;
+  color: var(--text-strong);
 }
 
 /* ===== Banner de consulta encerrada ===== */
