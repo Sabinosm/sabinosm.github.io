@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>B-íon — Termo de consentimento</title>
+<link rel="stylesheet" href="../../../../css/pages/user/clinico/assinar.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- Página PÚBLICA: o token do link é a autenticação. Sem sidebar, sem sessão,
+     sem preferenciasLoader/initPagina. -->
+<body>
+
+<main class="ass-pagina">
+
+  <header class="ass-topo">
+    <span class="ass-marca">B-íon</span>
+    <h1 class="ass-titulo">Termo de consentimento</h1>
+  </header>
+
+  <!-- ===== Carregando ===== -->
+  <section class="ass-cartao" id="ass-carregando">
+    <p class="ass-texto">Carregando o termo…</p>
+  </section>
+
+  <!-- ===== Erro (link inválido, expirado, já usado) ===== -->
+  <section class="ass-cartao ass-cartao--aviso" id="ass-erro" hidden>
+    <h2 class="ass-subtitulo" id="ass-erro-titulo">Não foi possível abrir o termo</h2>
+    <p class="ass-texto" id="ass-erro-texto"></p>
+  </section>
+
+  <!-- ===== Formulário de assinatura ===== -->
+  <form id="ass-form" hidden novalidate>
+
+    <section class="ass-cartao">
+      <p class="ass-rotulo">Titular</p>
+      <p class="ass-destaque" id="ass-nome"></p>
+      <p class="ass-texto ass-texto--suave">CPF <span id="ass-cpf"></span> · Versão do termo <span id="ass-versao"></span></p>
+      <p class="ass-texto ass-texto--suave">Este link expira em <strong id="ass-relogio">--:--</strong>.</p>
+    </section>
+
+    <section class="ass-cartao">
+      <h2 class="ass-subtitulo">Leia o termo</h2>
+      <div class="ass-termo" id="ass-termo" tabindex="0" aria-label="Texto do termo de consentimento"></div>
+      <p class="ass-dica" id="ass-dica-rolar">Role o texto até o fim para continuar.</p>
+      <a class="ass-link" id="ass-pdf" href="#" target="_blank" rel="noopener">Abrir o termo em PDF</a>
+    </section>
+
+    <section class="ass-cartao" id="ass-secao-escopos" hidden>
+      <h2 class="ass-subtitulo">Usos opcionais dos seus dados</h2>
+      <p class="ass-texto ass-texto--suave">Marque só o que você autoriza. Recusar não impede o seu atendimento.</p>
+      <div id="ass-escopos"></div>
+    </section>
+
+    <section class="ass-cartao">
+      <h2 class="ass-subtitulo">Confirmações</h2>
+      <label class="ass-check">
+        <input type="checkbox" id="ass-confirmo" disabled>
+        <span>Confirmo que sou a pessoa identificada acima.</span>
+      </label>
+      <label class="ass-check">
+        <input type="checkbox" id="ass-declaro" disabled>
+        <span>Li o termo e declaro o meu consentimento.</span>
+      </label>
+    </section>
+
+    <section class="ass-cartao">
+      <h2 class="ass-subtitulo">Sua assinatura</h2>
+      <p class="ass-texto ass-texto--suave">Desenhe com o dedo no quadro abaixo.</p>
+      <div class="ass-quadro">
+        <canvas id="ass-canvas" aria-label="Quadro para desenhar a assinatura"></canvas>
+      </div>
+      <button type="button" class="ass-botao ass-botao--sec" id="ass-limpar">Limpar assinatura</button>
+    </section>
+
+    <div id="ass-feedback" class="ass-feedback" role="alert" aria-live="polite"></div>
+
+    <button type="submit" class="ass-botao" id="ass-enviar" disabled>Assinar o termo</button>
+  </form>
+
+  <!-- ===== Sucesso ===== -->
+  <section class="ass-cartao ass-cartao--ok" id="ass-sucesso" hidden>
+    <h2 class="ass-subtitulo">Termo assinado</h2>
+    <p class="ass-texto">Obrigado. O seu consentimento foi registrado. Você já pode devolver o celular.</p>
+    <a class="ass-botao ass-botao--link" id="ass-copia" href="#" download>Baixar a minha cópia (PDF)</a>
+    <p class="ass-texto ass-texto--suave" id="ass-copia-aviso"></p>
+  </section>
+
+</main>
+
+<script type="module" src="../../../../js/pages/user/clinico/consulta/consentimento/assinar.js"></script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+/* ============================================
+   B-íon — Assinatura do termo (página pública do paciente)
+   Independente do tema do app (preferencias.css não é carregado aqui):
+   tema claro fixo, mobile first, alto contraste. O quadro de assinatura
+   precisa de fundo claro de qualquer forma.
+   ============================================ */
+
+:root {
+  --ass-bg: #f3f5f7;
+  --ass-cartao: #ffffff;
+  --ass-borda: #d5dbe1;
+  --ass-texto: #1c2733;
+  --ass-suave: #5a6775;
+  --ass-acento: #1f6feb;
+  --ass-acento-escuro: #1858bd;
+  --ass-erro: #c0392b;
+  --ass-erro-bg: #fdecea;
+  --ass-ok: #1e7e45;
+  --ass-ok-bg: #e8f6ee;
+  --ass-raio: 12px;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after { box-sizing: inherit; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ass-bg);
+  color: var(--ass-texto);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.ass-pagina {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+[hidden] { display: none !important; }
+
+/* ===== Topo ===== */
+.ass-topo { margin-bottom: 16px; }
+.ass-marca {
+  display: inline-block;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ass-acento);
+}
+.ass-titulo { margin: 4px 0 0; font-size: 1.5rem; line-height: 1.25; }
+
+/* ===== Cartões ===== */
+.ass-cartao {
+  background: var(--ass-cartao);
+  border: 1px solid var(--ass-borda);
+  border-radius: var(--ass-raio);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.ass-cartao--aviso { border-color: var(--ass-erro); background: var(--ass-erro-bg); }
+.ass-cartao--ok { border-color: var(--ass-ok); background: var(--ass-ok-bg); }
+
+.ass-subtitulo { margin: 0 0 8px; font-size: 1.05rem; }
+.ass-rotulo { margin: 0; font-size: 0.8rem; color: var(--ass-suave); text-transform: uppercase; letter-spacing: 0.04em; }
+.ass-destaque { margin: 2px 0 6px; font-size: 1.2rem; font-weight: 700; }
+.ass-texto { margin: 0 0 8px; }
+.ass-texto--suave { color: var(--ass-suave); font-size: 0.9rem; }
+.ass-dica { margin: 8px 0; font-size: 0.9rem; color: var(--ass-suave); }
+.ass-dica--ok { color: var(--ass-ok); }
+
+/* ===== Texto do termo (rolagem) ===== */
+.ass-termo {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--ass-borda);
+  border-radius: 8px;
+  background: #fafbfc;
+  font-size: 0.95rem;
+  word-break: break-word;
+  -webkit-overflow-scrolling: touch;
+}
+.ass-termo h2 { margin: 0 0 4px; font-size: 1.05rem; line-height: 1.3; }
+.ass-termo h3 { margin: 16px 0 4px; font-size: 0.98rem; }
+.ass-termo p { margin: 0 0 8px; }
+.ass-termo .ass-termo-sub { color: var(--ass-suave); font-size: 0.85rem; font-style: italic; }
+.ass-termo ul { margin: 0 0 8px; padding-left: 20px; }
+.ass-termo li { margin-bottom: 4px; }
+.ass-termo:focus-visible { outline: 3px solid var(--ass-acento); outline-offset: 2px; }
+
+.ass-link { color: var(--ass-acento); font-weight: 600; }
+
+/* ===== Caixas de seleção ===== */
+.ass-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  cursor: pointer;
+}
+.ass-check input {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  accent-color: var(--ass-acento);
+}
+.ass-check input:disabled + span { color: var(--ass-suave); }
+.ass-check small { display: block; color: var(--ass-suave); }
+
+/* ===== Quadro de assinatura ===== */
+.ass-quadro {
+  border: 2px dashed var(--ass-borda);
+  border-radius: 8px;
+  background: #fff;
+  margin: 8px 0 10px;
+}
+#ass-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 600 / 220;
+  touch-action: none;       /* o dedo desenha, não rola a página */
+  cursor: crosshair;
+}
+
+/* ===== Botões ===== */
+.ass-botao {
+  display: block;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--ass-acento);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ass-botao:hover:not(:disabled) { background: var(--ass-acento-escuro); }
+.ass-botao:disabled { opacity: 0.45; cursor: not-allowed; }
+.ass-botao--sec {
+  background: transparent;
+  color: var(--ass-acento);
+  border: 1px solid var(--ass-acento);
+  padding: 10px 14px;
+  width: auto;
+}
+.ass-botao--sec:hover:not(:disabled) { background: #e9f1fe; }
+.ass-botao--link { margin-top: 12px; }
+
+/* ===== Mensagens ===== */
+.ass-feedback {
+  display: none;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+.ass-feedback.erro { display: block; background: var(--ass-erro-bg); color: var(--ass-erro); border: 1px solid var(--ass-erro); }
+.ass-feedback.info { display: block; background: #eef3f8; color: var(--ass-suave); border: 1px solid var(--ass-borda); }
