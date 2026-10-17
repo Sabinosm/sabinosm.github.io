@@ -3,7 +3,7 @@ import { validarCadastroUsuario } from "../../sharedConfig/validacoes/usuarioVal
 import { validarSenha, setErro } from "../../sharedConfig/validacoes/generalValidation.js";
 import {
   setError, clearError, temErro, pintarErros, pintarMensagemBackend, ligarCampo,
-} from "../../sharedConfig/validacoes/dom_erros.js";
+} from "../../sharedConfig/validacoes/domErros.js";
 
 const IDS = [
   "nome_completo", "cpf", "telefone", "email", "user_login", "senha",
