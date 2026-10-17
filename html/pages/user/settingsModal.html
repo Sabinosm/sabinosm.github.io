@@ -41,7 +41,9 @@
         <div class="avatar-row">
           <div class="avatar-preview" id="user-avatar-iniciais"></div>
           <div>
-            <button class="btn-secondary btn-secondary--sm" data-i18n="settings.user.alterar_foto">Alterar foto</button>
+            <input type="file" id="input-foto" accept="image/jpeg,image/png,image/webp" hidden>
+            <button class="btn-secondary btn-secondary--sm" type="button" id="btn-alterar-foto" data-i18n="settings.user.alterar_foto">Alterar foto</button>
+            <button class="btn-ghost btn-ghost--sm" type="button" id="btn-remover-foto" hidden data-i18n="settings.user.remover_foto">Remover foto</button>
             <p class="field-hint" data-i18n="settings.user.foto_hint">JPG ou PNG, até 4MB.</p>
           </div>
         </div>

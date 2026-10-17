@@ -62,6 +62,8 @@ export {
 
 export { atualizarUsuarioCache } from './userCacheHelpers/userCacheUsuario.js';
 
+export { atualizarAvatarCache } from './userCacheHelpers/userCacheAvatar.js';
+
 export {
   atualizarDesignCache,
   atualizarPreferenciasCache,

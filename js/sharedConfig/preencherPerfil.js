@@ -16,6 +16,7 @@ import { preencherDispositivos } from './preencherHelpers/preencherDispositivosW
 import { preencherTotp } from './preencherHelpers/preencherTotp.js';
 import { atualizarAvisoUnicoFator } from './preencherHelpers/preencherAvisos.js';
 import { preencherPreferencias } from './preencherHelpers/preencherPreferencias.js';
+import { aplicarAvatar } from './preencherHelpers/preencherAvatar.js';
 
 /**
  * Preenche toda a UI de perfil a partir do payload de /me.
@@ -26,6 +27,7 @@ export function preencherPainelPerfil(dados) {
   const { usuario, configuracoes, webauthn, totp } = dados;
 
   preencherIdentidade(usuario);
+  aplicarAvatar(usuario); // foto de perfil por cima das iniciais (cache primeiro, API só como fallback)
   preencherDadosInstitucionais(usuario);
   preencherDispositivos(webauthn);
   preencherTotp(totp);

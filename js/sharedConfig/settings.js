@@ -27,6 +27,7 @@ import './settingsHelpers/settingsModal.js';
 import './settingsHelpers/settingsTotp.js';
 import './settingsHelpers/settingsSenha.js';
 import './settingsHelpers/settingsArquivos.js';
+import './settingsHelpers/settingsAvatar.js';
 
 // Mantém a API pública que preencherTotp.js já importa de settings.js
 export { abrirModalTotp, fecharModalTotp, refsFormTotp } from './settingsHelpers/settingsTotp.js';
