@@ -26,14 +26,13 @@
 // Aba "novo": espelha PacienteCriarSchema (schema_paciente.py). Obrigatórios:
 // sexo_biologico, data_nascimento, nome_completo e cpf. Telefone e e-mail são
 // opcionais; endereço, RG e contato de emergência ficam para depois
-// (PUT /pacientes/pessoal/<uuid>). Tudo isolado em lerPacienteNovo().
+// (PUT /pacientes/pessoal/<uuid>). A leitura e a validação do formulário ficam
+// em consultaPacienteForm.js (compartilhadas com a identificação de paciente).
 
 import { ApiError, abrirConsulta, listarPacientesResumo } from "./consultaApi.js";
-import { validarAberturaConsulta } from "./consultaValidation.js";
-import {
-  CAMPO_GERAL, dataFutura, dataIsoValida, hojeIso, limparDigitos, tam,
-  validarCpf, validarEmail, validarTelefoneBr,
-} from "./generalValidation.js";
+import { validarAberturaConsulta } from "../../../../sharedConfig/validacoes/consultaValidation.js";
+import { CAMPO_GERAL, hojeIso } from "../../../../sharedConfig/validacoes/generalValidation.js";
+import { CAMPOS_PACIENTE, lerPacienteForm } from "./consultaPacienteForm.js";
 import { extrairUuid, urlDetalhe } from "./consultaHelpers.js";
 
 const CLASSE_VISIVEL = "settings-overlay--visible"; // mesmo padrão do modal de profissionais
@@ -51,17 +50,8 @@ const CAMPOS_COMUNS = {
   origem_encaminhamento: "cons-origem",
 };
 
-const CAMPOS_PACIENTE_NOVO = {
-  nome_completo: "cons-pac-nome",
-  cpf: "cons-pac-cpf",
-  telefone: "cons-pac-telefone",
-  email: "cons-pac-email",
-  sexo_biologico: "cons-pac-sexo",
-  data_nascimento: "cons-pac-nascimento",
-};
-
 function idDoCampo(chave) {
-  if (forma === "novo" && chave in CAMPOS_PACIENTE_NOVO) return CAMPOS_PACIENTE_NOVO[chave];
+  if (forma === "novo" && chave in CAMPOS_PACIENTE) return CAMPOS_PACIENTE[chave];
   if (forma === "emergencia" && chave === "sexo_biologico") return "cons-sexo-emergencia";
   return CAMPOS_COMUNS[chave] ?? null;
 }
@@ -256,46 +246,6 @@ function mostrarBuscaPaciente(mostrar) {
 // Montagem do payload por aba
 // ============================================
 
-/** Lê os campos do "novo paciente" (chaves iguais às de PacienteCriarSchema). */
-function lerPacienteNovo() {
-  const erros = {};
-  const nome = $("cons-pac-nome").value.trim();
-  const sexo = $("cons-pac-sexo").value;
-  const nascimento = $("cons-pac-nascimento").value;
-  const cpf = $("cons-pac-cpf").value.trim();
-  const telefone = $("cons-pac-telefone").value.trim();
-  const email = $("cons-pac-email").value.trim();
-  const paciente = {};
-
-  if (!nome) erros["cons-pac-nome"] = "Informe o nome completo.";
-  else if (nome.split(/\s+/).length < 2 || tam(nome) < 3) erros["cons-pac-nome"] = "Informe nome e sobrenome.";
-  else paciente.nome_completo = nome;
-
-  if (!sexo) erros["cons-pac-sexo"] = "Selecione o sexo biológico.";
-  else paciente.sexo_biologico = sexo;
-
-  if (!nascimento) erros["cons-pac-nascimento"] = "Informe a data de nascimento.";
-  else if (!dataIsoValida(nascimento)) erros["cons-pac-nascimento"] = "Data de nascimento inválida.";
-  else if (dataFutura(nascimento)) erros["cons-pac-nascimento"] = "A data de nascimento não pode ser futura.";
-  else paciente.data_nascimento = nascimento;
-
-  if (!cpf) erros["cons-pac-cpf"] = "Informe o CPF.";
-  else if (!validarCpf(cpf)) erros["cons-pac-cpf"] = "O CPF está incorreto.";
-  else paciente.cpf = limparDigitos(cpf);
-
-  if (telefone) {
-    if (!validarTelefoneBr(telefone)) erros["cons-pac-telefone"] = "Telefone com formato inválido.";
-    else paciente.telefone = limparDigitos(telefone);
-  }
-
-  if (email) {
-    if (!validarEmail(email)) erros["cons-pac-email"] = "E-mail inválido.";
-    else paciente.email = email.toLowerCase();
-  }
-
-  return { paciente, erros };
-}
-
 /** Monta o corpo da aba ativa. `erros` vem indexado por id de input. */
 function montarPayload() {
   const erros = {};
@@ -305,7 +255,7 @@ function montarPayload() {
     if (!pacienteSelecionado) erros["cons-paciente-busca"] = "Busque e selecione um paciente.";
     else payload = { uuid_paciente: pacienteSelecionado.uuid };
   } else if (forma === "novo") {
-    const lido = lerPacienteNovo();
+    const lido = lerPacienteForm();
     Object.assign(erros, lido.erros);
     payload = { paciente: lido.paciente };
   } else {

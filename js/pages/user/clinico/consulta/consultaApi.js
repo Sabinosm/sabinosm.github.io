@@ -12,6 +12,11 @@
 //   GET  /consultas/<uuid>/consentimento   -> situacaoConsentimento(uuid)
 //   POST /consultas/<uuid>/consentimento/dispensar -> dispensarConsentimento(uuid, payload)
 //   GET  /pacientes/pessoal/resumo         -> listarPacientesResumo({ q, pagina })
+//   POST /pacientes/pessoal/<uuid_paciente>/identificar        -> identificarPaciente(uuidPaciente, paciente)
+//   POST /pacientes/lgpd/<uuid_paciente>/gerar-link-assinatura -> gerarLinkAssinatura(uuidPaciente)
+//   GET  /pacientes/lgpd/assinatura/<token>/status             -> statusAssinatura(token)
+//   POST /pacientes/lgpd/assinatura/<token>/cancelar           -> cancelarLinkAssinatura(token)
+//   GET  /pacientes/lgpd/download-pdf/<uuid_consentimento>     -> baixarPdfAssinado(uuid)
 //
 // Resposta do backend (json_success / json_error):
 //   sucesso: { status: "success", message, data }
@@ -30,6 +35,7 @@ import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 
 const BASE_CONSULTAS = `${URL_BASE_API}/consultas`;
 const BASE_PACIENTES = `${URL_BASE_API}/pacientes/pessoal`;
+const BASE_LGPD = `${URL_BASE_API}/pacientes/lgpd`;
 
 export class ApiError extends Error {
   constructor(message, status, erros = null) {
@@ -140,4 +146,75 @@ export function listarPacientesResumo({ q, pagina = 0 } = {}) {
   params.set("pagina", String(pagina));
   if (q) params.set("q", q);
   return requisitar(BASE_PACIENTES, `/resumo?${params.toString()}`, { method: "GET" });
+}
+
+/**
+ * POST /pacientes/pessoal/<uuid_paciente>/identificar — completa um paciente de
+ * emergência (não identificado) com os dados de cadastro. Corpo = o mesmo do
+ * cadastro (PacienteCriarSchema). 409 se já está identificado, tem óbito
+ * registrado ou o CPF já existe na empresa. Devolve o paciente com `pessoal`.
+ */
+export function identificarPaciente(uuidPaciente, paciente) {
+  return requisitar(BASE_PACIENTES, `/${encodeURIComponent(uuidPaciente)}/identificar`, {
+    method: "POST",
+    body: JSON.stringify(paciente),
+  });
+}
+
+// ============================================
+// Assinatura digital do termo (QR code)
+// ============================================
+
+/**
+ * POST /pacientes/lgpd/<uuid_paciente>/gerar-link-assinatura
+ * Cria o link de assinatura (vale poucos minutos; gerar outro cancela o
+ * anterior do mesmo paciente). Falha se o paciente não tem dados pessoais
+ * (não identificado ou anonimizado).
+ *
+ * `versaoTermo` é opcional: sem ele o servidor usa a versão vigente do termo.
+ * data: { token, url_assinatura, expira_em, paciente_nome, paciente_cpf }
+ * (url_assinatura é a URL da API; o QR aponta para a página do front, ver
+ * urlAssinaturaPaciente em consultaHelpers.js).
+ */
+export function gerarLinkAssinatura(uuidPaciente, { versaoTermo } = {}) {
+  const corpo = versaoTermo ? { versao_termo: versaoTermo } : {};
+  return requisitar(BASE_LGPD, `/${encodeURIComponent(uuidPaciente)}/gerar-link-assinatura`, {
+    method: "POST",
+    body: JSON.stringify(corpo),
+  });
+}
+
+/** GET .../assinatura/<token>/status — data: { status: "pendente"|"usado"|"expirado", expira_em, usado_em?, consentimento_uuid? } */
+export function statusAssinatura(token) {
+  return requisitar(BASE_LGPD, `/assinatura/${encodeURIComponent(token)}/status`, { method: "GET" });
+}
+
+/** POST .../assinatura/<token>/cancelar — invalida um link pendente (409 se já foi usado). */
+export function cancelarLinkAssinatura(token) {
+  return requisitar(BASE_LGPD, `/assinatura/${encodeURIComponent(token)}/cancelar`, { method: "POST" });
+}
+
+/**
+ * GET .../download-pdf/<uuid_consentimento> — PDF assinado (refeito em memória pelo back).
+ * Devolve { blob, integridade }: "confere" | "divergente" (header X-Integridade).
+ */
+export async function baixarPdfAssinado(uuidConsentimento) {
+  let resposta;
+  try {
+    resposta = await fetch(`${BASE_LGPD}/download-pdf/${encodeURIComponent(uuidConsentimento)}`, {
+      credentials: "include",
+    });
+  } catch {
+    throw new ApiError("Não foi possível conectar ao servidor. Verifique sua internet.", 0);
+  }
+
+  if (!resposta.ok) {
+    let mensagem = "Não foi possível baixar o PDF.";
+    try {
+      mensagem = (await resposta.json()).message || mensagem;
+    } catch { /* corpo não era JSON */ }
+    throw new ApiError(mensagem, resposta.status);
+  }
+
+  return { blob: await resposta.blob(), integridade: resposta.headers.get("X-Integridade") };
 }

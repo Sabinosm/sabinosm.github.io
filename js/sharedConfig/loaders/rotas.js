@@ -23,6 +23,8 @@
 // Ao mover/renomear uma página: ajuste só a linha dela aqui.
 
 // js/sharedConfig/loaders/rotas.js  ->  ../../  =  raiz do projeto
+
+
 const PAGINAS = new URL('../../../html/pages/', import.meta.url);
 const pagina = (caminho) => new URL(caminho, PAGINAS).href;
 
@@ -49,6 +51,16 @@ export const ROTAS = Object.freeze({
   sidebar: pagina('user/sidebar.html'),
   settingsModal: pagina('user/settingsModal.html'),
   stepupModal: pagina('user/stepupModal.html'),
+
+  // -- Consultas HTML ---
+  consulta: pagina('user/clinico/consultas.html'),
+  consultaDetalhe: pagina('user/clinico/consultaDetalhe.html'),
+
+  // -- Atendimento --
+  atendimento: pagina('user/shared/atendimento.html'),
+
+  // -- Consentimento --
+  assinar: pagina('user/clinico/assinar.html')
 });
 
 /**

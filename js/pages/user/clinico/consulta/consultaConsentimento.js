@@ -7,9 +7,8 @@
 //   (LGPD art. 11, II, "f": vale só para esta consulta e fica registrada
 //   com o motivo; o back confere o início da consulta em situacao()).
 //
-// Próxima etapa: coleta do termo por QR code (botão #cons-btn-coletar-termo,
-// por enquanto desabilitado em consultaDetalhe.html). Quando for feita,
-// entra neste módulo.
+// A coleta do termo por QR code (botão #cons-btn-coletar-termo) fica em
+// consultaAssinatura.js.
 //
 // Este módulo se liga sozinho no DOMContentLoaded e lê o uuid da URL. Em
 // caso de sucesso dispara EVENTO_CONSULTA_ALTERADA; quem recarrega a

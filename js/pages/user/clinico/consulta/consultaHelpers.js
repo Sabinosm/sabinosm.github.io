@@ -6,10 +6,13 @@
 
 // Página de detalhe da consulta (a criar). Fica numa constante só para
 // trocar o caminho em um lugar quando a página existir.
-const PAGINA_DETALHE = "./consultaDetalhe.html";
+import { ROTAS } from "../../../../sharedConfig/loaders/rotas";
+const PAGINA_DETALHE = ROTAS.consultaDetalhe;
 // Página de atendimento (a criar, Bloco 2); recebe o uuid da consulta.
-const PAGINA_ATENDIMENTO = "./atendimento.html";
-const PAGINA_LISTA = "./consulta.html";
+const PAGINA_ATENDIMENTO = ROTAS.atendimento;
+const PAGINA_LISTA = ROTAS.consulta;
+// Página que o paciente abre no celular ao ler o QR code (pública).
+const PAGINA_ASSINATURA = ROTAS.assinar;
 
 /** Evento disparado quando algo mudou na consulta (consentimento, encerramento...) e o detalhe precisa recarregar. */
 export const EVENTO_CONSULTA_ALTERADA = "consulta:alterada";
@@ -60,17 +63,37 @@ export function urlDetalhe(uuid, foco) {
 export const urlAtendimento = (uuidConsulta) => `${PAGINA_ATENDIMENTO}?consulta=${encodeURIComponent(uuidConsulta)}`;
 export const urlLista = () => PAGINA_LISTA;
 
+/**
+ * Endereço completo da página de assinatura do paciente (vai dentro do QR code).
+ * Usa a origem da página atual: o celular do paciente precisa alcançar esse
+ * host (em desenvolvimento, "localhost" não serve).
+ */
+export const urlAssinaturaPaciente = (token) =>
+  new URL(`${PAGINA_ASSINATURA}?token=${encodeURIComponent(token)}`, window.location.href).href;
+
 /** uuid da consulta aberta na página de detalhe (?uuid=...). */
 export const uuidDaUrl = () => new URLSearchParams(window.location.search).get("uuid");
 
 /** Dica de foco vinda da lista (?foco=encerrar). */
 export const focoDaUrl = () => new URLSearchParams(window.location.search).get("foco");
 
-/** O backend serializa em UTC com offset; exibe no fuso do navegador. */
+/**
+ * ISO do backend -> Date. O MySQL devolve DATETIME sem fuso, e então o
+ * isoformat() sai sem offset ("2026-10-15T12:00:00"); new Date() leria
+ * isso como horário LOCAL e deslocaria a data. Gravamos tudo em UTC:
+ * sem offset, assume UTC.
+ */
+export function paraDataUtc(iso) {
+  if (!iso) return null;
+  const temFuso = /(Z|[+-]\d{2}:?\d{2})$/.test(iso);
+  const d = new Date(temFuso ? iso : `${iso}Z`);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** Exibe no fuso do navegador. */
 export function formatarDataHora(iso) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  const d = paraDataUtc(iso);
+  if (!d) return "—";
   return d.toLocaleString("pt-BR", {
     day: "2-digit", month: "2-digit", year: "numeric",
     hour: "2-digit", minute: "2-digit",
