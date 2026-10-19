@@ -15,7 +15,8 @@ import { iniciarPainelTotp } from "./stepUpCaminhoTotp.js";
  * no mesmo WebAuthn -- tenta TOTP como próximo método via
  * iniciarPainelTotp(). Se o usuário quiser insistir no WebAuthn mesmo
  * assim, o botão "Tentar novamente" continua disponível no painel
- * WebAuthn (btnTentarWebauthnNovamente) para esse caso.
+ * WebAuthn (btnTentarWebauthnNovamente) para esse caso. Quem só tem
+ * WebAuthn (sem TOTP) fica nesse painel, pois não tem fallback por senha.
  */
 export async function executarWebauthn(ctx, options) {
   const { acao } = ctx;

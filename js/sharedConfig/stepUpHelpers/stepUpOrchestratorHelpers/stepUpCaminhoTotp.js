@@ -20,9 +20,10 @@ import { resolverComToken } from "./stepUpCicloDeVida.js";
  *    WebAuthn falha (aí `ocultarWebauthn: true`, pra esconder o
  *    painel que acabou de falhar).
  *
- * Se o usuário não tiver TOTP cadastrado (TotpNaoCadastradoError),
- * cai no fallback de senha -- mesmo racional de sempre manter uma
- * saída (ver step_up.py).
+ * Se o usuário não tiver TOTP cadastrado (TotpNaoCadastradoError), só
+ * tem WebAuthn: o painel WebAuthn continua aberto para tentar de novo,
+ * porque o fallback de senha só é liberado pelo backend para quem não
+ * tem nenhum fator ou esgotou as tentativas de TOTP (ver step_up.py).
  *
  * `jaIniciado: true` pula a chamada a /totp/2fa/stepup/iniciar --
  * usado quando /stepup/iniciar já resetou as tentativas e devolveu
@@ -53,8 +54,10 @@ export async function iniciarPainelTotp(ctx, { ocultarWebauthn = false, jaInicia
     mostrarPainel();
   } catch (erroTotp) {
     if (erroTotp instanceof TotpNaoCadastradoError) {
-      if (ocultarWebauthn) painelWebauthn.hidden = true;
-      mostrarPainelSenha(ctx);
+      mostrarErro(
+        ctx,
+        "Não foi possível confirmar pela chave de segurança. Tente novamente ou, se perdeu o acesso a ela, contate o administrador."
+      );
       return;
     }
     console.error("stepUp: falha ao iniciar TOTP", erroTotp);
@@ -77,7 +80,14 @@ export async function onSubmitTotp(ctx, e) {
   } catch (erroTotp) {
     botaoSubmit.disabled = false;
 
-    if (erroTotp instanceof LimiteTentativasTotpExcedidoError) {
+    // O backend libera o fallback assim que a última tentativa é gasta
+    // (tentativasRestantes === 0), sem exigir um pedido a mais só para
+    // receber o 429.
+    const tentativasEsgotadas =
+      erroTotp instanceof LimiteTentativasTotpExcedidoError ||
+      (erroTotp instanceof CodigoTotpInvalidoError && erroTotp.tentativasRestantes === 0);
+
+    if (tentativasEsgotadas) {
       painelTotp.hidden = true;
       mostrarErro(ctx, "Não foi possível confirmar pelo aplicativo autenticador.");
       mostrarPainelSenha(ctx);

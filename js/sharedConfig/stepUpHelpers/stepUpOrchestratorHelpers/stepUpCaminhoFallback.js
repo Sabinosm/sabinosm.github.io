@@ -1,9 +1,10 @@
 // stepUpOrchestratorHelpers/stepUpCaminhoFallback.js
 //
-// Caminho 3 (fallback, sempre disponível) -- senha atual + popup do
-// Google. O step-up NUNCA fica sem saída: mesmo quem tem WebAuthn
-// e/ou TOTP mas esgotou os dois chega aqui (ver docstring de
-// step_up.py para o racional).
+// Caminho 3 (fallback) -- senha atual + popup do Google. O backend só
+// libera este caminho para quem não tem nenhum fator (metodo ===
+// "senha_google" em /stepup/iniciar) ou para quem tem TOTP e esgotou as
+// tentativas dele (ver stepUpCaminhoTotp.js). Quem só tem WebAuthn não
+// tem fallback (ver docstring de step_up.py para o racional).
 
 import { URL_BASE_API, FRONT_ORIGIN } from "../../urlConfig.js";
 import { PopupBloqueadoError, mensagemParaErroCallback } from "../stepUpErros.js";
@@ -20,6 +21,12 @@ const FRONTEND_ORIGIN = FRONT_ORIGIN;
 function origemEhConfiavel(origin) {
   return origin === FRONTEND_ORIGIN || origin === window.location.origin;
 }
+
+// Códigos do backend que merecem texto próprio. Os demais seguem como antes.
+const MENSAGENS_ERRO_SENHA = {
+  fallback_indisponivel:
+    "Esta forma de confirmação não está disponível agora. Use a chave de segurança ou o aplicativo autenticador.",
+};
 
 export async function onSubmitSenha(ctx, e) {
   e.preventDefault();
@@ -39,7 +46,7 @@ export async function onSubmitSenha(ctx, e) {
       body: JSON.stringify({ acao: ctx.acao, senha }),
     });
     dados = await resp.json();
-    if (!resp.ok) throw new Error(dados.erro || "Senha incorreta.");
+    if (!resp.ok) throw new Error(MENSAGENS_ERRO_SENHA[dados.erro] || dados.erro || "Senha incorreta.");
   } catch (erro) {
     mostrarErro(ctx, erro.message || "Não foi possível confirmar a senha.");
     return;

@@ -27,9 +27,19 @@ document.getElementById("login-form").addEventListener("submit", async (event) =
 
   } catch (erro) {
     console.error("Falha na comunicação:", erro);
-    exibirMensagem(erro.message || "Ocorreu um erro ao enviar os dados. Tente novamente.", "erro");
+    exibirMensagem(mensagemErroLogin(erro), "erro");
   }
 });
+
+// O backend responde igual para credenciais erradas e para conta sem senha
+// (só Google), para não revelar quais contas existem. A dica abaixo é
+// genérica, mostrada para qualquer 401, justamente por isso.
+const DICA_LOGIN_GOOGLE = " Se sua conta foi cadastrada para entrar com o Google, use o botão do Google.";
+
+function mensagemErroLogin(erro) {
+  const base = erro.message || "Ocorreu um erro ao enviar os dados. Tente novamente.";
+  return erro.status === 401 ? base + DICA_LOGIN_GOOGLE : base;
+}
 
 /**
  * Envia login/senha para a API. Lança erro se a resposta HTTP não for
@@ -49,7 +59,9 @@ async function enviarLogin(dados) {
   const resultado = await response.json();
 
   if (!response.ok) {
-    throw new Error(resultado.message || `Erro no servidor: ${response.status}`);
+    const erro = new Error(resultado.message || `Erro no servidor: ${response.status}`);
+    erro.status = response.status;
+    throw erro;
   }
 
   return resultado;
@@ -65,7 +77,7 @@ async function enviarLogin(dados) {
 //     { tipo: "oauth_concluido" } para cá e fecha o popup; seguimos
 //     para afterLogin.html (onde mfa_pendente/onboarding_pendente é
 //     tratado).
-//   - Erro (usuário não cadastrado/inativo): oauth.py redireciona para
+//   - Erro (usuário não cadastrado/inativo/conta Google inválida): oauth.py redireciona para
 //     login.html?erro=... -- dentro do popup. A parte "dentro do popup"
 //     deste mesmo arquivo (no fim) repassa o erro para a janela
 //     original e fecha o popup.
@@ -76,6 +88,7 @@ async function enviarLogin(dados) {
 const MENSAGENS_ERRO_OAUTH = {
   usuario_nao_cadastrado: "Usuário não cadastrado.",
   conta_inativa: "Conta inativa.",
+  conta_google_invalida: "Não foi possível validar sua conta Google. Use a conta cadastrada, com o e-mail verificado.",
 };
 
 function mostrarErroOauth(codigo) {

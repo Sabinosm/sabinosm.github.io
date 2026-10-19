@@ -189,7 +189,15 @@ formSenha.addEventListener("submit", async (event) => {
   botaoSubmit.disabled = true;
   try {
     await definirSenha(senha);
-    await irParaPasso2fa();
+
+    // Quem já tem um fator confirmado (ex.: reset de senha por admin) não
+    // escolhe 2FA de novo: o backend recusa cadastrar fator nesse caso, e
+    // o único passo que falta é concluir (que leva ao 2FA em seguida).
+    if (await usuarioJaTem2fa()) {
+      await concluirOnboarding();
+    } else {
+      await irParaPasso2fa();
+    }
   } catch (erro) {
     console.error("Falha ao definir senha:", erro);
     exibirMensagem(erro.message || "Não foi possível definir a senha.", "erro");
@@ -392,9 +400,13 @@ formTotpConfirmar.addEventListener("submit", async (event) => {
 
 /**
  * Chama /onboarding/concluir, que confirma que senha + pelo menos um
- * método de 2FA já estão prontos e libera a sessão completa -- mesmo
- * papel que a antiga /definir-senha cumpria sozinha antes desta
- * mudança (ver onboarding.py).
+ * método de 2FA já estão prontos. A resposta traz um de dois status:
+ *   - "onboarding_concluido": o usuário comprovou um fator nesta sessão,
+ *     e a sessão já está completa.
+ *   - "mfa_pendente": o usuário já tinha fator antes (ex.: reset de senha
+ *     por admin), e a sessão segue pendente de 2FA.
+ * Nos dois casos o destino é o afterLogin.html, que consulta
+ * /status_completo e decide o próximo passo (home ou confirmação do 2FA).
  */
 async function concluirOnboarding() {
   const resp = await fetch(`${URL_BASE_API}/auth/onboarding/concluir`, {
@@ -411,6 +423,11 @@ async function concluirOnboarding() {
     throw new Error(dados.erro || "Não foi possível concluir o cadastro.");
   }
 
-  exibirMensagem("Cadastro concluído! Redirecionando...", "sucesso");
+  exibirMensagem(
+    dados.status === "mfa_pendente"
+      ? "Cadastro concluído! Agora confirme sua identidade."
+      : "Cadastro concluído! Redirecionando...",
+    "sucesso"
+  );
   window.location.href = DESTINO_APOS_CONCLUIR;
 }
