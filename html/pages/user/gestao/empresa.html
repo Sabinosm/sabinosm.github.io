@@ -26,7 +26,7 @@
         <h1 data-i18n="empresa.titulo">Empresa</h1>
         <p class="main-subtitle" data-i18n="empresa.subtitulo">Dados institucionais e plano contratado</p>
       </div>
-      
+
     </header>
 
     <section class="section section--centered">
@@ -41,65 +41,75 @@
 
         <form id="form-empresa-editar">
 
-          <div class="section-label" data-i18n="empresa.secao.dados">Dados da empresa</div>
+          <!-- Bloco 1 (bento): dados da empresa. Wrapper só visual. -->
+          <div class="empresa-bloco empresa-bloco--dados">
 
-          <div class="row-2">
-            <!-- Fixo: exige alteração de registro (Receita) -- não editável aqui -->
-            <div class="field-group field-group--locked">
-              <label class="field-label" data-i18n="empresa.razao_social">Razão social</label>
-              <div class="field-locked" id="empresa-razao-social"></div>
+            <div class="section-label" data-i18n="empresa.secao.dados">Dados da empresa</div>
+
+            <div class="row-2">
+              <!-- Fixo: exige alteração de registro (Receita) -- não editável aqui -->
+              <div class="field-group field-group--locked">
+                <label class="field-label" data-i18n="empresa.razao_social">Razão social</label>
+                <div class="field-locked" id="empresa-razao-social"></div>
+              </div>
+
+              <!-- Editável: 1 input só, readonly fora do modo de edição. Ao
+                   entrar em edição o valor atual vira placeholder, não fica
+                   dentro do campo -- ver empresa.js. -->
+              <div class="field-group field">
+                <label class="field-label" for="empresa-nome-fantasia" data-i18n="empresa.nome_fantasia">Nome fantasia</label>
+                <input class="field-input" type="text" id="empresa-nome-fantasia" data-track readonly>
+                <p class="error-msg" id="err-empresa-nome-fantasia"></p>
+              </div>
             </div>
 
-            <!-- Editável: 1 input só, readonly fora do modo de edição. Ao
-                 entrar em edição o valor atual vira placeholder, não fica
-                 dentro do campo -- ver empresa.js. -->
-            <div class="field-group field">
-              <label class="field-label" for="empresa-nome-fantasia" data-i18n="empresa.nome_fantasia">Nome fantasia</label>
-              <input class="field-input" type="text" id="empresa-nome-fantasia" data-track readonly>
-              <p class="error-msg" id="err-empresa-nome-fantasia"></p>
+            <div class="row-2">
+              <div class="field-group field-group--locked">
+                <label class="field-label" data-i18n="empresa.cnpj">CNPJ</label>
+                <div class="field-locked" id="empresa-cnpj"></div>
+              </div>
+
+              <div class="field-group field">
+                <label class="field-label" for="empresa-cnes" data-i18n="empresa.cnes">CNES</label>
+                <input class="field-input" type="text" id="empresa-cnes" data-track readonly>
+                <p class="error-msg" id="err-empresa-cnes"></p>
+              </div>
             </div>
+
           </div>
 
-          <div class="row-2">
-            <div class="field-group field-group--locked">
-              <label class="field-label" data-i18n="empresa.cnpj">CNPJ</label>
-              <div class="field-locked" id="empresa-cnpj"></div>
+          <!-- Bloco 2 (bento): endereço. Wrapper só visual. -->
+          <div class="empresa-bloco empresa-bloco--endereco">
+
+            <div class="section-label" data-i18n="empresa.secao.endereco">Endereço</div>
+
+            <div class="row-endereco">
+              <div class="field-group field">
+                <label class="field-label" for="empresa-cep" data-i18n="empresa.cep">CEP</label>
+                <input class="field-input" type="text" id="empresa-cep" data-track readonly>
+                <div class="field-spinner" aria-hidden="true"></div>
+                <p class="error-msg" id="err-empresa-cep"></p>
+              </div>
+
+              <div class="field-group field">
+                <label class="field-label" for="empresa-bairro" data-i18n="empresa.bairro">Bairro</label>
+                <input class="field-input" type="text" id="empresa-bairro" data-track readonly>
+                <p class="error-msg" id="err-empresa-bairro"></p>
+              </div>
+
+              <div class="field-group field">
+                <label class="field-label" for="empresa-numero" data-i18n="empresa.numero">Número</label>
+                <input class="field-input" type="text" id="empresa-numero" data-track readonly>
+                <p class="error-msg" id="err-empresa-numero"></p>
+              </div>
+
+              <div class="field-group field">
+                <label class="field-label" for="empresa-complemento" data-i18n="empresa.complemento">Complemento</label>
+                <input class="field-input" type="text" id="empresa-complemento" data-track readonly>
+                <p class="error-msg" id="err-empresa-complemento"></p>
+              </div>
             </div>
 
-            <div class="field-group field">
-              <label class="field-label" for="empresa-cnes" data-i18n="empresa.cnes">CNES</label>
-              <input class="field-input" type="text" id="empresa-cnes" data-track readonly>
-              <p class="error-msg" id="err-empresa-cnes"></p>
-            </div>
-          </div>
-
-          <div class="section-label" data-i18n="empresa.secao.endereco">Endereço</div>
-
-          <div class="row-endereco">
-            <div class="field-group field">
-              <label class="field-label" for="empresa-cep" data-i18n="empresa.cep">CEP</label>
-              <input class="field-input" type="text" id="empresa-cep" data-track readonly>
-              <div class="field-spinner" aria-hidden="true"></div>
-              <p class="error-msg" id="err-empresa-cep"></p>
-            </div>
-
-            <div class="field-group field">
-              <label class="field-label" for="empresa-bairro" data-i18n="empresa.bairro">Bairro</label>
-              <input class="field-input" type="text" id="empresa-bairro" data-track readonly>
-              <p class="error-msg" id="err-empresa-bairro"></p>
-            </div>
-
-            <div class="field-group field">
-              <label class="field-label" for="empresa-numero" data-i18n="empresa.numero">Número</label>
-              <input class="field-input" type="text" id="empresa-numero" data-track readonly>
-              <p class="error-msg" id="err-empresa-numero"></p>
-            </div>
-
-            <div class="field-group field">
-              <label class="field-label" for="empresa-complemento" data-i18n="empresa.complemento">Complemento</label>
-              <input class="field-input" type="text" id="empresa-complemento" data-track readonly>
-              <p class="error-msg" id="err-empresa-complemento"></p>
-            </div>
           </div>
 
           <!-- Botões de ação -- escondidos até "Alterar" ser clicado -->
@@ -109,17 +119,23 @@
           </div>
         </form>
 
+        <!-- Sem função visual no layout em blocos (escondido por CSS); mantido por segurança -->
         <div class="panel-divider"></div>
 
-        <h2 class="panel-title" data-i18n="empresa.plano_titulo">Plano</h2>
-        <p class="panel-subtitle" data-i18n="empresa.plano_subtitulo">Detalhes do plano contratado.</p>
+        <!-- Bloco 3 (bento): plano contratado, destaque da página. Wrapper só visual. -->
+        <div class="empresa-bloco empresa-bloco--plano">
 
-        <div class="field-group field-group--locked">
-          <label class="field-label" data-i18n="empresa.plano_atual">Plano atual</label>
-          <div class="field-locked" id="empresa-plano">
-            <span id="empresa-plano-nome"></span>
-            <span class="field-locked-tag" id="empresa-plano-status"></span>
+          <h2 class="panel-title" data-i18n="empresa.plano_titulo">Plano</h2>
+          <p class="panel-subtitle" data-i18n="empresa.plano_subtitulo">Detalhes do plano contratado.</p>
+
+          <div class="field-group field-group--locked">
+            <label class="field-label" data-i18n="empresa.plano_atual">Plano atual</label>
+            <div class="field-locked" id="empresa-plano">
+              <span id="empresa-plano-nome"></span>
+              <span class="field-locked-tag" id="empresa-plano-status"></span>
+            </div>
           </div>
+
         </div>
       </div>
     </section>

@@ -1,0 +1,79 @@
+/* empresa-plano.css
+ *
+ * Bloco do plano contratado: o destaque da página. Mesma receita de
+ * superfície dos outros blocos (empresa-card.css), com uma camada de tinta
+ * na cor de destaque por cima, e a tag de status como pílula.
+ *
+ * Os ids #empresa-plano, #empresa-plano-nome e #empresa-plano-status
+ * são do JS: só mudamos o visual deles.
+ */
+
+.empresa-bloco--plano {
+  display: flex;
+  flex-direction: column;
+  /* tinta suave do accent sobre a superfície; o gradiente de cor única
+     é só um jeito de pôr uma cor semitransparente como camada */
+  background-image: linear-gradient(var(--accent-tint), var(--accent-tint));
+}
+
+.empresa-bloco--plano .field-group {
+  margin-top: auto; /* ancora o plano na base do bloco */
+}
+
+/* "Plano atual" deixa de ser um tile travado: vira bloco de destaque */
+.empresa-bloco--plano .field-locked {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  overflow: visible;
+  white-space: normal;
+}
+
+#empresa-plano-nome {
+  font-size: calc(24px * var(--font-scale, 1));
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text-strong);
+}
+
+/* Pílula de status. :empty esconde a pílula enquanto o JS ainda não
+   preencheu o texto, para não aparecer uma bolinha vazia. */
+.empresa-bloco--plano .field-locked-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-tint);
+  border: 1px solid var(--focus-ring);
+  color: var(--accent);
+  font-size: calc(11px * var(--font-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 1;
+}
+
+.empresa-bloco--plano .field-locked-tag:empty {
+  display: none;
+}
+
+.empresa-bloco--plano .field-locked-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+@media (max-width: 860px) {
+  .empresa-bloco--plano .field-group {
+    margin-top: 0;
+  }
+}

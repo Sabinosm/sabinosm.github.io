@@ -1,0 +1,139 @@
+/* empresa-campos.css
+ *
+ * Campos da página Empresa. Três estados visuais bem distintos:
+ *
+ *   1. TRAVADO (razão social, CNPJ): tile plano, sem tracejado, com
+ *      ícone de cadeado desenhado em CSS. Não parece clicável.
+ *   2. EDITÁVEL EM LEITURA (input[readonly]): parece texto limpo, só com
+ *      uma linha fina embaixo.
+ *   3. EDITÁVEL EM EDIÇÃO (input sem readonly): "afunda" na superfície
+ *      (sombra interna suave) e ganha anel de foco. É aqui que o
+ *      neomorfismo entra, só na interação, onde o contraste é bom.
+ *
+ * O JS alterna o atributo readonly; estas regras só reagem a ele.
+ * Nenhuma transição aqui: ficam todas em empresa-motion.css.
+ */
+
+.empresa-bloco .field-group {
+  max-width: none;
+  margin-bottom: 14px;
+}
+
+.empresa-bloco .field-group:last-child {
+  margin-bottom: 0;
+}
+
+.empresa-bloco .field-label {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+
+/* ----- 1. Travado ----- */
+
+.empresa-bloco .field-locked {
+  min-height: 42px;
+  background: var(--surface-2);
+  border: 1px solid transparent; /* mantém a mesma altura dos inputs */
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* cadeado: máscara SVG pintada com a cor do texto (currentColor), então
+   acompanha qualquer tema. Fora do bloco do plano, que não é "travado
+   por cadastro". */
+.empresa-bloco .field-locked:not(#empresa-plano)::after {
+  content: "";
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  opacity: 0.45;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='5' y='11' width='14' height='9' rx='2'/%3E%3Cpath d='M8 11V8a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ----- 2. Editável em leitura ----- */
+
+.empresa-bloco .field-input {
+  min-height: 42px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom-color: var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empresa-bloco .field-input[readonly] {
+  cursor: default;
+}
+
+/* ----- 3. Editável em edição ----- */
+
+.empresa-bloco .field-input:not([readonly]) {
+  background: var(--surface-sunken);
+  border-color: var(--border);
+  box-shadow: inset 0 2px 5px var(--neu-shadow-dark);
+  cursor: text;
+}
+
+.empresa-bloco .field-input:not([readonly]):hover {
+  border-color: var(--focus-ring);
+}
+
+.empresa-bloco .field-input:not([readonly]):focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 2px 5px var(--neu-shadow-dark),
+    0 0 0 3px var(--focus-ring);
+}
+
+/* Placeholder do valor antigo durante edição: mais apagado que texto
+   digitado, para não parecer valor já preenchido pronto pra apagar. */
+#form-empresa-editar input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.55;
+}
+
+/* ----- Spinner do CEP ----- */
+
+/* Escondido por padrão; .field.is-loading (colocada pelo JS) revela.
+   A rotação está em empresa-motion.css. */
+.field {
+  position: relative;
+}
+
+.field-spinner {
+  display: none;
+  position: absolute;
+  right: 12px;
+  top: 34px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+}
+
+.field.is-loading .field-spinner {
+  display: block;
+}
+
+/* ----- Mensagem de erro por campo ----- */
+
+/* Vermelho só como sinal real de erro, não decoração. */
+.error-msg {
+  color: var(--status-danger-fg, var(--palette-status-red));
+  font-size: calc(12px * var(--font-scale, 1));
+  margin-top: 4px;
+  min-height: 14px;
+}

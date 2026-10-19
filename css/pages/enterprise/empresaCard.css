@@ -1,0 +1,84 @@
+/* empresa-card.css
+ *
+ * Aparência dos blocos (superfícies tonais) e da tipografia de títulos.
+ *
+ * Receita do bloco:
+ *   - tom de superfície um nível acima do fundo (--bg-elevated)
+ *   - borda de 1px (--border)
+ *   - brilho fino no topo (--highlight-top), estilo Linear/Vercel
+ *   - uma única sombra ambiente difusa (--shadow-ambient)
+ * Isso substitui a sombra dupla do neomorfismo, que quebrava nos temas
+ * escuros (a sombra clara some e só sobra a escura).
+ *
+ * Variáveis usadas estão definidas nos 8 temas de preferencias.css.
+ */
+
+.empresa-bloco {
+  min-width: 0; /* evita que campos com nowrap estourem a coluna da grade */
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px 26px;
+  box-shadow:
+    inset 0 1px 0 var(--highlight-top),
+    var(--shadow-ambient);
+}
+
+/* Bloco com algum campo em edição ganha um contorno na cor de destaque.
+   :has() é melhoria progressiva: sem suporte, nada quebra. */
+.empresa-bloco:has(.field-input:not([readonly])) {
+  border-color: var(--focus-ring);
+}
+
+/* ----- Títulos ----- */
+
+.panel-card .panel-title {
+  font-size: calc(18px * var(--font-scale, 1));
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+  margin-bottom: 4px;
+}
+
+.panel-card .panel-subtitle {
+  font-size: calc(13px * var(--font-scale, 1));
+  line-height: 1.45;
+  color: var(--text-muted);
+  margin-bottom: 0;
+}
+
+/* O título "Plano" fica dentro de um bloco; o subtítulo precisa de ar
+   antes do conteúdo. */
+.empresa-bloco .panel-subtitle {
+  margin-bottom: 18px;
+}
+
+/* ----- Rótulo de seção (Dados da empresa / Endereço) ----- */
+
+.empresa-bloco .section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+}
+
+/* pontinho na cor de destaque: único ornamento do bloco */
+.empresa-bloco .section-label::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+@media (max-width: 760px) {
+  .empresa-bloco {
+    padding: 20px 18px;
+  }
+}

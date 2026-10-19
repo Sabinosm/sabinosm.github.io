@@ -1,0 +1,69 @@
+/* empresa-botoes.css
+ *
+ * Botão "Alterar" da página Empresa: ação principal da tela, então ganha
+ * destaque. Antes era um botão secundário pequeno; agora é maior e
+ * invertido:
+ *
+ *   repouso: fundo roxo (--cta-bg) + texto branco (--cta-fg)
+ *   hover:   fundo transparente + texto e borda roxos (--cta-ink)
+ *
+ * O --cta-ink é mais claro que o --cta-bg nos temas escuros e mais escuro
+ * nos claros, para o texto continuar legível sobre o fundo do bloco.
+ * Cores definidas nos 8 temas de preferencias.css.
+ *
+ * O id #empresa-btn-alterar e as classes btn-secondary / btn-secondary--sm
+ * continuam no HTML (o JS usa o id); aqui só sobrescrevemos o visual. O
+ * seletor com o id é de propósito, para vencer .btn-secondary--sm de
+ * settings.css sem depender da ordem de carregamento.
+ * Transições ficam em empresa-motion.css.
+ */
+
+.panel-header-row #empresa-btn-alterar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 12px 26px;
+  font-size: calc(15px * var(--font-scale, 1));
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--cta-fg);
+  background: var(--cta-bg);
+  border: 1.5px solid var(--cta-bg);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* ícone de lápis desenhado em CSS (máscara pintada com currentColor,
+   então acompanha a cor do texto no repouso e no hover) */
+.panel-header-row #empresa-btn-alterar::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-color: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z'/%3E%3Cpath d='M13.5 6.5l4 4'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z'/%3E%3Cpath d='M13.5 6.5l4 4'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.panel-header-row #empresa-btn-alterar:hover {
+  color: var(--cta-ink);
+  background: transparent;
+  border-color: var(--cta-ink);
+}
+
+/* foco por teclado: anel visível, sem depender do hover */
+.panel-header-row #empresa-btn-alterar:focus-visible {
+  outline: 2px solid var(--cta-ink);
+  outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .panel-header-row #empresa-btn-alterar {
+    min-height: 42px;
+    padding: 10px 20px;
+  }
+}

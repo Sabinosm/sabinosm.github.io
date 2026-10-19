@@ -1,0 +1,116 @@
+/* empresa-layout.css
+ *
+ * Grade "bento" da página Empresa. O .panel-card deixa de ser um cartão
+ * único e vira só o contêiner da grade; quem tem aparência de cartão são
+ * os .empresa-bloco (ver empresa-card.css).
+ *
+ *   desktop:  [ dados dados plano ]
+ *             [ endereco endereco endereco ]
+ *             [ acoes ]
+ *   mobile:   uma coluna: dados, endereco, acoes, plano
+ */
+
+.section--centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* ocupa a altura visível abaixo do header da página, para o conteúdo
+     centralizar de verdade na tela, não só na largura */
+  min-height: calc(100vh - 200px);
+}
+
+.panel-card {
+  width: 100%;
+  max-width: 980px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-areas:
+    "cabecalho cabecalho cabecalho"
+    "dados     dados     plano"
+    "endereco  endereco  endereco"
+    "acoes     acoes     acoes";
+  gap: 16px;
+  /* sem fundo/borda/sombra: o "cartão" agora é cada bloco */
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* O <form> não participa do layout: seus blocos viram itens diretos da
+   grade acima. display: contents não altera envio, validação nem o JS. */
+#form-empresa-editar {
+  display: contents;
+}
+
+.panel-header-row {
+  grid-area: cabecalho;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.empresa-bloco--dados    { grid-area: dados; }
+.empresa-bloco--endereco { grid-area: endereco; }
+.empresa-bloco--plano    { grid-area: plano; }
+
+.form-actions {
+  grid-area: acoes;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* O atributo hidden é o que o JS usa para mostrar/esconder as ações.
+   Como .form-actions define display, garantimos que hidden continue
+   vencendo. */
+.form-actions[hidden] {
+  display: none;
+}
+
+/* O divisor antigo separava formulário e plano dentro de um cartão só.
+   Com blocos separados ele não tem mais função visual (mantido no HTML). */
+.panel-divider {
+  display: none;
+}
+
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.row-endereco {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 0.8fr 1fr;
+  gap: 14px;
+}
+
+/* Reservado para campos que precisam ocupar a linha inteira (fora do
+   row-2). */
+.field-group--full,
+.field--full {
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .panel-card {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "cabecalho"
+      "dados"
+      "endereco"
+      "acoes"
+      "plano";
+  }
+}
+
+@media (max-width: 560px) {
+  .row-2,
+  .row-endereco {
+    grid-template-columns: 1fr;
+  }
+}

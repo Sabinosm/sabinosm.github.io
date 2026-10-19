@@ -63,6 +63,20 @@
   /* neumorphism — em tema escuro o relevo vem de luz/sombra bem sutis sobre --bg */
   --neu-shadow-dark: rgba(0, 0, 0, 0.35);
   --neu-shadow-light: rgba(255, 255, 255, 0.028);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #272b31;
+  --surface-sunken: #17191d;
+  --highlight-top: rgba(255,255,255,0.07);
+  --shadow-ambient: 0 10px 30px rgba(0,0,0,0.28);
+  --accent-tint: rgba(91,127,224,0.12);
+  --focus-ring: rgba(91,127,224,0.35);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #4a6bcc;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #4a6bcc;
 }
 
 [data-theme="light"] {
@@ -116,6 +130,20 @@
 
   --neu-shadow-dark: rgba(20, 23, 27, 0.10);
   --neu-shadow-light: rgba(255, 255, 255, 0.75);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #f1f3f5;
+  --surface-sunken: #e8ebee;
+  --highlight-top: rgba(255,255,255,0.9);
+  --shadow-ambient: 0 8px 24px rgba(20,23,27,0.07);
+  --accent-tint: rgba(47,95,219,0.07);
+  --focus-ring: rgba(47,95,219,0.25);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #6a4bd0;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #5a3cc0;
 }
 
 [data-theme="blue"] {
@@ -170,6 +198,20 @@
 
   --neu-shadow-dark: rgba(0, 0, 4, 0.4);
   --neu-shadow-light: rgba(160, 190, 255, 0.04);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #222a3d;
+  --surface-sunken: #121723;
+  --highlight-top: rgba(160,190,255,0.08);
+  --shadow-ambient: 0 10px 30px rgba(0,0,6,0.32);
+  --accent-tint: rgba(77,143,224,0.13);
+  --focus-ring: rgba(77,143,224,0.38);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #6d4fd6;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #a994f5;
 }
 
 [data-theme="blue-light"] {
@@ -222,6 +264,20 @@
 
   --neu-shadow-dark: rgba(16, 22, 39, 0.10);
   --neu-shadow-light: rgba(255, 255, 255, 0.8);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #eef1f9;
+  --surface-sunken: #e3e8f4;
+  --highlight-top: rgba(255,255,255,0.9);
+  --shadow-ambient: 0 8px 24px rgba(16,22,39,0.07);
+  --accent-tint: rgba(49,99,216,0.07);
+  --focus-ring: rgba(49,99,216,0.25);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #6a4bd0;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #5a3cc0;
 }
 
 [data-theme="burgundy"] {
@@ -277,6 +333,20 @@
 
   --neu-shadow-dark: rgba(0, 0, 0, 0.45);
   --neu-shadow-light: rgba(255, 200, 210, 0.03);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #32232a;
+  --surface-sunken: #1a0f14;
+  --highlight-top: rgba(255,200,210,0.07);
+  --shadow-ambient: 0 10px 30px rgba(0,0,0,0.32);
+  --accent-tint: rgba(184,74,98,0.14);
+  --focus-ring: rgba(184,74,98,0.38);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #6d4fd6;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #a994f5;
 }
 
 
@@ -330,6 +400,20 @@
 
   --neu-shadow-dark: rgba(31, 15, 21, 0.08);
   --neu-shadow-light: rgba(255, 255, 255, 0.8);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #f6eff2;
+  --surface-sunken: #eee3e8;
+  --highlight-top: rgba(255,255,255,0.9);
+  --shadow-ambient: 0 8px 24px rgba(31,15,21,0.07);
+  --accent-tint: rgba(163,56,79,0.07);
+  --focus-ring: rgba(163,56,79,0.25);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #6a4bd0;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #5a3cc0;
 }
 
 [data-theme="teal"] {
@@ -385,6 +469,20 @@
 
   --neu-shadow-dark: rgba(0, 0, 0, 0.4);
   --neu-shadow-light: rgba(160, 255, 240, 0.03);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #203333;
+  --surface-sunken: #0f1b1b;
+  --highlight-top: rgba(160,255,240,0.07);
+  --shadow-ambient: 0 10px 30px rgba(0,0,0,0.30);
+  --accent-tint: rgba(58,155,147,0.14);
+  --focus-ring: rgba(58,155,147,0.38);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #6d4fd6;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #a994f5;
 }
 
 [data-theme="teal-light"] {
@@ -437,6 +535,20 @@
 
   --neu-shadow-dark: rgba(15, 31, 31, 0.08);
   --neu-shadow-light: rgba(255, 255, 255, 0.8);
+
+  /* superfícies tonais (página Empresa e futuras) */
+  --surface-2: #eef5f5;
+  --surface-sunken: #e2eded;
+  --highlight-top: rgba(255,255,255,0.9);
+  --shadow-ambient: 0 8px 24px rgba(15,31,31,0.07);
+  --accent-tint: rgba(35,128,120,0.07);
+  --focus-ring: rgba(35,128,120,0.25);
+
+  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
+     transparente com texto/borda em --cta-ink */
+  --cta-bg: #6a4bd0;
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: #5a3cc0;
 }
 
 :root {

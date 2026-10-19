@@ -1,0 +1,137 @@
+/* empresa-motion.css
+ *
+ * Todas as transições e animações da página Empresa, num arquivo só.
+ * Só CSS (transition, animation, transform, opacity): nenhum JS novo.
+ *
+ *   1. entrada escalonada dos blocos ao abrir a página
+ *   2. transição leitura -> edição dos campos
+ *   3. barra Salvar/Cancelar entrando quando o JS tira o hidden
+ *   4. micro-interações de botões
+ *   5. spinner do CEP
+ *   6. prefers-reduced-motion
+ */
+
+/* ----- 1. Entrada dos blocos ----- */
+
+@keyframes empresa-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel-header-row,
+.empresa-bloco {
+  animation: empresa-entrada 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* escalonado: cabeçalho, depois dados, plano, endereço */
+.empresa-bloco--dados    { animation-delay: 0.06s; }
+.empresa-bloco--plano    { animation-delay: 0.12s; }
+.empresa-bloco--endereco { animation-delay: 0.18s; }
+
+/* ----- 2. Leitura -> edição ----- */
+
+.empresa-bloco,
+.empresa-bloco .field-input,
+.empresa-bloco .field-locked {
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    color 0.22s ease;
+}
+
+/* ----- 3. Barra de ações ----- */
+
+@keyframes empresa-acoes-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Roda toda vez que o hidden sai (display: none -> flex reinicia a
+   animação). */
+.form-actions:not([hidden]) {
+  animation: empresa-acoes-entrada 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* ----- 4. Botões ----- */
+
+.panel-header-row .btn-secondary,
+.form-actions .btn-primary,
+.form-actions .btn-ghost {
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.panel-header-row .btn-secondary:hover,
+.form-actions .btn-primary:hover {
+  transform: translateY(-1px);
+}
+
+.panel-header-row .btn-secondary:active,
+.form-actions .btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Botão Alterar (empresa-botoes.css): a cor do texto também transiciona,
+   senão o texto "estala" de branco para roxo enquanto o fundo ainda
+   desvanece. Seletor com id para vencer a regra genérica acima. */
+.panel-header-row #empresa-btn-alterar {
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+/* ----- 5. Spinner do CEP ----- */
+
+@keyframes empresa-spin {
+  to { transform: rotate(360deg); }
+}
+
+.field.is-loading .field-spinner {
+  animation: empresa-spin 0.7s linear infinite;
+}
+
+/* ----- 6. Menos movimento ----- */
+
+/* Desliga entradas e transições, mas deixa o spinner girando: ele é
+   feedback funcional (a consulta de CEP está em andamento), não
+   decoração. */
+@media (prefers-reduced-motion: reduce) {
+  .panel-header-row,
+  .empresa-bloco,
+  .form-actions:not([hidden]) {
+    animation: none;
+  }
+
+  .empresa-bloco,
+  .empresa-bloco .field-input,
+  .empresa-bloco .field-locked,
+  .panel-header-row .btn-secondary,
+  .panel-header-row #empresa-btn-alterar,
+  .form-actions .btn-primary,
+  .form-actions .btn-ghost {
+    transition: none;
+  }
+
+  .panel-header-row .btn-secondary:hover,
+  .form-actions .btn-primary:hover {
+    transform: none;
+  }
+}
