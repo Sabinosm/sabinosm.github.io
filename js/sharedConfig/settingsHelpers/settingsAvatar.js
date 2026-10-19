@@ -5,7 +5,7 @@
 // tela). Como os demais helpers do modal, roda no top-level e assume
 // que o HTML do modal já foi injetado por settingsLoader.js.
 
-import { enviarAvatar, removerAvatar } from '../avatar.js';
+import { enviarAvatar, removerAvatar } from '../preencherHelpers/preencherAvatar.js';
 import { exibirMensagem } from '../../shared/feedback.js';
 
 const TAMANHO_MAXIMO = 4 * 1024 * 1024; // mesmo limite do backend (4MB)
