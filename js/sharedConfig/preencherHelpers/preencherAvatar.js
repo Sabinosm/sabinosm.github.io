@@ -17,8 +17,8 @@
 // preencherIdentidade pode seguir reescrevendo o textContent sem
 // apagar a foto). Se a imagem falhar ao carregar, as iniciais voltam.
 
-import { URL_BASE_API } from './urlConfig.js';
-import { atualizarAvatarCache } from './userCache.js';
+import { URL_BASE_API } from '../urlConfig.js';
+import { atualizarAvatarCache } from '../userCache.js';
 
 // Prefixo do blueprint "usuario" -- ajuste aqui se o register_blueprint
 // usar outro url_prefix.
