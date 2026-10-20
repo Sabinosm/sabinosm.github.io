@@ -1,17 +1,37 @@
 /* ============================================
    B-íon — Modal de Configurações (overlay sobre a tela atual)
    Reusa os tokens de style.css
+
+   v2 — tonal surfaces + profundidade interna:
+   - Modal e recipientes com borda fina + highlight no topo.
+   - Itens (dispositivos/arquivos) como superfícies tonais com
+     hover suave, sem sombra neomórfica pesada.
+   - Abas com indicador lateral fino no ativo.
+   - Entrada dos modais com animação suave (pop).
    ============================================ */
+
+@keyframes set-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes set-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 .settings-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: color-mix(in srgb, var(--bg) 45%, rgba(0, 0, 0, 0.55));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: 24px;
+  animation: set-fade 0.2s ease both;
 }
 
 body.no-scroll {
@@ -35,7 +55,10 @@ body.no-scroll {
   grid-template-columns: 200px 1fr;
   grid-template-rows: 1fr auto;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent),
+    0 24px 64px color-mix(in srgb, var(--neu-shadow-dark) 80%, transparent);
+  animation: set-pop 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 .settings-close {
@@ -77,6 +100,7 @@ body.no-scroll {
 }
 
 .settings-tab {
+  position: relative;
   text-align: left;
   background: transparent;
   border: none;
@@ -100,6 +124,17 @@ body.no-scroll {
   font-weight: 600;
 }
 
+.settings-tab--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
 /* ===== Painéis (coluna direita do modal) ===== */
 .settings-panels {
   padding: 32px 40px;
@@ -111,6 +146,7 @@ body.no-scroll {
 }
 .settings-panel--active {
   display: block;
+  animation: set-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 .panel-title {
@@ -144,20 +180,29 @@ body.no-scroll {
   margin-bottom: 6px;
 }
 
+/* Campo "afundado": neomorfismo só nos inputs */
 .field-input {
   width: 100%;
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg) 60%, var(--bg-elevated));
   border: 1px solid var(--border);
   color: var(--text);
   font-size: calc(14px * var(--font-scale, 1));
   font-family: inherit;
   padding: 10px 12px;
   border-radius: var(--radius-sm);
-  transition: border-color 0.15s ease;
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 .field-input:focus {
   outline: none;
   border-color: var(--accent);
+  background: var(--bg-elevated);
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light),
+    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .field-hint {
@@ -176,7 +221,7 @@ body.no-scroll {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg-elevated) 50%, var(--bg));
   border: 1px dashed var(--border);
   color: var(--text-muted);
   font-size: calc(14px * var(--font-scale, 1));
@@ -226,6 +271,9 @@ body.no-scroll {
   font-size: calc(18px * var(--font-scale, 1));
   font-weight: 700;
   flex-shrink: 0;
+  box-shadow:
+    inset 0 2px 3px color-mix(in srgb, var(--palette-white, #fff) 20%, transparent),
+    0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .btn-secondary--sm, .btn-ghost--sm {
@@ -241,6 +289,7 @@ body.no-scroll {
   margin-bottom: 14px;
 }
 
+/* Item tonal: superfície + borda fina + highlight no topo */
 .device-item {
   display: flex;
   align-items: center;
@@ -249,9 +298,12 @@ body.no-scroll {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 12px 16px;
-  box-shadow:
-    3px 3px 8px var(--neu-shadow-dark),
-    -3px -3px 8px var(--neu-shadow-light);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.device-item:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
 }
 
 .device-icon {
@@ -276,8 +328,7 @@ body.no-scroll {
 }
 
 
-/* ===== Documentos (aba Arquivos) =====
-   Mesmo padrão visual de .device-item/.device-list (aba Segurança). */
+/* ===== Documentos (aba Arquivos) ===== */
 .file-list {
   display: flex;
   flex-direction: column;
@@ -292,9 +343,12 @@ body.no-scroll {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 12px 16px;
-  box-shadow:
-    3px 3px 8px var(--neu-shadow-dark),
-    -3px -3px 8px var(--neu-shadow-light);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.file-item:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
 }
 
 .file-icon {
@@ -336,20 +390,29 @@ body.no-scroll {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  background: transparent;
-  border: 2px solid var(--border);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 10px;
   cursor: pointer;
   color: var(--text-muted);
   font-size: calc(12px * var(--font-scale, 1));
   font-weight: 600;
-  transition: border-color 0.15s ease;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent);
+  transition: border-color 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.theme-option:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
 
 .theme-option--active {
   border-color: var(--accent);
   color: var(--text-strong);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .theme-swatch {
@@ -357,6 +420,9 @@ body.no-scroll {
   height: 42px;
   border-radius: 6px;
   display: block;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 15%, transparent),
+    0 2px 6px color-mix(in srgb, var(--neu-shadow-dark) 60%, transparent);
 }
 
 .theme-swatch--dark {
@@ -401,10 +467,17 @@ body.no-scroll {
   background: var(--bg-elevated);
   border-top: 1px solid var(--border);
   padding: 14px 40px;
+  box-shadow: 0 -8px 20px color-mix(in srgb, var(--neu-shadow-dark) 40%, transparent);
 }
 
 .save-bar--visible {
   display: flex;
+  animation: set-rise 0.25s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes set-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .save-bar-text {
@@ -418,13 +491,14 @@ body.no-scroll {
 }
 
 @media (max-width: 760px) {
-  .settings-overlay { padding: 0; }
+  .settings-overlay { padding: 0; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .settings-modal {
     height: 100%;
     max-height: 100%;
     border-radius: 0;
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr auto;
+    animation: none;
   }
   .settings-tabs {
     grid-row: 1;
@@ -432,6 +506,7 @@ body.no-scroll {
     overflow-x: auto;
   }
   .settings-tabs-title { display: none; }
+  .settings-tab--active::before { display: none; }
   .settings-panels { grid-row: 2; padding: 24px 20px; }
   .save-bar { grid-column: 1; padding: 14px 20px; }
 }
@@ -440,20 +515,22 @@ body.no-scroll {
 /* ============================================
    Modal de Configuração do TOTP
    Overlay PRÓPRIO (irmão de .settings-overlay no HTML, ver
-   settingsModal.html) -- abre por cima do modal de configurações
-   quando o usuário clica em "Configurar aplicativo autenticador".
+   settingsModal.html) -- abre por cima do modal de configurações.
    z-index maior que .settings-overlay (100) por causa disso.
    ============================================ */
 
 .totp-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: color-mix(in srgb, var(--bg) 45%, rgba(0, 0, 0, 0.55));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 150;
   padding: 24px;
+  animation: set-fade 0.2s ease both;
 }
 
 .totp-modal-overlay--visible {
@@ -470,7 +547,10 @@ body.no-scroll {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 32px 28px 28px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent),
+    0 24px 64px color-mix(in srgb, var(--neu-shadow-dark) 80%, transparent);
+  animation: set-pop 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 .totp-modal-close {
@@ -494,7 +574,7 @@ body.no-scroll {
   font-size: calc(16px * var(--font-scale, 1));
   font-weight: 600;
   margin-bottom: 4px;
-  padding-right: 24px; /* não fica embaixo do botão de fechar */
+  padding-right: 24px;
 }
 
 .totp-modal-subtitulo {
@@ -546,8 +626,8 @@ body.no-scroll {
   border-radius: var(--radius-sm);
   padding: 14px;
   box-shadow:
-    3px 3px 8px var(--neu-shadow-dark),
-    -3px -3px 8px var(--neu-shadow-light);
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 60%, transparent),
+    0 8px 24px color-mix(in srgb, var(--neu-shadow-dark) 55%, transparent);
 }
 
 .totp-modal-qr {
@@ -558,9 +638,6 @@ body.no-scroll {
   justify-content: center;
 }
 
-/* Placeholder enquanto a lib QRCode ainda não terminou de desenhar,
-   ou se ela nunca chegar a tempo (ver aguardarLibQrCode em
-   settings.js) -- evita a caixa branca "vazia" sem explicação. */
 .totp-modal-qr:empty::before {
   content: "Gerando QR code...";
   font-size: calc(12px * var(--font-scale, 1));
@@ -610,26 +687,27 @@ body.no-scroll {
 }
 
 @media (max-width: 480px) {
+  .totp-modal-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .totp-modal { max-width: 100%; padding: 28px 20px 24px; }
 }
 
 /* ============================================
    Modal de Alterar Senha
-   Mesmo padrão do modal de TOTP acima: overlay PRÓPRIO (irmão de
-   .settings-overlay e .totp-modal-overlay no HTML, ver
-   settingsModal.html), abre por cima do modal de configurações.
-   Mesmo z-index do modal TOTP -- os dois nunca abrem ao mesmo tempo.
+   Mesmo padrão do modal de TOTP acima.
    ============================================ */
 
 .senha-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: color-mix(in srgb, var(--bg) 45%, rgba(0, 0, 0, 0.55));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 150;
   padding: 24px;
+  animation: set-fade 0.2s ease both;
 }
 
 .senha-modal-overlay--visible {
@@ -646,7 +724,10 @@ body.no-scroll {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 32px 28px 28px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent),
+    0 24px 64px color-mix(in srgb, var(--neu-shadow-dark) 80%, transparent);
+  animation: set-pop 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 .senha-modal-close {
@@ -670,7 +751,7 @@ body.no-scroll {
   font-size: calc(16px * var(--font-scale, 1));
   font-weight: 600;
   margin-bottom: 4px;
-  padding-right: 24px; /* não fica embaixo do botão de fechar */
+  padding-right: 24px;
 }
 
 .senha-modal-subtitulo {
@@ -689,9 +770,6 @@ body.no-scroll {
   max-width: none;
 }
 
-/* Reusa .field-hint--erro (mesma classe do modal TOTP e do erro de
-   confirmação do form de profissional) para a mensagem de erro deste
-   modal -- ver #senha-erro em settingsModal.html. */
 .field-hint--erro {
   color: var(--color-error, #e5484d);
 }
@@ -699,11 +777,8 @@ body.no-scroll {
   display: none;
 }
 
-/* Reusa .stepup-actions (definida em stepUpModal.html/css) para a
-   barra de botões Cancelar/Confirmar -- mesmo espaçamento do modal
-   de step-up, que este modal antecede diretamente no fluxo. */
-
 @media (max-width: 480px) {
+  .senha-modal-overlay { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .senha-modal { max-width: 100%; padding: 28px 20px 24px; }
 }
 
@@ -714,7 +789,7 @@ body.no-scroll {
 }
 
 .senha-toggle-wrap .field-input {
-  padding-right: 40px; /* espaço pro botão não sobrepor o texto digitado */
+  padding-right: 40px;
 }
 
 .senha-toggle-btn {
@@ -727,6 +802,8 @@ body.no-scroll {
   color: var(--color-text-secondary, #888);
   display: flex;
   align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s ease;
 }
 
 .senha-toggle-btn:hover {
@@ -741,4 +818,20 @@ body.no-scroll {
 
 #prof-modal-acoes-admin p{
  margin-top: 1em;
+}
+
+/* ===== Acessibilidade: menos movimento ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .settings-overlay,
+  .totp-modal-overlay,
+  .senha-modal-overlay {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
