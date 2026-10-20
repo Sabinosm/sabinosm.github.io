@@ -1,0 +1,72 @@
+/* ===== TEMA "LIGHT" — branco + cinza quente escuro + azul + esmeralda ===== */
+
+[data-theme="light"] {
+  --palette-gray-50: #f7f7f6;
+  --palette-gray-100: #efeeec;
+  --palette-gray-200: #e0deda;
+  --palette-gray-300: #c9c6c0;
+  --palette-gray-400: #9d998f;
+  --palette-gray-600: #5f5a52;
+  --palette-gray-800: #2e2b27;
+  --palette-gray-900: #171512;
+
+  --palette-white:        #ffffff;
+  --palette-white-strong: #ffffff;
+
+  --palette-accent-600: #2f5fdb;
+  --palette-accent-700: #2650b8;
+
+  /* cor secundária complementar — usar com parcimônia (gráficos, badges, detalhes) */
+  --palette-secondary-600: #0e9f8a;
+  --palette-secondary-700: #0b8472;
+
+  --palette-status-neutral: #8a929e;
+  --palette-status-yellow: #b98a12;
+  --palette-status-orange: #c46f12;
+  --palette-status-amber: #c96a12;
+  --palette-status-red: #c94a3f;
+  --palette-status-lime: #6a9c2f;
+  --palette-status-green: #1f8a4c;
+  --palette-status-blue: #2f6fdb;
+
+  /* fundos de status derivados do fg (color-mix) — não edite individualmente */
+  --palette-status-neutral-bg: color-mix(in srgb, var(--palette-status-neutral) 16%, transparent);
+  --palette-status-yellow-bg: color-mix(in srgb, var(--palette-status-yellow) 14%, transparent);
+  --palette-status-orange-bg: color-mix(in srgb, var(--palette-status-orange) 14%, transparent);
+  --palette-status-amber-bg: color-mix(in srgb, var(--palette-status-amber) 14%, transparent);
+  --palette-status-red-bg: color-mix(in srgb, var(--palette-status-red) 14%, transparent);
+  --palette-status-lime-bg: color-mix(in srgb, var(--palette-status-lime) 14%, transparent);
+  --palette-status-green-bg: color-mix(in srgb, var(--palette-status-green) 14%, transparent);
+  --palette-status-blue-bg: color-mix(in srgb, var(--palette-status-blue) 14%, transparent);
+
+  /* tokens semânticos */
+  --bg: var(--palette-gray-50);
+  --bg-elevated: var(--palette-white);
+  --text: var(--palette-gray-900);
+  --text-strong: var(--palette-gray-900);
+  --text-muted: var(--palette-gray-600);
+  --border: var(--palette-gray-200);
+  --accent: var(--palette-accent-600);
+  --accent-hover: var(--palette-accent-700);
+  --secondary: var(--palette-secondary-600);
+  --secondary-hover: var(--palette-secondary-700);
+  --secondary-tint: color-mix(in srgb, var(--secondary) 10%, transparent);
+  --sidebar-bg: var(--palette-gray-900);
+  --sidebar-text: var(--palette-gray-400);
+  --sidebar-text-active: var(--palette-white-strong);
+  --sidebar-active-bg: rgba(255,255,255,0.08);
+  --neu-shadow-dark: rgba(20,23,27,0.10);
+  --neu-shadow-light: rgba(255,255,255,0.75);
+  --focus-ring: color-mix(in srgb, var(--accent) 25%, transparent);
+  --accent-tint: color-mix(in srgb, var(--accent) 7%, transparent);
+
+  /* superfícies tonais */
+  --surface-2: #f1f0ed;
+  --surface-sunken: #e9e7e2;
+  --highlight-top: rgba(255,255,255,0.9);
+  --shadow-ambient: 0 8px 24px rgba(23,21,18,0.07);
+
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 70, 80, 120;
+  --particle-dot: 70, 80, 120;
+}

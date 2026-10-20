@@ -1,0 +1,36 @@
+/* ===== Nível (interpretacao.nivel) → escala de 6 tons + neutro ===== */
+
+.nivel--otimo {
+  --status-fg: var(--palette-status-lime);
+  --status-bg: var(--palette-status-lime-bg);
+}
+
+.nivel--bom {
+  --status-fg: var(--palette-status-green);
+  --status-bg: var(--palette-status-green-bg);
+}
+
+.nivel--ok {
+  --status-fg: var(--palette-status-yellow);
+  --status-bg: var(--palette-status-yellow-bg);
+}
+
+.nivel--medio {
+  --status-fg: var(--palette-status-orange);
+  --status-bg: var(--palette-status-orange-bg);
+}
+
+.nivel--medio_ruim {
+  --status-fg: var(--palette-status-amber);
+  --status-bg: var(--palette-status-amber-bg);
+}
+
+.nivel--ruim {
+  --status-fg: var(--palette-status-red);
+  --status-bg: var(--palette-status-red-bg);
+}
+
+.nivel--neutro {
+  --status-fg: var(--palette-status-neutral);
+  --status-bg: var(--palette-status-neutral-bg);
+}

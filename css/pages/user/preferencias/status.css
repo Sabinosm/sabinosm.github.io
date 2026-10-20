@@ -1,0 +1,27 @@
+/* ===== Status do fluxo → cor+ícone (agrupado por fase) ===== */
+
+.status--aguardando-triagem,
+.status--encerrada {
+  --status-fg: var(--palette-status-neutral);
+  --status-bg: var(--palette-status-neutral-bg);
+}
+
+.status--em-triagem {
+  --status-fg: var(--palette-status-yellow);
+  --status-bg: var(--palette-status-yellow-bg);
+}
+
+.status--aguardando-medico {
+  --status-fg: var(--palette-status-amber);
+  --status-bg: var(--palette-status-amber-bg);
+}
+
+.status--em-atendimento {
+  --status-fg: var(--palette-status-green);
+  --status-bg: var(--palette-status-green-bg);
+}
+
+.status--em-observacao {
+  --status-fg: var(--palette-status-blue);
+  --status-bg: var(--palette-status-blue-bg);
+}

@@ -1,0 +1,7 @@
+/* ===== Tokens estruturais compartilhados (raio, tipografia) ===== */
+
+:root {
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}

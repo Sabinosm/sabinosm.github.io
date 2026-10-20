@@ -1,0 +1,32 @@
+/* ============================================
+   B-íon — Produto clínico (alto contraste, sóbrio)
+
+   AGREGADOR: este arquivo NÃO contém regras,
+   apenas importa os módulos de tokens.
+
+   Estrutura:
+     tokens-base.css .... tokens estruturais (raio, fonte)
+     temas/*.css ........ uma paleta por arquivo (dark, light, blue, ...)
+     status.css ......... cores de status do fluxo clínico
+     niveis.css ......... escala de níveis (otimo → ruim + neutro)
+     font-scale.css ..... controle global de tamanho de fonte
+     cta.css ............ botão de destaque
+
+   Para criar um tema novo:
+     1) copie temas/dark.css → temas/meu-tema.css e ajuste as cores
+     2) adicione o @import abaixo
+   ============================================ */
+
+@import url("tokensBase.css");
+@import url("temas/dark.css");
+@import url("temas/light.css");
+@import url("temas/blue.css");
+@import url("temas/blueLight.css");
+@import url("temas/burgundy.css");
+@import url("temas/burgundyLight.css");
+@import url("temas/teal.css");
+@import url("temas/tealLight.css");
+@import url("status.css");
+@import url("niveis.css");
+@import url("fontScale.css");
+@import url("cta.css");
