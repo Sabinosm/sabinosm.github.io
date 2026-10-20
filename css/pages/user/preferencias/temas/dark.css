@@ -9,9 +9,9 @@
   --palette-gray-400: #7b8794;
   --palette-accent-600: #6b6ff0;   
   --palette-accent-700: #5a54d6;
-  --palette-gray-850: #0e1116;
   --palette-gray-900: #090b0f;                       /* sidebar preta */
-  --palette-gray-800: #232a35; 
+  --palette-gray-850: #1a1e26;   /* fundo: aproximado do card */
+  --palette-gray-800: #272d37;   /* CARD: cinza neutro */ 
 
   --palette-white:        #f2f3f5;
   --palette-white-strong: #ffffff;
@@ -64,10 +64,10 @@
   --accent-tint: color-mix(in srgb, var(--accent) 14%, transparent);
 
   /* superfícies tonais */
-  --surface-2: #2a3341;
-  --surface-sunken: #0a0d12;
+  --surface-2: #323a47;          /* card elevado (modal, dropdown) */
+  --surface-sunken: #12151b;     /* áreas rebaixadas: mais escuro que o  */
   --highlight-top: rgba(139, 92, 246, 0.10);  
-  --shadow-ambient: 0 10px 30px rgba(0,0,0,0.28);
+  --shadow-ambient: 0 12px 32px rgba(0,0,0,0.42);
 
   /* partículas de fundo (particles.js lê como "r, g, b") */
   --particle-line: 205, 215, 235;
