@@ -4,7 +4,7 @@
 // ============================================
 
 import { atualizarDesignCache, atualizarPreferenciasCache } from '../userCache.js';
-import { exibirFeedbackConfiguracoes, limparFeedbackConfiguracoes, exibirFeedbackSucessoTemporario } from './settingsFeedback.js';
+import { exibirFeedbackConfiguracoes, exibirFeedbackSucessoTemporario } from './settingsFeedback.js';
 import { montarConfiguracoesParaApi, salvarConfiguracoesNaApi } from './settingsApi.js';
 import { aplicarIdioma } from '../i18n/aplicarIdioma.js';
 
@@ -138,7 +138,6 @@ export function revertActivePanel() {
 
 document.getElementById('btn-cancel').addEventListener('click', () => {
   revertActivePanel();
-  limparFeedbackConfiguracoes();
 });
 
 // ===== Salvar — só afeta o painel ativo (hoje: Preferências) =====

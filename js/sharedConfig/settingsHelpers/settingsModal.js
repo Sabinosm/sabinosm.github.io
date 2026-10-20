@@ -2,7 +2,6 @@
 // B-íon — Modal de Configurações: abrir/fechar o modal e navegação por abas
 // ============================================
 
-import { limparFeedbackConfiguracoes } from './settingsFeedback.js';
 import { revertActivePanel, refreshSaveBarForActivePanel } from './settingsPaineis.js';
 
 // ===== Abrir / fechar modal =====
@@ -18,7 +17,6 @@ function openSettings() {
 function closeSettings() {
   // Sair sem salvar descarta automaticamente as alterações do painel ativo
   revertActivePanel();
-  limparFeedbackConfiguracoes();
   overlay.classList.remove('settings-overlay--visible');
   document.body.classList.remove('no-scroll');
 }
