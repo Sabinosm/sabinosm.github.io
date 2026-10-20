@@ -1,0 +1,65 @@
+/* fundo-particulas.css
+ *
+ * Camada de fundo para o canvas do particles.js (rede de partículas que
+ * já existe no login). Serve para qualquer página: basta
+ *   1. <canvas id="c" aria-hidden="true"></canvas> logo depois de <body>
+ *   2. este CSS
+ *   3. <script src=".../particles.js"></script> no fim do body
+ * O script lê as cores de --particle-line / --particle-dot (definidas nos
+ * 8 temas em preferencias.css). Nenhuma linha do particles.js foi mexida.
+ *
+ * ===== Botões de ajuste (mude só estes dois valores) =====
+ *   --particulas-opacidade   força do fundo na página inteira (0 a 1)
+ *   --sidebar-vidro          quanto da sidebar é sólida (100% = sólida,
+ *                            sem partículas; 88% = partículas aparecem
+ *                            bem de leve atrás dela)
+ *
+ * Se o fundo ficar pesado na página: baixe --particulas-opacidade, ou
+ * deixe a página em 0 e use só a sidebar (ex.: 0 e 85%).
+ */
+
+:root {
+  --particulas-opacidade: 0.5;
+  --sidebar-vidro: 100%;
+}
+
+html,
+body {
+  background: var(--bg);
+}
+
+#c {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;      /* não bloqueia cliques; o script escuta o mouse na window */
+  opacity: var(--particulas-opacidade);
+}
+
+/* o app fica acima do canvas; fundos próprios precisam ser transparentes
+   para as partículas aparecerem atrás do conteúdo */
+.app {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.app .main {
+  background: transparent;
+}
+
+/* sidebar: sólida por padrão; com --sidebar-vidro menor, as partículas
+   aparecem através dela */
+.app .sidebar {
+  background-color: color-mix(in srgb, var(--sidebar-bg) var(--sidebar-vidro), transparent);
+}
+
+/* Sem movimento = sem fundo animado. (O script não checa essa preferência,
+   então escondemos o canvas por CSS.) */
+@media (prefers-reduced-motion: reduce) {
+  #c {
+    display: none;
+  }
+}
