@@ -1,434 +1,453 @@
-// onboarding.js
+// afterLogin.js
 //
-// Fluxo de primeiro acesso, chamado quando a sessão está em estado
-// `onboarding_pendente` (usuário ainda sem senha definida e/ou sem
-// 2FA escolhido -- pode ter vindo tanto de login por senha quanto de
-// login via Google).
+// Ponto de chegada depois do callback do Google OAuth
+// (oauth.py -> google_callback redireciona para cá).
 //
-// ALTERADO (2FA sempre obrigatório -- ver mfa.py/login.py/oauth.py/
-// onboarding.py no backend): volta a ter DOIS passos, não um só:
-//   1) definir senha (/definir-senha);
-//   2) escolher e confirmar WebAuthn OU TOTP (/webauthn/registrar/*
-//      ou /totp/registrar/*, reaproveitados de webauthn.js/totp.js),
-//      depois concluir via /2fa/status + /concluir.
-// Login sem 2FA algum deixou de existir no sistema -- se o onboarding
-// liberasse a sessão sem nenhum fator cadastrado, o usuário nunca
-// mais conseguiria logar de novo.
+// oauth.py não manda o estado da sessão na URL -- ele fica no cookie
+// httpOnly. Por isso, o primeiro passo aqui é sempre consultar
+// /auth/status_completo (via sessionStatus.js) para saber o que fazer em seguida:
+//   - "mfa_pendente"       -> pedir confirmação. ALTERADO (2FA sempre
+//                              obrigatório -- ver mfa.py/login.py/
+//                              oauth.py no backend): agora ocorre
+//                              também vindo de login por Google, não
+//                              só por senha.
+//                              ALTERADO 2 (escolha de método -- ver
+//                              status.py::status_completo,
+//                              mfa.py::metodos_2fa_disponiveis): o
+//                              backend agora manda `metodosDisponiveis`
+//                              (lista completa), não só um `metodo`
+//                              preferencial único. Com 2+ métodos, o
+//                              usuário ESCOLHE qual usar (telas
+//                              #escolha-mfa-metodo, iguais em espírito
+//                              à escolha do onboarding). Com 1 só, vai
+//                              direto sem perguntar. Com 0 (dado
+//                              legado inconsistente), bloqueio direto.
+//                              O fallback por erro (WebAuthn falha por
+//                              falta de autenticador/limite -> tenta
+//                              TOTP automaticamente) continua existindo,
+//                              mas só dispara se o usuário TAMBÉM tiver
+//                              TOTP disponível -- ver iniciarMetodo().
+//   - "onboarding_pendente" -> mandar para a página de onboarding
+//   - "completa"           -> sessão já pronta, ir para o dashboard
+//   - qualquer outra coisa / erro -> volta para o login
 
+import { confirmarSegundoFator, SemAutenticadorDisponivelError, LimiteTentativasExcedidoError } from "./webauthn.js";
+import { iniciarSegundoFatorTOTP, confirmarSegundoFatorTOTP, TotpNaoCadastradoError, LimiteTentativasTotpExcedidoError, CodigoTotpInvalidoError } from "./totp.js";
 import { exibirMensagem } from "../../shared/feedback.js";
-import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
 import { consultarStatusSessao } from "./sessionStatus.js";
-import { registrarNovoDispositivo, ErroRegistroDispositivo } from "./webauthn.js";
-import { iniciarCadastroTOTP, confirmarCadastroTOTP, ErroCadastroTOTP } from "./totp.js";
-import { validarSenha } from "../../sharedConfig/passwordManagement/passwordValidation.js";
-import { ativarTogglesSenha } from "../../sharedConfig/passwordManagement/passwordToggle.js";
+import { URL_BASE_API } from "../../sharedConfig/urlConfig.js";
+import { definirDadosUsuarioCache } from "../../sharedConfig/userCache.js";
+import { derivarPermissoes } from "../../sharedConfig/userCacheHelpers/userCachePermissoes.js";
+import { homePara } from "../../sharedConfig/loaders/rotas.js";
 
-const passoSenha = document.getElementById("passo-senha");
-const passoTwoFa = document.getElementById("passo-2fa");
-const formSenha = document.getElementById("form-senha");
-const inputSenha = document.getElementById("senha");
-const inputConfirmarSenha = document.getElementById("confirmar_senha");
+// Destino pós-login -- centralizado aqui porque é o único lugar que
+// decide navegação inicial pós-login. watchSession.js (rodando dentro
+// das homes) nunca precisa disso, só sabe voltar pro login.
+//
+// A decisão usa CAPACIDADES (gerenciar / atenderClinicamente /
+// avaliarMedicamente), derivadas de is_admin + funcao_clinica em
+// userCachePermissoes.js -- duas dimensões ortogonais (um médico-admin
+// tem is_admin=True e funcao_clinica='medico' ao mesmo tempo).
+const ROTA_LOGIN = "../../../html/pages/auth/login.html";
 
-ativarTogglesSenha([inputSenha, inputConfirmarSenha]);
+const botaoTentarNovamente = document.getElementById("btn-tentar-novamente");
 
-// Mesmo padrão simples de setError/clearError de adminValidation.js
-// (Cadastro de administrador) -- não justifica um módulo de validação
-// dedicado aqui, já que este form só tem os dois campos de senha.
-function setErroCampo(fieldId, mensagem) {
-  const input = document.getElementById(fieldId);
-  const field = input?.closest(".field");
-  const errEl = document.getElementById("err-" + fieldId);
-  field?.classList.add("has-error");
-  if (errEl) errEl.textContent = mensagem;
+// Elementos da tela de escolha de método (ver afterLogin.html).
+const escolhaMfaMetodo = document.getElementById("escolha-mfa-metodo");
+const btnMfaEscolherWebauthn = document.getElementById("btn-mfa-escolher-webauthn");
+const btnMfaEscolherTotp = document.getElementById("btn-mfa-escolher-totp");
+
+// Guarda a última lista de métodos disponíveis recebida de
+// /auth/status_completo -- usada pelo botão "tentar novamente" (que não tem
+// acesso ao `resultado` original de tratarPosLogin) e pelo fallback
+// por erro do WebAuthn (para saber se vale tentar TOTP em seguida).
+let ultimosMetodosDisponiveis = [];
+
+// Loader B-íon (bion-loader.js, carregado como script clássico no HTML).
+// Aparece SÓ depois que o login foi confirmado (status "completa" ou
+// 2FA aprovado), cobrindo a espera do /me + a navegação para a home.
+// Se o bion-loader.js não carregar, tudo segue funcionando sem ele.
+let esconderLoadingBion = null;
+
+function mostrarLoadingBion() {
+  if (esconderLoadingBion || !window.Bion?.showLoading) return;
+  esconderLoadingBion = window.Bion.showLoading(); // sem duração: fica até chamarmos hide()
 }
 
-function limparErroCampo(fieldId) {
-  const input = document.getElementById(fieldId);
-  const field = input?.closest(".field");
-  const errEl = document.getElementById("err-" + fieldId);
-  field?.classList.remove("has-error");
-  if (errEl) errEl.textContent = "";
+function ocultarLoadingBion() {
+  if (!esconderLoadingBion) return;
+  esconderLoadingBion();
+  esconderLoadingBion = null;
 }
 
-const escolha2faOpcoes = document.getElementById("escolha-2fa-opcoes");
-const painelWebauthn = document.getElementById("painel-2fa-webauthn");
-const painelTotp = document.getElementById("painel-2fa-totp");
-const btnEscolherWebauthn = document.getElementById("btn-escolher-webauthn");
-const btnEscolherTotp = document.getElementById("btn-escolher-totp");
-const btnCadastrarWebauthn = document.getElementById("btn-cadastrar-webauthn");
-const btnVoltarEscolhaWebauthn = document.getElementById("btn-voltar-escolha-webauthn");
-const btnVoltarEscolhaTotp = document.getElementById("btn-voltar-escolha-totp");
-const formTotpConfirmar = document.getElementById("form-totp-confirmar");
+// pageshow dispara tanto no carregamento normal quanto quando a
+// página é restaurada do bfcache do navegador (ex.: botão "voltar"
+// depois de já ter saído desta página). DOMContentLoaded sozinho não
+// dispara nesse segundo caso, o que deixava o spinner girando pra
+// sempre -- a checagem de status nunca era refeita.
+window.addEventListener("pageshow", async () => {
+  ocultarLoadingBion(); // voltou do bfcache com o loader ainda visível
+  await tratarPosLogin();
+});
 
-// CORRIGIDO: antes apontava fixo para a home de médico
-// (medicHomePage.html), o que estava certo por acaso enquanto só
-// profissionais clínicos completavam onboarding, mas manda o admin
-// fundador (ou qualquer futuro admin que passe por onboarding) para a
-// home errada -- afterLogin.js::irParaHomeDoUsuario() já centraliza
-// essa decisão (is_admin tem prioridade sobre funcao_clinica, com
-// tratamento de papel desconhecido), então delegamos pra lá em vez de
-// duplicar a lógica aqui.
-const DESTINO_APOS_CONCLUIR = "../../../html/pages/auth/afterLogin.html";
+botaoTentarNovamente.addEventListener("click", async () => {
+  botaoTentarNovamente.hidden = true;
+  await tratarMfaPendente(ultimosMetodosDisponiveis);
+});
 
-// A URL (?senha_definida=) é só um hint de UX vindo do afterLogin.js,
-// não a fonte de verdade -- o usuário pode editá-la livremente. Quem
-// decide de fato se ainda há algo a fazer aqui é o servidor,
-// consultado via consultarStatusSessao({ completo: false }) (/auth/status,
-// a versão enxuta: aqui só importa o estado, não o `usuario`).
-// Loader B-íon cobre a tela enquanto o servidor decide qual passo mostrar
-// (evita o flash do formulário de senha para quem já tem senha). Só é
-// escondido quando uma etapa é de fato exibida -- nos redirecionamentos
-// ele fica até a navegação acontecer.
-const esconderCarregando = window.Bion?.showLoading?.() ?? (() => {});
+btnMfaEscolherWebauthn.addEventListener("click", () => {
+  escolhaMfaMetodo.hidden = true;
+  iniciarMetodo("webauthn");
+});
 
-await sincronizarPasso();
+btnMfaEscolherTotp.addEventListener("click", () => {
+  escolhaMfaMetodo.hidden = true;
+  iniciarMetodo("totp");
+});
 
-async function sincronizarPasso() {
+async function tratarPosLogin() {
+  let resultado;
+
   try {
-    // Lança só em falha de rede/5xx (cai no catch abaixo, que pede para
-    // recarregar). 401 NÃO lança: vem como { ok: false }.
-    const resultado = await consultarStatusSessao({ completo: false });
-
-    if (!resultado.ok && resultado.motivo === "nao_autenticado") {
-      // Sessão inválida/expirada -- volta para o login.
-      window.location.href = "../../../html/pages/auth/login.html";
-      return;
-    }
-
-    if (!resultado.ok || resultado.status !== "onboarding_pendente") {
-      // Sessão não está mais em onboarding (ex.: concluído em outra
-      // aba, ou já completa) ou status desconhecido -- deixa o
-      // afterLogin decidir o destino certo em vez de assumir aqui.
-      window.location.href = "../../../html/pages/auth/afterLogin.html";
-      return;
-    }
-
-    if (resultado.senhaDefinida) {
-      // CORRIGIDO: antes pulava direto para a TELA de 2FA sem checar
-      // se já havia um método confirmado. Isso podia acontecer mesmo
-      // com um TOTP/WebAuthn já funcionando -- por exemplo, se
-      // /onboarding/concluir nunca chegou a rodar numa sessão anterior
-      // (ver onboarding.py) e o backend te devolve aqui de novo. Nesse
-      // caso, entrar na tela de cadastro de TOTP dispara
-      // /totp/registrar/iniciar de novo, que podia (antes de corrigido
-      // no backend) desconfirmar o fator que já existia -- ou, mesmo
-      // corrigido lá, força o usuário a escanear um QR code de novo à
-      // toa. Agora checamos /2fa/status primeiro: se já há um método
-      // confirmado, o único passo que falta é concluir.
-      const tem2fa = await usuarioJaTem2fa();
-      if (tem2fa) {
-        await concluirOnboarding();
-        return;
-      }
-      esconderCarregando();
-      await irParaPasso2fa();
-    } else {
-      // Único caso em que o formulário de senha deve aparecer.
-      esconderCarregando();
-      passoSenha.hidden = false;
-    }
+    resultado = await consultarStatusSessao();
   } catch (erro) {
-    console.error("Erro ao verificar etapa do onboarding:", erro);
-    esconderCarregando();
-    // Nenhum passo é exibido neste caso (tela vazia), então a mensagem fica mais tempo.
-    exibirMensagem("Não foi possível carregar seu progresso. Recarregue a página.", "erro", 8000);
+    console.error("Erro ao verificar status da sessão:", erro);
+    exibirMensagem("Não foi possível verificar sua sessão. Tente entrar novamente.", "erro");
+    setTimeout(() => { window.location.href = ROTA_LOGIN; }, 2000);
+    return;
+  }
+
+  if (!resultado.ok) {
+    // Cobre tanto "nao_autenticado" (401) quanto "status_desconhecido"
+    // -- em ambos os casos não assumimos sucesso silenciosamente.
+    if (resultado.motivo === "status_desconhecido") {
+      console.error("Status de sessão desconhecido:", resultado.bruto);
+    }
+    window.location.href = ROTA_LOGIN;
+    return;
+  }
+
+  switch (resultado.status) {
+    case "mfa_pendente":
+      ultimosMetodosDisponiveis = resultado.metodosDisponiveis || [];
+      await tratarMfaPendente(ultimosMetodosDisponiveis);
+      break;
+
+    case "onboarding_pendente": {
+      const senhaJaDefinida = resultado.senhaDefinida ? "1" : "0";
+      window.location.href = `../../../html/pages/auth/onboarding.html?senha_definida=${senhaJaDefinida}`;
+      break;
+    }
+
+    case "completa":
+      await irParaHomeDoUsuario();
+      break;
   }
 }
 
 /**
- * Consulta /onboarding/2fa/status -- usado em sincronizarPasso() para
- * não reabrir a tela de cadastro de 2FA quando já existe um método
- * confirmado (ver comentário em sincronizarPasso).
+ * Decide o destino pós-login a partir das CAPACIDADES, delegando a
+ * escolha da home a homePara() (rotas.js) -- a mesma regra que a
+ * sidebar usa pro link de início. As homes diferem SÓ no HTML: o JS e
+ * o CSS são compartilhados (ver initHomePage.js).
+ *
+ * @returns {string|undefined} undefined = nenhuma capacidade
+ *   (estado inconsistente) -- quem chama deve tratar como erro.
  */
-async function usuarioJaTem2fa() {
+function decidirDestino(p) {
+  return homePara(p);
+}
+
+/**
+ * Busca /me (agora que a sessão está completa), guarda o payload
+ * inteiro no cache de sessão via userCache.js (definirDadosUsuarioCache)
+ * -- para as homes lerem sem precisar refazer o fetch -- e redireciona
+ * conforme is_admin/funcao_clinica (ver decidirDestino()).
+ *
+ * usuario.to_dict() não expõe token/sessão nenhuma, só dados de
+ * perfil; o cookie httpOnly continua sendo a única credencial real,
+ * nunca acessível via JS.
+ */
+async function irParaHomeDoUsuario() {
+  let payload;
+
+  mostrarLoadingBion();
+
   try {
-    const resp = await fetch(`${URL_BASE_API}/auth/onboarding/2fa/status`, {
+    const resp = await fetch(`${URL_BASE_API}/auth/me`, {
       method: "GET",
       credentials: "include",
     });
-    if (!resp.ok) return false;
-    const dados = await resp.json();
-    return Boolean(dados.tem_2fa);
-  } catch (erro) {
-    console.error("Erro ao verificar status de 2FA no onboarding:", erro);
-    return false;
-  }
-}
 
-// ============================================
-// Passo 1: senha
-// ============================================
-
-formSenha.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  limparErroCampo("senha");
-  limparErroCampo("confirmar_senha");
-
-  const senha = inputSenha.value;
-  const confirmarSenha = inputConfirmarSenha.value;
-
-  // Pré-filtro client-side espelhando validar_senha() do backend (ver
-  // ../../sharedConfig/passwordManagement/passwordValidation.js) -- só para feedback rápido.
-  // A validação real e definitiva continua sendo do backend (ver
-  // catch abaixo, que mostra cru o motivo devolvido por
-  // /onboarding/definir-senha quando ele reprovar algo que passou
-  // aqui).
-  const { valida: senhaValida, mensagem: mensagemSenha } = validarSenha(senha);
-  if (!senhaValida) {
-    setErroCampo("senha", mensagemSenha);
-    return;
-  }
-
-  if (senha !== confirmarSenha) {
-    setErroCampo("confirmar_senha", "As senhas não coincidem.");
-    return;
-  }
-
-  const botaoSubmit = formSenha.querySelector("button[type=submit]");
-
-  botaoSubmit.disabled = true;
-  try {
-    await definirSenha(senha);
-
-    // Quem já tem um fator confirmado (ex.: reset de senha por admin) não
-    // escolhe 2FA de novo: o backend recusa cadastrar fator nesse caso, e
-    // o único passo que falta é concluir (que leva ao 2FA em seguida).
-    if (await usuarioJaTem2fa()) {
-      await concluirOnboarding();
-    } else {
-      await irParaPasso2fa();
+    if (!resp.ok) {
+      throw new Error(`/me respondeu ${resp.status}`);
     }
+
+    const corpo = await resp.json();
+    payload = corpo.data ?? corpo; // json_success envelopa em { data, message }
   } catch (erro) {
-    console.error("Falha ao definir senha:", erro);
-    exibirMensagem(erro.message || "Não foi possível definir a senha.", "erro");
-    botaoSubmit.disabled = false;
-  }
-});
-
-/**
- * Envia a nova senha para /onboarding/definir-senha -- ALTERADO: não
- * conclui mais o onboarding sozinha, só avança para o passo de 2FA
- * (ver onboarding.py, docstring do módulo).
- */
-async function definirSenha(senha) {
-  const resp = await fetch(`${URL_BASE_API}/auth/onboarding/definir-senha`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ senha }),
-  });
-
-  const dados = await resp.json();
-
-  if (!resp.ok) {
-    // validar_senha() devolve o motivo específico da invalidação
-    throw new Error(dados.erro || dados.message || "Senha inválida.");
-  }
-
-  return dados;
-}
-
-// ============================================
-// Passo 2: escolha de método 2FA
-// ============================================
-
-async function irParaPasso2fa() {
-  passoSenha.hidden = true;
-  passoTwoFa.hidden = false;
-  mostrarEscolha2fa();
-}
-
-function mostrarEscolha2fa() {
-  escolha2faOpcoes.hidden = false;
-  painelWebauthn.hidden = true;
-  painelTotp.hidden = true;
-}
-
-btnEscolherWebauthn.addEventListener("click", () => {
-  escolha2faOpcoes.hidden = true;
-  painelWebauthn.hidden = false;
-});
-
-btnEscolherTotp.addEventListener("click", () => {
-  escolha2faOpcoes.hidden = true;
-  iniciarFluxoTotp();
-});
-
-btnVoltarEscolhaWebauthn.addEventListener("click", mostrarEscolha2fa);
-btnVoltarEscolhaTotp.addEventListener("click", mostrarEscolha2fa);
-
-// ---- Sub-fluxo WebAuthn ----
-
-btnCadastrarWebauthn.addEventListener("click", async () => {
-  const apelidoPadrao = "Meu dispositivo";
-  btnCadastrarWebauthn.disabled = true;
-  btnCadastrarWebauthn.textContent = "Aguardando confirmação...";
-
-  try {
-    // Reaproveita registrarNovoDispositivo de webauthn.js -- a rota
-    // no backend (/webauthn/registrar/iniciar e /confirmar) já aceita
-    // tanto sessão completa quanto onboarding_pendente (ver
-    // session.py::requer_login_ou_onboarding_pendente).
-    await registrarNovoDispositivo(apelidoPadrao, "desktop");
-    await concluirOnboarding();
-  } catch (erro) {
-    console.error("Falha ao cadastrar WebAuthn no onboarding:", erro);
-    exibirMensagem(
-      erro instanceof ErroRegistroDispositivo ? erro.message : "Não foi possível cadastrar a chave de segurança.",
-      "erro"
-    );
-    btnCadastrarWebauthn.disabled = false;
-    btnCadastrarWebauthn.textContent = "Cadastrar chave de segurança";
-  }
-});
-
-// ---- Sub-fluxo TOTP ----
-
-async function iniciarFluxoTotp() {
-  const qrContainer = document.getElementById("totp-qrcode-container");
-  const secretTexto = document.getElementById("totp-secret-texto");
-  const inputCodigo = document.getElementById("totp-codigo");
-
-  qrContainer.innerHTML = "";
-  secretTexto.textContent = "";
-  inputCodigo.value = "";
-  painelTotp.hidden = false;
-
-  let dados;
-  try {
-    dados = await iniciarCadastroTOTP();
-  } catch (erro) {
-    console.error("Falha ao iniciar cadastro TOTP no onboarding:", erro);
-    exibirMensagem(
-      erro instanceof ErroCadastroTOTP ? erro.message : "Não foi possível gerar o código de configuração.",
-      "erro"
-    );
-    mostrarEscolha2fa();
+    console.error("Falha ao buscar dados do usuário em /me:", erro);
+    ocultarLoadingBion(); // a mensagem de erro aparece no toast, então o loader sai
+    exibirMensagem("Não foi possível carregar seus dados. Tente entrar novamente.", "erro");
+    setTimeout(() => { window.location.href = ROTA_LOGIN; }, 2000);
     return;
   }
 
-  // Não bloqueia o texto do secret nem o foco do input -- o usuário já
-  // pode começar a digitar manualmente enquanto o QR (se demorar)
-  // ainda está sendo esperado.
-  renderizarQrCode(qrContainer, dados.otpauth_uri).catch((erro) => {
-    console.error("Falha inesperada ao renderizar QR code TOTP no onboarding:", erro);
-  });
-  secretTexto.textContent = `Ou digite manualmente: ${dados.secret_texto}`;
-  inputCodigo.focus();
-}
+  // O cache ainda NÃO foi gravado neste ponto (definirDadosUsuarioCache
+  // vem abaixo), por isso derivarPermissoes(usuario) e não getPermissoes().
+  const permissoes = derivarPermissoes(payload?.usuario);
+  const destino = decidirDestino(permissoes);
 
-/**
- * Espera a lib `qrcode` (window.QRCode) ficar disponível, até um
- * limite de tempo -- mesma correção aplicada em preencherTotp.js
- * (Configurações). A janela de corrida aqui é menor porque o
- * onboarding não passa por fetch+inject de partial nem import
- * dinâmico de módulo (a lib e este script chegam por caminhos mais
- * diretos), mas não é zero -- a tag <script> do CDN ainda é
- * carregada de forma desacoplada do restante do JS da página, então
- * nada garante ordem entre os dois. Sem isso, a checagem antiga
- * (`typeof window.QRCode === "undefined"`) podia desistir pra sempre
- * de um QR que só chegaria alguns milissegundos depois.
- */
-function aguardarLibQrCode(timeoutMs = 4000) {
-  if (typeof window.QRCode !== "undefined") return Promise.resolve(true);
-
-  return new Promise((resolve) => {
-    const intervaloMs = 100;
-    let decorrido = 0;
-
-    const id = setInterval(() => {
-      if (typeof window.QRCode !== "undefined") {
-        clearInterval(id);
-        resolve(true);
-        return;
-      }
-      decorrido += intervaloMs;
-      if (decorrido >= timeoutMs) {
-        clearInterval(id);
-        resolve(false);
-      }
-    }, intervaloMs);
-  });
-}
-
-async function renderizarQrCode(container, otpauthUri) {
-  const disponivel = await aguardarLibQrCode();
-
-  if (!disponivel) {
-    console.warn("Lib QRCode não carregou a tempo -- cadastro TOTP seguirá só com o secret em texto.");
-    exibirMensagem(
-      "Não foi possível carregar o QR code agora -- use o código exibido para configurar manualmente, ou recarregue a página.",
-      "erro"
-    );
+  if (!destino) {
+    // Nem gerenciar nem atenderClinicamente -- mais seguro travar aqui
+    // do que adivinhar uma home genérica pra um perfil desconhecido.
+    console.error("Usuário sem capacidade mapeada (is_admin/funcao_clinica):", permissoes);
+    window.location.href = ROTA_LOGIN;
     return;
   }
 
-  new window.QRCode(container, {
-    text: otpauthUri,
-    width: 180,
-    height: 180,
-  });
+  definirDadosUsuarioCache(payload);
+  window.location.href = destino;
 }
 
-formTotpConfirmar.addEventListener("submit", async (event) => {
+/**
+ * Decide o que mostrar ao entrar em mfa_pendente:
+ *   - 0 métodos: estado inconsistente (dado legado sem WebAuthn nem
+ *     TOTP) -- bloqueio direto, mesmo tratamento de esgotamento total.
+ *   - 1 método: vai direto para o único disponível, sem perguntar
+ *     (comportamento equivalente ao anterior a esta mudança).
+ *   - 2+ métodos: mostra a tela de escolha.
+ */
+async function tratarMfaPendente(metodosDisponiveis) {
+  exibirMensagem("Confirme sua identidade para continuar...", "info");
+
+  if (!metodosDisponiveis || metodosDisponiveis.length === 0) {
+    console.error("Nenhum método de 2FA disponível para este usuário -- estado inconsistente.");
+    mostrarBloqueio();
+    return;
+  }
+
+  if (metodosDisponiveis.length === 1) {
+    await iniciarMetodo(metodosDisponiveis[0]);
+    return;
+  }
+
+  mostrarEscolhaMetodo();
+}
+
+function mostrarEscolhaMetodo() {
+  const spinner = document.querySelector(".loading-wrap");
+  if (spinner) spinner.hidden = true;
+  botaoTentarNovamente.hidden = true;
+
+  const painelTotp = document.getElementById("painel-totp");
+  if (painelTotp) painelTotp.hidden = true;
+
+  escolhaMfaMetodo.hidden = false;
+}
+
+/**
+ * Dispara a confirmação do método escolhido (ou único disponível).
+ * Ponto único de entrada para os dois métodos -- substitui a antiga
+ * tratarMfaPendente(), que sempre chamava WebAuthn primeiro
+ * incondicionalmente, mesmo para quem só tinha TOTP cadastrado (o que
+ * desperdiçava uma tentativa de MAX_TENTATIVAS_MFA à toa).
+ */
+async function iniciarMetodo(metodo) {
+  if (metodo === "totp") {
+    await iniciarFluxoTotpLogin();
+    return;
+  }
+
+  // metodo === "webauthn"
+  try {
+    await confirmarSegundoFator();
+    exibirMensagem("Login realizado com sucesso!", "sucesso");
+    await irParaHomeDoUsuario();
+  } catch (erro) {
+    console.error("Falha na confirmação via WebAuthn:", erro);
+
+    // Fallback por erro: só faz sentido tentar TOTP automaticamente
+    // se o usuário TAMBÉM tiver TOTP disponível -- senão é bloqueio
+    // direto (ver branch else no final).
+    const totpTambemDisponivel = ultimosMetodosDisponiveis.includes("totp");
+
+    if (
+      (erro instanceof LimiteTentativasExcedidoError || erro instanceof SemAutenticadorDisponivelError)
+      && totpTambemDisponivel
+    ) {
+      exibirMensagem(
+        "Não foi possível confirmar pela chave de segurança. Tentando código do aplicativo autenticador...",
+        "info"
+      );
+      await iniciarFluxoTotpLogin();
+      return;
+    }
+
+    exibirMensagem(
+      erro.message || "Não foi possível confirmar sua identidade. Tente novamente.",
+      "erro"
+    );
+    botaoTentarNovamente.hidden = false;
+  }
+}
+
+/**
+ * Inicia o fluxo de TOTP no login -- chamado tanto no caminho direto
+ * (usuário só tem TOTP, ou escolheu TOTP na tela de escolha) quanto
+ * no fallback por erro do WebAuthn (usuário tem os dois métodos).
+ */
+async function iniciarFluxoTotpLogin() {
+  escolhaMfaMetodo.hidden = true; // garante que some se veio da escolha
+
+  try {
+    await iniciarSegundoFatorTOTP();
+    exibirMensagem("Digite o código do seu aplicativo autenticador.", "info");
+    mostrarPainelCodigoTOTP();
+  } catch (erroTotp) {
+    if (erroTotp instanceof TotpNaoCadastradoError) {
+      // Não deveria ocorrer se metodosDisponiveis disse que tinha TOTP
+      // -- mas trata explicitamente em vez de mascarar como outro
+      // tipo de bloqueio silencioso.
+      console.error("Backend indicou TOTP disponível em /auth/status_completo mas /totp/2fa/iniciar recusou.");
+      mostrarBloqueio();
+      return;
+    }
+    console.error("Falha ao iniciar segundo fator via TOTP:", erroTotp);
+    exibirMensagem(
+      "Não foi possível verificar o método de confirmação por código. Tente recarregar a página.",
+      "erro"
+    );
+    botaoTentarNovamente.hidden = false;
+  }
+}
+
+// ============================================
+// Painel de código TOTP -- reaproveita os elementos já existentes em
+// afterLogin.html (spinner) e injeta um form simples
+// para o código, sem precisar de um modal separado (diferente do
+// step-up, que já tem modal próprio) -- esta é uma página inteira
+// dedicada à confirmação, não um overlay sobre outra tela.
+// ============================================
+
+let painelTotpCriado = false;
+
+function mostrarPainelCodigoTOTP() {
+  const spinner = document.querySelector(".loading-wrap");
+  if (spinner) spinner.hidden = true;
+  botaoTentarNovamente.hidden = true;
+  escolhaMfaMetodo.hidden = true;
+
+  if (painelTotpCriado) {
+    document.getElementById("painel-totp").hidden = false;
+    document.getElementById("totp-codigo").focus();
+    return;
+  }
+
+  const card = document.querySelector(".card");
+  const painel = document.createElement("div");
+  painel.id = "painel-totp";
+  painel.innerHTML = `
+    <form id="form-totp-codigo">
+      <div class="field-group">
+        <label class="field-label" for="totp-codigo">Código do autenticador</label>
+        <input class="field-input" type="text" id="totp-codigo" inputmode="numeric"
+               autocomplete="one-time-code" maxlength="6" placeholder="000000" required>
+      </div>
+      <button class="btn-primary" type="submit">Confirmar</button>
+    </form>
+  `;
+  card.appendChild(painel);
+  painelTotpCriado = true;
+
+  document.getElementById("form-totp-codigo").addEventListener("submit", onSubmitCodigoTOTP);
+  document.getElementById("totp-codigo").focus();
+}
+
+async function onSubmitCodigoTOTP(event) {
   event.preventDefault();
-  const inputCodigo = document.getElementById("totp-codigo");
-  const codigo = inputCodigo.value.trim();
+  const input = document.getElementById("totp-codigo");
+  const codigo = input.value.trim();
   if (!codigo) return;
 
-  const botaoSubmit = formTotpConfirmar.querySelector("button[type=submit]");
+  const botaoSubmit = event.target.querySelector("button[type=submit]");
   botaoSubmit.disabled = true;
 
   try {
-    await confirmarCadastroTOTP(codigo);
-    await concluirOnboarding();
+    await confirmarSegundoFatorTOTP(codigo);
+    exibirMensagem("Login realizado com sucesso!", "sucesso");
+    await irParaHomeDoUsuario();
   } catch (erro) {
-    console.error("Falha ao confirmar TOTP no onboarding:", erro);
-    exibirMensagem(
-      erro instanceof ErroCadastroTOTP ? erro.message : "Não foi possível confirmar o código.",
-      "erro"
-    );
     botaoSubmit.disabled = false;
-    inputCodigo.value = "";
-    inputCodigo.focus();
-  }
-});
 
-// ============================================
-// Conclusão -- chamado depois que WebAuthn OU TOTP foi confirmado
-// ============================================
+    if (erro instanceof LimiteTentativasTotpExcedidoError) {
+      // FIM DA LINHA de verdade -- ALTERADO: não sobra mais nenhum
+      // método (WebAuthn já tinha esgotado, ou nem era o método deste
+      // usuário, antes de chegar em TOTP). Sem fallback para Google
+      // aqui -- login sempre exige 2FA.
+      document.getElementById("painel-totp").hidden = true;
+      mostrarBloqueio();
+      return;
+    }
+
+    if (erro instanceof CodigoTotpInvalidoError) {
+      exibirMensagem(
+        `${erro.message}${erro.tentativasRestantes != null ? ` (${erro.tentativasRestantes} tentativa(s) restante(s))` : ""}`,
+        "erro"
+      );
+      input.value = "";
+      input.focus();
+      return;
+    }
+
+    console.error("Falha inesperada ao confirmar código TOTP:", erro);
+    exibirMensagem(erro.message || "Não foi possível confirmar o código. Tente novamente.", "erro");
+  }
+}
 
 /**
- * Chama /onboarding/concluir, que confirma que senha + pelo menos um
- * método de 2FA já estão prontos. A resposta traz um de dois status:
- *   - "onboarding_concluido": o usuário comprovou um fator nesta sessão,
- *     e a sessão já está completa.
- *   - "mfa_pendente": o usuário já tinha fator antes (ex.: reset de senha
- *     por admin), e a sessão segue pendente de 2FA.
- * Nos dois casos o destino é o afterLogin.html, que consulta
- * /status_completo e decide o próximo passo (home ou confirmação do 2FA).
+ * Mostra o estado de BLOQUEIO -- usado quando WebAuthn e TOTP se
+ * esgotaram (ou não estão disponíveis) e não sobra mais nenhum
+ * caminho de login. Substitui a antiga exibirMensagemVoltarAoLogin(),
+ * que oferecia um link "Voltar para o login" -- isso fazia sentido
+ * quando Google era um fallback sem 2FA, mas não faz mais (Google
+ * também exige 2FA agora, ver oauth.py). Voltar ao login só repetiria
+ * a mesma exigência.
+ *
+ * Não oferece nenhuma ação própria de recuperação -- só orienta
+ * contato com o administrador, que pode resetar as credenciais de
+ * 2FA do usuário.
  */
-async function concluirOnboarding() {
-  const resp = await fetch(`${URL_BASE_API}/auth/onboarding/concluir`, {
-    method: "POST",
-    credentials: "include",
-  });
+function mostrarBloqueio() {
+  const spinner = document.querySelector(".loading-wrap");
+  if (spinner) spinner.hidden = true;
+  botaoTentarNovamente.hidden = true;
+  escolhaMfaMetodo.hidden = true;
 
-  const dados = await resp.json();
+  const painelTotp = document.getElementById("painel-totp");
+  if (painelTotp) painelTotp.hidden = true;
 
-  if (!resp.ok) {
-    // Não deveria ocorrer numa navegação normal (o frontend só chama
-    // isto depois de confirmar um método) -- mas se ocorrer (ex:
-    // corrida entre abas), mostra o erro em vez de mascarar.
-    throw new Error(dados.erro || "Não foi possível concluir o cadastro.");
-  }
+  // Beco sem saída: diferente de um erro comum, não há botão nem passo
+  // seguinte na tela. Um toast de 2s deixaria o card vazio, então a
+  // mensagem fica FIXA no card (e não some). Idempotente: o pageshow
+  // (bfcache) pode chamar tratarPosLogin() -> mostrarBloqueio() de novo.
+  if (document.getElementById("aviso-bloqueio")) return;
 
-  exibirMensagem(
-    dados.status === "mfa_pendente"
-      ? "Cadastro concluído! Agora confirme sua identidade."
-      : "Cadastro concluído! Redirecionando...",
-    "sucesso"
-  );
-  window.location.href = DESTINO_APOS_CONCLUIR;
+  const card = document.querySelector(".card");
+  if (!card) return;
+
+  const aviso = document.createElement("div");
+  aviso.id = "aviso-bloqueio";
+  aviso.setAttribute("role", "alert");
+
+  const motivo = document.createElement("p");
+  motivo.textContent =
+    "Não foi possível confirmar sua identidade pelos métodos cadastrados. " +
+    "Por segurança, não é possível continuar agora.";
+
+  const orientacao = document.createElement("p");
+  orientacao.textContent = "Entre em contato com o administrador para verificar suas credenciais de segurança.";
+
+  aviso.append(motivo, orientacao);
+  card.appendChild(aviso);
 }
