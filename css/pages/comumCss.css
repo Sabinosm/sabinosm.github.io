@@ -1,0 +1,11 @@
+/*
+Arquivo que importa todos os comuns entre os arquivos
+*/
+
+@import url("user/shared/homePage.css");
+@import url("user/shared/fundoParticulas.css");
+@import url("user/sidebar/sidebar.css");
+@import url("user/preferencias.css");
+@import url("user/stepup.css");
+@import url("user/settings.css");
+
