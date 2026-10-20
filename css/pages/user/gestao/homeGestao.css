@@ -1,0 +1,300 @@
+/* ============================================
+   B-íon — Home de Gerenciamento (bento dashboard)
+   Carrega DEPOIS do comumCss.css.
+
+   v1 — "superfícies tonais com profundidade interna" em formato
+   BENTO ASSIMÉTRICO:
+   - Os olhos não descem mais em fila única: um card-hero ocupa 2x2,
+     um card de alerta chama atenção com tinta de status e "pulso",
+     e o efetivo por papel vira uma faixa larga de apoio.
+   - Tudo no padrão de tokens: borda 1px + highlight no topo
+     (--highlight-top), elevação só no hover, nenhuma cor fixa
+     (color-mix das variáveis dos temas).
+   - Ícones são decorativos (aria-hidden), herdando a cor via
+     currentColor — funcionam em todos os temas.
+   - Animação de entrada escalonada + prefers-reduced-motion.
+
+   Classes originais (.metrics, .metric-card, .metric-value,
+   .metric-label) e todos os id="metric-*" mantidos intactos:
+   o JS continua preenchendo sem nenhuma mudança.
+   ============================================ */
+
+@keyframes hg-rise {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.main {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
+    margin-right: auto;
+  }
+}
+
+.main-header {
+  animation: hg-rise 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* ============================================
+   BENTO — visão institucional (4 colunas)
+   hero 2x2 | pacientes | consultas
+   hero     | alerta   | taxa
+   confianca| versao   | efetivo(2)
+   ============================================ */
+.metrics--bento {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas:
+    "hero   hero   pacientes consultas"
+    "hero   hero   alerta    alerta";
+  gap: 14px;
+  margin-bottom: 36px;
+  align-items: stretch;
+}
+
+.metrics--bento .metric-card:nth-child(1) { grid-area: hero; }
+.metrics--bento .metric-card:nth-child(2) { grid-area: pacientes; }
+.metrics--bento .metric-card:nth-child(3) { grid-area: consultas; }
+.metrics--bento .metric-card:nth-child(4) { grid-area: alerta; }
+
+/* ============================================
+   BENTO — Desempenho e IA
+   taxa(2) | confianca | versao
+   efetivo-ia faixa larga (4)
+   ============================================ */
+.metrics--bento-ia {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-areas:
+    "taxa taxa conf ver"
+    "efet efet efet efet";
+  gap: 14px;
+  margin-bottom: 36px;
+  align-items: stretch;
+}
+
+.metrics--bento-ia .metric-card:nth-child(1) { grid-area: taxa; }
+.metrics--bento-ia .metric-card:nth-child(2) { grid-area: conf; }
+.metrics--bento-ia .metric-card:nth-child(3) { grid-area: ver; }
+.metrics--bento-ia .metric-card:nth-child(4) { grid-area: efet; }
+
+/* ===== Card base tonal ===== */
+.metrics .metric-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  box-shadow: inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 5%, transparent));
+  overflow: hidden;
+  transition:
+    transform 0.18s cubic-bezier(0.2, 0.7, 0.3, 1),
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.metrics .metric-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  box-shadow:
+    inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 5%, transparent)),
+    var(--shadow-ambient, 0 8px 20px color-mix(in srgb, var(--neu-shadow-dark) 65%, transparent));
+}
+
+/* Entrada escalonada (dentro de cada seção) */
+.metrics .metric-card:nth-child(1) { animation: hg-rise 0.45s 0.03s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.metrics .metric-card:nth-child(2) { animation: hg-rise 0.45s 0.08s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.metrics .metric-card:nth-child(3) { animation: hg-rise 0.45s 0.13s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.metrics .metric-card:nth-child(4) { animation: hg-rise 0.45s 0.18s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.metrics .metric-card:nth-child(5) { animation: hg-rise 0.45s 0.23s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.metrics .metric-card:nth-child(6) { animation: hg-rise 0.45s 0.28s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+.metrics .metric-card:nth-child(7) { animation: hg-rise 0.45s 0.33s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+
+/* ===== Ícone decorativo ===== */
+.metric-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  transition: color 0.18s ease, transform 0.18s ease;
+}
+.metric-card:hover .metric-icon {
+  color: var(--accent);
+  transform: scale(1.08);
+}
+
+/* ===== Tipografia dos valores ===== */
+.metric-value {
+  font-size: calc(24px * var(--font-scale, 1));
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-label {
+  font-size: calc(12px * var(--font-scale, 1));
+  color: var(--text-muted);
+  margin-top: 0;
+}
+
+.metric-label--accent { color: var(--status-fg, var(--accent)); }
+
+/* ===== HERO (Profissionais ativos, 2x2) ===== */
+.metric-card--hero {
+  background:
+    radial-gradient(120% 140% at 100% 0%,
+      var(--accent-tint, color-mix(in srgb, var(--accent) 12%, transparent)) 0%,
+      transparent 55%),
+    var(--bg-elevated) !important;
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border)) !important;
+  justify-content: flex-end;
+  padding: 24px;
+}
+.metric-card--hero .metric-icon {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 30px;
+  height: 30px;
+  color: var(--accent);
+  opacity: 0.85;
+}
+.metric-card--hero .metric-value {
+  font-size: calc(44px * var(--font-scale, 1));
+  line-height: 1.05;
+}
+.metric-card--hero .metric-label {
+  font-size: calc(13px * var(--font-scale, 1));
+}
+
+/* ===== ALERTA (Convites pendentes) =====
+   Tinta de status + ponto pulsante. O label já tem a classe
+   status--aguardando-medico (define --status-fg/--status-bg). */
+.metric-card--alert {
+  background: var(--status-bg, color-mix(in srgb, var(--palette-status-amber) 12%, var(--bg-elevated))) !important;
+  border-color: color-mix(in srgb, var(--status-fg, var(--palette-status-amber)) 35%, var(--border)) !important;
+}
+.metric-card--alert .metric-icon {
+  color: var(--status-fg, var(--accent));
+}
+.metric-card--alert .metric-value {
+  color: var(--status-fg, var(--text-strong));
+}
+.metric-card--alert::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-fg, var(--accent));
+  animation: hg-pulse 2s ease-in-out infinite;
+}
+
+@keyframes hg-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-fg, var(--accent)) 45%, transparent); }
+  50%      { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* ===== MONO (Versão de IA) =====
+   Valor com cara de chip mono, como um identificador técnico. */
+.metric-card--mono .metric-value {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: calc(18px * var(--font-scale, 1));
+  font-weight: 400;
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--bg) 60%, var(--bg-elevated));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  box-shadow:
+    inset 1px 1px 3px var(--neu-shadow-dark),
+    inset -1px -1px 3px var(--neu-shadow-light);
+}
+
+/* ===== WIDE (Efetivo por papel) =====
+   Faixa larga de apoio: valor e label lado a lado. */
+.metric-card--wide {
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.metric-card--wide .metric-icon {
+  margin-bottom: 0;
+}
+.metric-card--wide .metric-value {
+  font-size: calc(17px * var(--font-scale, 1));
+  font-weight: 600;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 200px;
+}
+.metric-card--wide .metric-label {
+  flex-basis: 100%;
+  order: -1;
+  margin-bottom: 2px;
+}
+
+/* ===== Título de seção ===== */
+.section-title {
+  animation: hg-rise 0.45s 0.1s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 1000px) {
+  .metrics--bento {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "hero      hero"
+      "pacientes consultas"
+      "alerta    alerta";
+  }
+  .metrics--bento-ia {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "taxa taxa"
+      "conf ver"
+      "efet efet";
+  }
+}
+
+@media (max-width: 560px) {
+  .metrics--bento,
+  .metrics--bento-ia {
+    grid-template-columns: 1fr;
+    grid-template-areas: none;
+  }
+  /* Volta a ser fila única no celular — mais confortável pra leitura */
+  .metrics--bento .metric-card,
+  .metrics--bento-ia .metric-card {
+    grid-area: auto;
+  }
+  .metric-card--hero .metric-value {
+    font-size: calc(34px * var(--font-scale, 1));
+  }
+}
+
+/* ===== Acessibilidade: menos movimento ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

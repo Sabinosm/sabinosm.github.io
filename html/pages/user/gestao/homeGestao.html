@@ -6,7 +6,9 @@
 <title data-i18n="pagina.gerenciamento.titulo">B-íon — Gerenciamento</title>
 <script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<link rel="stylesheet" href="../../../../css/pages/user/gestao/homeGestao.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+<base target="_blank">
 </head>
 <!-- Acesso desta home: declarado aqui, lido por iniciarPagina() -->
 <body data-requer="gerenciar">
@@ -24,46 +26,82 @@
         <h1 data-i18n="nav.gerenciamento">Gerenciamento</h1>
         <p class="main-subtitle" data-i18n="home.subtitulo">Visão geral da instituição</p>
       </div>
-      
+
     </header>
 
     <!-- Métricas — visão institucional.
          data-home-secao="gestao": initHomePage.js carrega o módulo desta seção.
          (é só o marcador; as métricas continuam sendo preenchidas por id) -->
-    <section class="metrics" data-home-secao="gestao">
-      <div class="metric-card">
+    <section class="metrics metrics--bento" data-home-secao="gestao">
+      <div class="metric-card metric-card--hero">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/>
+          <circle cx="10" cy="7" r="4"/>
+          <path d="M21 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
         <div class="metric-value" id="metric-profissionais-ativos">—</div>
         <div class="metric-label" data-i18n="home.metric.profissionais_ativos">Profissionais ativos</div>
       </div>
       <div class="metric-card">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
         <div class="metric-value" id="metric-pacientes-cadastrados">—</div>
         <div class="metric-label" data-i18n="home.metric.pacientes_cadastrados">Pacientes cadastrados</div>
       </div>
       <div class="metric-card">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
         <div class="metric-value" id="metric-consultas-hoje">—</div>
         <div class="metric-label" data-i18n="home.metric.consultas_hoje">Consultas hoje</div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card metric-card--alert">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+          <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+        </svg>
         <div class="metric-value" id="metric-convites-pendentes">—</div>
         <div class="metric-label metric-label--accent status--aguardando-medico" data-i18n="home.metric.convites_pendentes">Convites pendentes</div>
       </div>
     </section>
 
     <h2 class="section-title" data-i18n="home.secao.desempenho_ia">Desempenho e IA</h2>
-    <section class="metrics">
+    <section class="metrics metrics--bento-ia">
       <div class="metric-card">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <path d="m9 11 3 3L22 4"/>
+        </svg>
         <div class="metric-value" id="metric-taxa-conclusao">—</div>
         <div class="metric-label" data-i18n="home.metric.taxa_conclusao">Taxa de conclusão (30d)</div>
       </div>
       <div class="metric-card">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2a4 4 0 0 1 4 4c2.5.5 4 2.5 4 5a5 5 0 0 1-1 3 4 4 0 0 1-1 5c-.8.8-2 1-3 1-1.5 1.5-4 1.5-5.5 0-1 0-2.2-.2-3-1a4 4 0 0 1-1-5 5 5 0 0 1-1-3c0-2.5 1.5-4.5 4-5a4 4 0 0 1 4-4z"/>
+          <path d="M12 8v8M8 12h8"/>
+        </svg>
         <div class="metric-value" id="metric-confianca-ia">—</div>
         <div class="metric-label" data-i18n="home.metric.confianca_ia">Confiança média da IA (30d)</div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card metric-card--mono">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 17V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>
+          <path d="M8 9h8M8 13h5"/>
+        </svg>
         <div class="metric-value" id="metric-versao-ia">—</div>
         <div class="metric-label" id="metric-versao-ia-label" data-i18n="home.metric.versao_ia">Versão de IA predominante</div>
       </div>
-      <div class="metric-card">
+      <div class="metric-card metric-card--wide">
+        <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
         <div class="metric-value" id="metric-efetivo-detalhe">—</div>
         <div class="metric-label" id="metric-efetivo-detalhe-label" data-i18n="home.metric.efetivo_papel">Efetivo por papel</div>
       </div>
