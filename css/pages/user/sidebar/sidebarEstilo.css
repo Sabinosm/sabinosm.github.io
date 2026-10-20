@@ -1,0 +1,114 @@
+/* sidebar-estilo.css
+ *
+ * Acabamento visual da sidebar (compartilhada por todas as páginas). Só
+ * ADICIONA camadas por cima do que já existe em homePage.css: nenhuma
+ * classe ou id foi renomeado, e o HTML só ganhou o SVG da logo.
+ * Seletores começam em .sidebar / .app .sidebar para ganhar de regras
+ * genéricas sem depender da ordem de carregamento.
+ *
+ * Ideias, da mais para a menos perceptível:
+ *   1. logo com marca (órbitas) + brilho suave de destaque no topo
+ *   2. item ativo com barra lateral na cor do tema e fundo em degradê
+ *   3. hover: ícone desliza um pouco, fundo aparece
+ *   4. divisor fino antes do perfil, avatar com anel
+ *   5. linha fina na borda direita separando da área de conteúdo
+ *
+ * Cores: só variáveis de tema (preferencias.css). Nada fixo.
+ * Animações ficam em sidebar-motion.css.
+ */
+
+.app .sidebar {
+  position: relative;
+  /* brilho de destaque bem suave no canto superior, sobre o fundo do tema */
+  background-image:
+    radial-gradient(120% 55% at 0% 0%, var(--accent-tint), transparent 70%);
+  /* linha fina na borda direita (usa o mesmo tom do hover da sidebar) */
+  box-shadow: inset -1px 0 0 var(--sidebar-active-bg);
+}
+
+/* ----- 1. Logo ----- */
+
+.sidebar .sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--sidebar-text-active);
+}
+
+.sidebar .sidebar-logo-mark {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  color: var(--sidebar-text-active);
+  /* halo na cor de destaque, bem difuso */
+  filter: drop-shadow(0 0 6px var(--accent-tint));
+}
+
+.sidebar .logo-orbitas {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+
+/* ----- 2 e 3. Itens de navegação ----- */
+
+.sidebar .nav-item {
+  position: relative;
+  border-radius: var(--radius-sm);
+}
+
+.sidebar .nav-item .nav-icon {
+  display: inline-flex;
+}
+
+.sidebar .nav-item:hover .nav-icon,
+.sidebar .nav-item:focus-visible .nav-icon {
+  color: var(--sidebar-text-active);
+}
+
+/* Barra lateral do item ativo. O nome da classe de "ativo" não está no
+   HTML da sidebar (quem marca é o sidebarLoader.js), então cobrimos as
+   convenções mais comuns. Se o seu loader usa outra, acrescente aqui. */
+.sidebar .nav-item.active,
+.sidebar .nav-item.is-active,
+.sidebar .nav-item.nav-item--active,
+.sidebar .nav-item[aria-current="page"] {
+  background-image: linear-gradient(90deg, var(--accent-tint), transparent 85%);
+}
+
+.sidebar .nav-item.active::before,
+.sidebar .nav-item.is-active::before,
+.sidebar .nav-item.nav-item--active::before,
+.sidebar .nav-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -10px;               /* encosta na borda da sidebar */
+  top: 22%;
+  bottom: 22%;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
+}
+
+.sidebar .nav-item.active .nav-icon,
+.sidebar .nav-item.is-active .nav-icon,
+.sidebar .nav-item.nav-item--active .nav-icon,
+.sidebar .nav-item[aria-current="page"] .nav-icon {
+  color: var(--accent);
+}
+
+/* ----- 4. Perfil ----- */
+
+.sidebar .nav-group--system {
+  padding-top: 10px;
+  border-top: 1px solid var(--sidebar-active-bg);
+}
+
+.sidebar .nav-avatar {
+  box-shadow:
+    0 0 0 2px var(--sidebar-bg),
+    0 0 0 3.5px var(--accent);
+}
+
+.sidebar .nav-profile-caret {
+  opacity: 0.7;
+}

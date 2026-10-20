@@ -1,0 +1,108 @@
+/* sidebar-motion.css
+ *
+ * Movimento da sidebar. Só CSS, discreto:
+ *   1. órbitas da logo giram bem devagar (60s por volta)
+ *   2. itens entram em sequência quando a página abre
+ *   3. hover: ícone desliza 2px; avatar e caret respondem
+ *   4. prefers-reduced-motion desliga tudo
+ */
+
+/* ----- 1. Logo ----- */
+
+@keyframes sidebar-orbitar {
+  to { transform: rotate(360deg); }
+}
+
+.sidebar .logo-orbitas {
+  animation: sidebar-orbitar 60s linear infinite;
+}
+
+/* acelera um pouco quando o mouse passa na logo: detalhe de vida */
+.sidebar .sidebar-logo:hover .logo-orbitas {
+  animation-duration: 14s;
+}
+
+/* ----- 2. Entrada dos itens ----- */
+
+@keyframes sidebar-item-entrada {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.sidebar .nav-group--work .nav-item,
+.sidebar .nav-group--system .nav-item {
+  animation: sidebar-item-entrada 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* escalonado (até 10 itens; os removidos por permissão não deixam buraco
+   visível, só encurtam a sequência) */
+.sidebar .nav-group--work .nav-item:nth-child(1)  { animation-delay: 0.03s; }
+.sidebar .nav-group--work .nav-item:nth-child(2)  { animation-delay: 0.06s; }
+.sidebar .nav-group--work .nav-item:nth-child(3)  { animation-delay: 0.09s; }
+.sidebar .nav-group--work .nav-item:nth-child(4)  { animation-delay: 0.12s; }
+.sidebar .nav-group--work .nav-item:nth-child(5)  { animation-delay: 0.15s; }
+.sidebar .nav-group--work .nav-item:nth-child(6)  { animation-delay: 0.18s; }
+.sidebar .nav-group--work .nav-item:nth-child(7)  { animation-delay: 0.21s; }
+.sidebar .nav-group--work .nav-item:nth-child(8)  { animation-delay: 0.24s; }
+.sidebar .nav-group--work .nav-item:nth-child(9)  { animation-delay: 0.27s; }
+.sidebar .nav-group--system .nav-item             { animation-delay: 0.32s; }
+
+/* ----- 3. Hover ----- */
+
+.sidebar .nav-item,
+.sidebar .nav-item .nav-icon,
+.sidebar .nav-item .nav-label,
+.sidebar .nav-avatar,
+.sidebar .nav-profile-caret {
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.2s ease,
+    opacity 0.18s ease,
+    box-shadow 0.2s ease;
+}
+
+.sidebar .nav-item:hover .nav-icon {
+  transform: translateX(2px);
+}
+
+.sidebar .nav-item--profile:hover .nav-avatar {
+  box-shadow:
+    0 0 0 2px var(--sidebar-bg),
+    0 0 0 4px var(--accent);
+}
+
+.sidebar .nav-item--profile:hover .nav-profile-caret {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+/* ----- 4. Menos movimento ----- */
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar .logo-orbitas,
+  .sidebar .sidebar-logo:hover .logo-orbitas,
+  .sidebar .nav-group--work .nav-item,
+  .sidebar .nav-group--system .nav-item {
+    animation: none;
+  }
+
+  .sidebar .nav-item,
+  .sidebar .nav-item .nav-icon,
+  .sidebar .nav-item .nav-label,
+  .sidebar .nav-avatar,
+  .sidebar .nav-profile-caret {
+    transition: none;
+  }
+
+  .sidebar .nav-item:hover .nav-icon,
+  .sidebar .nav-item--profile:hover .nav-profile-caret {
+    transform: none;
+  }
+}

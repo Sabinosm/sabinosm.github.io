@@ -1,0 +1,132 @@
+/* sidebar-trilho.css
+ *
+ * Sidebar em "trilho" (estilo Supabase):
+ *   repouso: faixa fina só com ícones (--sidebar-trilho de largura)
+ *   hover / foco por teclado: a faixa se expande (--sidebar-aberta) e
+ *   mostra os textos, POR CIMA da tela. O conteúdo não se mexe, porque o
+ *   espaço reservado para a sidebar é sempre o do trilho.
+ *
+ * Como funciona sem mexer no HTML nem no JS:
+ *   - .sidebar vira position: fixed (sai do fluxo, então expandir não
+ *     empurra nada)
+ *   - .app reserva o espaço do trilho com padding-left
+ *   - os ícones ficam no mesmo X no trilho e na versão aberta (só os
+ *     textos aparecem), então nada "pula" na hora de expandir
+ *
+ * Ordem de carga: depois de homePage.css e de sidebar-estilo.css.
+ * Movimento (entrada, fade dos textos) está em sidebar-motion.css.
+ *
+ * Ajustes rápidos: --sidebar-trilho e --sidebar-aberta abaixo.
+ */
+
+:root {
+  --sidebar-trilho: 64px;
+  --sidebar-aberta: 232px;
+}
+
+/* ----- Espaço reservado: o conteúdo só enxerga o trilho ----- */
+
+/* display: block + padding-left funciona tanto se o .app era flex quanto
+   grid, porque a sidebar saiu do fluxo. O margin-left: 0 anula uma
+   eventual margem que o .main tivesse para "desviar" da sidebar antiga. */
+.app {
+  display: block;
+  min-height: 100vh;
+  padding-left: var(--sidebar-trilho);
+}
+
+.app .main {
+  margin-left: 0;
+  width: auto;
+  min-width: 0;
+}
+
+/* ----- A sidebar ----- */
+
+.app .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  height: 100vh;
+  width: var(--sidebar-trilho);
+  max-width: none;
+  z-index: 40;               /* acima do conteúdo, abaixo dos modais (100+) */
+  padding-left: 10px;
+  padding-right: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;     /* sem barra de rolagem aparecendo no trilho */
+}
+
+.app .sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Aberta: hover do mouse ou foco dentro (teclado). Sólida, mesmo que o
+   --sidebar-vidro do fundo de partículas deixe o trilho translúcido. */
+.app .sidebar:hover,
+.app .sidebar:focus-within {
+  width: var(--sidebar-aberta);
+  background-color: var(--sidebar-bg);
+  /* sombra só para o lado do conteúdo, para ler como "flutuando" */
+  box-shadow:
+    inset -1px 0 0 var(--sidebar-active-bg),
+    14px 0 40px var(--neu-shadow-dark);
+}
+
+/* ----- Posição dos ícones: iguais no trilho e na versão aberta ----- */
+
+/* ícone de 18px centralizado no trilho de 64px:
+   10 (padding da sidebar) + 13 (padding do item) = 23 = (64 - 18) / 2 */
+.app .sidebar .nav-item {
+  padding-left: 13px;
+  padding-right: 13px;
+  white-space: nowrap;
+}
+
+.app .sidebar .nav-icon {
+  flex-shrink: 0;
+}
+
+/* logo: a marca de 30px fica centralizada (10 + 7 = 17 = (64 - 30) / 2) */
+.app .sidebar .sidebar-logo {
+  padding-left: 7px;
+  padding-right: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* perfil: avatar de 28px centralizado (10 + 8 = 18) */
+.app .sidebar .nav-item--profile {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* ----- Textos: escondidos no trilho, aparecem ao abrir ----- */
+
+.app .sidebar .nav-label,
+.app .sidebar .nav-label-group,
+.app .sidebar .sidebar-logo-text,
+.app .sidebar .nav-profile-caret {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app .sidebar:hover .nav-label,
+.app .sidebar:hover .nav-label-group,
+.app .sidebar:hover .sidebar-logo-text,
+.app .sidebar:hover .nav-profile-caret,
+.app .sidebar:focus-within .nav-label,
+.app .sidebar:focus-within .nav-label-group,
+.app .sidebar:focus-within .sidebar-logo-text,
+.app .sidebar:focus-within .nav-profile-caret {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* nome longo do usuário não estoura a largura */
+.app .sidebar .nav-label-group .nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
