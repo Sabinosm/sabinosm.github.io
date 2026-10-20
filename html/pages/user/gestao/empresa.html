@@ -9,9 +9,13 @@
 <link rel="stylesheet" href="../../../../css/pages/user/settings.css">
 <link rel="stylesheet" href="../../../../css/pages/enterprise/empresa.css">
 <link rel="stylesheet" href="../../../../css/pages/user/stepup.css">
+<link rel="stylesheet" href="../../../../css/pages/user/shared/fundo-particulas.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
 </head>
 <body data-requer="gerenciar">
+
+<!-- Fundo animado (particles.js procura por id="c"). Decorativo: aria-hidden. -->
+<canvas id="c" aria-hidden="true"></canvas>
 
 <div class="app">
 
@@ -143,6 +147,8 @@
   </main>
 </div>
 
+<!-- AJUSTE O CAMINHO para onde o particles.js fica no projeto (o mesmo do login) -->
+<script src="../../../../js/sharedConfig/particles.js"></script>
 <script type="module" src="../../../../js/pages/enterprise/empresa.js"></script>
 </body>
 </html>

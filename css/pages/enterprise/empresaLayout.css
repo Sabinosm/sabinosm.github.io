@@ -20,6 +20,11 @@
 }
 
 .panel-card {
+  /* escala de fonte só desta página (0.9 = 10% menor). Multiplica o
+     --font-scale global, então o controle de tamanho de fonte continua
+     funcionando. Mude aqui para ajustar tudo de uma vez. */
+  --empresa-escala: 0.9;
+
   width: 100%;
   max-width: 980px;
   display: grid;

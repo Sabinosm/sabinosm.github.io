@@ -33,7 +33,7 @@
 /* ----- Títulos ----- */
 
 .panel-card .panel-title {
-  font-size: calc(18px * var(--font-scale, 1));
+  font-size: calc(18px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text-strong);
@@ -41,7 +41,7 @@
 }
 
 .panel-card .panel-subtitle {
-  font-size: calc(13px * var(--font-scale, 1));
+  font-size: calc(13px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   line-height: 1.45;
   color: var(--text-muted);
   margin-bottom: 0;
@@ -59,7 +59,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: calc(12px * var(--font-scale, 1));
+  font-size: calc(12px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;

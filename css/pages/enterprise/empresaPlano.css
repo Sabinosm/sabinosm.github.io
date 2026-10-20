@@ -35,7 +35,7 @@
 }
 
 #empresa-plano-nome {
-  font-size: calc(24px * var(--font-scale, 1));
+  font-size: calc(24px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.15;
@@ -53,7 +53,7 @@
   background: var(--accent-tint);
   border: 1px solid var(--focus-ring);
   color: var(--accent);
-  font-size: calc(11px * var(--font-scale, 1));
+  font-size: calc(11px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;

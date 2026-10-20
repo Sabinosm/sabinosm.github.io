@@ -1,15 +1,14 @@
 /* empresa-botoes.css
  *
  * Botão "Alterar" da página Empresa: ação principal da tela, então ganha
- * destaque. Antes era um botão secundário pequeno; agora é maior e
- * invertido:
+ * destaque. Invertido em relação ao botão secundário comum:
  *
- *   repouso: fundo roxo (--cta-bg) + texto branco (--cta-fg)
- *   hover:   fundo transparente + texto e borda roxos (--cta-ink)
+ *   repouso: fundo na cor do tema (--cta-bg) + texto branco (--cta-fg)
+ *   hover:   fundo transparente + texto e borda na cor do tema (--cta-ink)
  *
- * O --cta-ink é mais claro que o --cta-bg nos temas escuros e mais escuro
- * nos claros, para o texto continuar legível sobre o fundo do bloco.
- * Cores definidas nos 8 temas de preferencias.css.
+ * As três variáveis --cta-* são derivadas do --accent de cada tema (ver
+ * final de preferencias.css), então o botão acompanha o tema escolhido.
+ * Tamanho: 39px de altura, fonte 12.75px (15% menor que a 1ª versão).
  *
  * O id #empresa-btn-alterar e as classes btn-secondary / btn-secondary--sm
  * continuam no HTML (o JS usa o id); aqui só sobrescrevemos o visual. O
@@ -22,10 +21,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 46px;
-  padding: 12px 26px;
-  font-size: calc(15px * var(--font-scale, 1));
+  gap: 7px;
+  min-height: 39px;
+  padding: 10px 22px;
+  font-size: calc(12.75px * var(--font-scale, 1));
   font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1;
@@ -41,8 +40,8 @@
    então acompanha a cor do texto no repouso e no hover) */
 .panel-header-row #empresa-btn-alterar::before {
   content: "";
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   flex-shrink: 0;
   background-color: currentColor;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z'/%3E%3Cpath d='M13.5 6.5l4 4'/%3E%3C/svg%3E") center / contain no-repeat;
@@ -63,7 +62,7 @@
 
 @media (max-width: 560px) {
   .panel-header-row #empresa-btn-alterar {
-    min-height: 42px;
-    padding: 10px 20px;
+    min-height: 36px;
+    padding: 9px 17px;
   }
 }

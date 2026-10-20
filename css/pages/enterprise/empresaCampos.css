@@ -24,7 +24,7 @@
 }
 
 .empresa-bloco .field-label {
-  font-size: calc(12px * var(--font-scale, 1));
+  font-size: calc(12px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--text-muted);
@@ -133,7 +133,7 @@
 /* Vermelho só como sinal real de erro, não decoração. */
 .error-msg {
   color: var(--status-danger-fg, var(--palette-status-red));
-  font-size: calc(12px * var(--font-scale, 1));
+  font-size: calc(12px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   margin-top: 4px;
   min-height: 14px;
 }

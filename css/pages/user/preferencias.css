@@ -72,11 +72,9 @@
   --accent-tint: rgba(91,127,224,0.12);
   --focus-ring: rgba(91,127,224,0.35);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #4a6bcc;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #4a6bcc;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 205, 215, 235;
+  --particle-dot: 205, 215, 235;
 }
 
 [data-theme="light"] {
@@ -139,11 +137,9 @@
   --accent-tint: rgba(47,95,219,0.07);
   --focus-ring: rgba(47,95,219,0.25);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #6a4bd0;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #5a3cc0;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 70, 80, 120;
+  --particle-dot: 70, 80, 120;
 }
 
 [data-theme="blue"] {
@@ -207,11 +203,9 @@
   --accent-tint: rgba(77,143,224,0.13);
   --focus-ring: rgba(77,143,224,0.38);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #6d4fd6;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #a994f5;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 205, 215, 235;
+  --particle-dot: 205, 215, 235;
 }
 
 [data-theme="blue-light"] {
@@ -273,11 +267,9 @@
   --accent-tint: rgba(49,99,216,0.07);
   --focus-ring: rgba(49,99,216,0.25);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #6a4bd0;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #5a3cc0;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 70, 80, 120;
+  --particle-dot: 70, 80, 120;
 }
 
 [data-theme="burgundy"] {
@@ -342,11 +334,9 @@
   --accent-tint: rgba(184,74,98,0.14);
   --focus-ring: rgba(184,74,98,0.38);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #6d4fd6;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #a994f5;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 205, 215, 235;
+  --particle-dot: 205, 215, 235;
 }
 
 
@@ -409,11 +399,9 @@
   --accent-tint: rgba(163,56,79,0.07);
   --focus-ring: rgba(163,56,79,0.25);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #6a4bd0;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #5a3cc0;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 70, 80, 120;
+  --particle-dot: 70, 80, 120;
 }
 
 [data-theme="teal"] {
@@ -478,11 +466,9 @@
   --accent-tint: rgba(58,155,147,0.14);
   --focus-ring: rgba(58,155,147,0.38);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #6d4fd6;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #a994f5;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 205, 215, 235;
+  --particle-dot: 205, 215, 235;
 }
 
 [data-theme="teal-light"] {
@@ -544,11 +530,9 @@
   --accent-tint: rgba(35,128,120,0.07);
   --focus-ring: rgba(35,128,120,0.25);
 
-  /* botão de destaque (CTA): fundo roxo + texto branco; no hover vira
-     transparente com texto/borda em --cta-ink */
-  --cta-bg: #6a4bd0;
-  --cta-fg: var(--palette-white-strong);
-  --cta-ink: #5a3cc0;
+  /* partículas de fundo (particles.js lê como "r, g, b") */
+  --particle-line: 70, 80, 120;
+  --particle-dot: 70, 80, 120;
 }
 
 :root {
@@ -631,3 +615,13 @@
 :root[data-font-size="pequeno"] { --font-scale: 0.9; }
 :root[data-font-size="medio"]   { --font-scale: 1; }
 :root[data-font-size="grande"]  { --font-scale: 1.1; }
+
+/* ===== Botão de destaque (CTA): segue a cor de destaque de cada tema =====
+   fundo = --accent-hover (a versão mais escura do accent, para o texto branco
+   passar de 4.5:1); no hover vira transparente com texto/borda em --cta-ink
+   (accent clareado nos temas escuros / escurecido nos claros via text-strong). */
+:root {
+  --cta-bg: var(--accent-hover);
+  --cta-fg: var(--palette-white-strong);
+  --cta-ink: color-mix(in srgb, var(--accent) 68%, var(--text-strong));
+}
