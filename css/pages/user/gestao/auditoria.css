@@ -21,10 +21,6 @@
    ============================================ */
 
 /* ===== Centralização do conteúdo ===== */
-.app {
-  display: flex;
-  min-height: 100vh;
-}
 
 .main {
   flex: 1; /* Ocupa todo o espaço à direita da sidebar */

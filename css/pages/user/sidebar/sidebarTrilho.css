@@ -39,6 +39,15 @@
   margin-left: 0;
   width: auto;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza os filhos na horizontal */
+}
+
+.app .main > header,
+.app .main > section {
+  width: 100%;
+  max-width: 1040px;
 }
 
 /* ----- A sidebar ----- */
