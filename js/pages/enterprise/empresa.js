@@ -25,6 +25,7 @@ import { preencherPainelEmpresa } from './preencherEmpresa.js';
 import { ligarValidacaoEmTempoReal, validarFormularioEdicaoEmpresa, limparErros } from './empresaEditValidation.js';
 import { URL_BASE_API } from '../../sharedConfig/urlConfig.js';
 import { iniciarPagina } from '../../sharedConfig/loaders/initPagina.js';
+import { exibirMensagem } from '../../shared/feedback.js';
 // ALTERADO (múltiplos admins por empresa): edição de empresa passou a
 // ser restrita ao super admin no backend -- reaproveita o mesmo
 // helper de sessão já usado na tela de Profissionais, em vez de
@@ -43,6 +44,13 @@ const CAMPOS_EDITAVEIS = [
 ];
 
 let empresaAtual = null;
+
+// Mensagens do backend chegam em Error(message); falha de rede vem como
+// TypeError ("Failed to fetch"), que não serve para mostrar ao usuário.
+function mensagemDeErro(erro, padrao) {
+  if (erro instanceof TypeError || !erro?.message) return padrao;
+  return erro.message;
+}
 
 async function buscarEmpresa() {
   const resp = await fetch(URL_BASE, {
@@ -218,6 +226,7 @@ async function salvarEdicao(evento) {
   evento.preventDefault();
 
   if (!validarFormularioEdicaoEmpresa()) {
+    exibirMensagem('Corrija os campos destacados antes de salvar.', 'erro');
     return;
   }
 
@@ -229,11 +238,10 @@ async function salvarEdicao(evento) {
     empresaAtual = await atualizarEmpresa(dados);
     preencherPainelEmpresa(empresaAtual);
     sairModoEdicao();
+    exibirMensagem('Dados da empresa atualizados.', 'sucesso');
   } catch (erro) {
-    // TODO: usar o componente de feedback (exibirMensagem) quando ele
-    // for promovido para um local compartilhado entre auth/ e admin/,
-    // como já apontado em enterpriseRegistration.js.
     console.error('Erro ao atualizar empresa:', erro);
+    exibirMensagem(mensagemDeErro(erro, 'Não foi possível atualizar os dados da empresa.'), 'erro');
   } finally {
     botaoSalvar.disabled = false;
   }
@@ -267,6 +275,7 @@ async function iniciar() {
     preencherPainelEmpresa(empresaAtual);
   } catch (erro) {
     console.error('Erro ao carregar dados da empresa:', erro);
+    exibirMensagem(mensagemDeErro(erro, 'Não foi possível carregar os dados da empresa.'), 'erro');
   }
 
   const ctx = await iniciarPagina();
