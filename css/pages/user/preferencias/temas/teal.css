@@ -8,7 +8,7 @@
   --palette-gray-400: #668f8d;
   --palette-gray-850: #0c1a19;
   --palette-gray-900: #071110;
-  --palette-gray-800: #182e2c;
+  --palette-gray-800: #232b2d;
   --palette-gray-600: #9fc6c2;
 
   --palette-white:        #eef6f6;
@@ -62,10 +62,10 @@
   --accent-tint: color-mix(in srgb, var(--accent) 12%, transparent);
 
   /* superfícies tonais */
-  --surface-2: #1f3a37;
-  --surface-sunken: #08100f;
+  --surface-2: #2f3a3e;
+  --surface-sunken: #071010;
   --highlight-top: rgba(217, 165, 46, 0.08); 
-  --shadow-ambient: 0 10px 30px rgba(0,0,0,0.30);
+  --shadow-ambient: 0 12px 32px rgba(0,0,0,0.48);
 
   /* partículas de fundo (particles.js lê como "r, g, b") */
   --particle-line: 205, 215, 235;
