@@ -21,10 +21,17 @@
    ============================================ */
 
 /* ===== Centralização do conteúdo ===== */
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
 .main {
+  flex: 1; /* Ocupa todo o espaço à direita da sidebar */
   max-width: 1040px;
   margin-left: auto;
   margin-right: auto;
+  width: 100%;
 }
 
 /* .sidebar é fixa (position: fixed), então .main precisa manter o
