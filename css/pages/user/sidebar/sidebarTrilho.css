@@ -45,11 +45,6 @@
   align-items: center;
 }
 
-.app .main h2{
-  width: 100%;
-  justify-content: left;
-}
-
 .app .main > header,
 .app .main > section {
   width: 100%;

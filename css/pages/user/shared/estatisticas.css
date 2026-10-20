@@ -16,7 +16,7 @@
 /* ===== Abas de categoria ===== */
 .stat-tabs {
   display: flex;
-  gap: 4px;
+  gap: 55px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 28px;
   overflow-x: auto;
