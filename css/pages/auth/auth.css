@@ -282,16 +282,6 @@ p.hint {
 }
 .footer a:hover { color: var(--text-strong); }
 
-/* ── Feedback ─────────────────────────────── */
-#mensagemFeedback {
-  text-align: center;
-  font-size: .78rem;
-  margin-top: 14px;
-  min-height: 1em;
-}
-#mensagemFeedback.erro    { color: #ff6b6b; }
-#mensagemFeedback.sucesso { color: #6bffb0; }
-#mensagemFeedback.info    { color: var(--muted2); }
 
 /* ── Loading state (afterLogin) ────────────────
    Spinner simples via CSS puro, sem lib/ícone externo. */
