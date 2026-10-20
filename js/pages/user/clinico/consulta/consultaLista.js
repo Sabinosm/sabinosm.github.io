@@ -21,6 +21,7 @@
 // O modal de nova consulta vive em consultaNova.js, que chama de volta
 // recarregarLista (exportada daqui).
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import { ApiError, listarConsultas } from "./consultaApi.js";
 import {
   DESFECHO_LABELS, ORIGEM_LABELS,
@@ -137,10 +138,9 @@ async function carregar() {
   try {
     const resposta = await listarConsultas({ abertas: filtros.situacao === "abertas" });
     todas = Array.isArray(resposta.data) ? resposta.data : [];
-    esconderFeedback();
   } catch (erro) {
     todas = [];
-    exibirFeedback(erro instanceof ApiError ? erro.message : "Não foi possível carregar as consultas.", "erro");
+    exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível carregar as consultas.", "erro");
   } finally {
     carregando = false;
   }
@@ -257,21 +257,4 @@ function irParaPagina(numero) {
   paginaAtual = numero;
   renderizar();
   document.getElementById("cons-lista")?.scrollIntoView({ block: "start", behavior: "smooth" });
-}
-
-// ============================================
-// Feedback
-// ============================================
-function exibirFeedback(texto, tipo) {
-  const el = document.getElementById("cons-feedback-lista");
-  if (!el) return;
-  el.textContent = texto;
-  el.className = `cons-feedback ${tipo}`;
-}
-
-function esconderFeedback() {
-  const el = document.getElementById("cons-feedback-lista");
-  if (!el) return;
-  el.textContent = "";
-  el.className = "cons-feedback";
 }

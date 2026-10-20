@@ -25,6 +25,7 @@
 // está marcado; tipo_papel só é incluído quando um tipo foi escolhido
 // -- os dois são ortogonais no backend (ver Usuario.to_dict()).
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import {
   criarProfissional,
   atualizarProfissional,
@@ -44,7 +45,6 @@ const overlay = document.getElementById('prof-modal-overlay');
 const form = document.getElementById('form-profissional');
 const titulo = document.getElementById('prof-modal-title');
 const hintEdicao = document.getElementById('prof-modal-edit-hint');
-const feedback = document.getElementById('mensagemFeedback');
 const btnToggleStatus = document.getElementById('prof-modal-toggle-status');
 const btnSalvar = document.getElementById('prof-modal-save');
 const btnCancelar = document.getElementById('prof-modal-cancel');
@@ -96,7 +96,6 @@ export function abrirModalConvite() {
 
   titulo.textContent = 'Convidar profissional';
   hintEdicao.hidden = true;
-  esconderFeedback();
   btnToggleStatus.hidden = true;
   btnSalvar.textContent = 'Enviar convite';
   definirModoFormulario(false);
@@ -131,7 +130,6 @@ export function abrirModalConvite() {
 export async function abrirModalProfissional(item) {
   limparFormulario();
   uuidEmEdicao = item.uuid;
-  esconderFeedback();
 
   const alvoEhAdmin = Boolean(item.is_admin);
   somenteLeitura = alvoEhAdmin && !souSuperAdmin();
@@ -341,7 +339,6 @@ async function aoSubmeter(e) {
   }
 
   btnSalvar.disabled = true;
-  esconderFeedback();
 
   try {
     if (editando) {
@@ -426,7 +423,6 @@ function definirModoFormulario(editando) {
 function limparFormulario() {
   form.reset();
   limparErrosExibidos();
-  esconderFeedback();
   blocoMedico.hidden = true;
   blocoEnfermeiro.hidden = true;
   if (blocoAcoesAdmin) blocoAcoesAdmin.hidden = true;
@@ -453,16 +449,6 @@ function exibirErros(erros) {
     if (input) input.classList.add('field-input--invalid');
     if (erroEl) erroEl.textContent = mensagem;
   });
-}
-
-function exibirMensagem(texto, tipo) {
-  feedback.textContent = texto;
-  feedback.className = `prof-form-feedback ${tipo}`;
-}
-
-function esconderFeedback() {
-  feedback.textContent = '';
-  feedback.className = 'prof-form-feedback';
 }
 
 function fecharModal() {

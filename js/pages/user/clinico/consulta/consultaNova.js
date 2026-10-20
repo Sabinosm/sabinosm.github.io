@@ -29,6 +29,7 @@
 // (PUT /pacientes/pessoal/<uuid>). A leitura e a validação do formulário ficam
 // em consultaPacienteForm.js (compartilhadas com a identificação de paciente).
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import { ApiError, abrirConsulta, listarPacientesResumo } from "./consultaApi.js";
 import { validarAberturaConsulta } from "../../../../sharedConfig/validacoes/consultaValidation.js";
 import { CAMPO_GERAL, hojeIso } from "../../../../sharedConfig/validacoes/generalValidation.js";
@@ -128,7 +129,6 @@ function limparFormulario() {
   mostrarBuscaPaciente(true);
   renderizarResultados([]);
   limparErros();
-  esconderFeedback();
   const salvar = $("cons-modal-save");
   if (salvar) salvar.disabled = false;
   enviando = false;
@@ -150,7 +150,6 @@ function definirForma(nova) {
   });
 
   limparErros();
-  esconderFeedback();
 }
 
 // ============================================
@@ -280,7 +279,6 @@ async function aoSubmeter(e) {
   if (enviando) return;
 
   limparErros();
-  esconderFeedback();
 
   const montado = montarPayload();
   if (Object.keys(montado.erros).length > 0) {
@@ -300,7 +298,7 @@ async function aoSubmeter(e) {
   try {
     const resposta = await abrirConsulta(validacao.dados);
     redirecionando = true;
-    exibirFeedback("Consulta aberta. Abrindo o detalhe…", "sucesso");
+    exibirMensagem("Consulta aberta. Abrindo o detalhe…", "sucesso");
     const uuid = resposta.data?.uuid;
     setTimeout(() => {
       window.location.href = uuid ? urlDetalhe(uuid) : window.location.href;
@@ -317,7 +315,7 @@ async function aoSubmeter(e) {
 
 function tratarErroEnvio(erro) {
   if (!(erro instanceof ApiError)) {
-    exibirFeedback("Não foi possível abrir a consulta.", "erro");
+    exibirMensagem("Não foi possível abrir a consulta.", "erro");
     return;
   }
 
@@ -345,8 +343,8 @@ function tratarErroEnvio(erro) {
   // atribuir a um input; o resto vai inteiro para a mensagem do topo.
   const { porCampo, residual } = separarErrosDeTexto(erro.message);
   if (Object.keys(porCampo).length > 0) exibirErrosPorCampo(porCampo);
-  if (residual) exibirFeedback(residual, "erro");
-  else if (Object.keys(porCampo).length === 0) exibirFeedback(erro.message, "erro");
+  if (residual) exibirMensagem(residual, "erro");
+  else if (Object.keys(porCampo).length === 0) exibirMensagem(erro.message, "erro");
 }
 
 /** "cpf: CPF inválido; telefone: ..." -> { porCampo: {cpf, telefone}, residual: "..." } (só campos conhecidos). */
@@ -411,7 +409,7 @@ function exibirErrosPorCampo(erros) {
     else gerais.push(campo === CAMPO_GERAL || campo === "paciente" ? msg : `${campo}: ${msg}`);
   });
 
-  if (gerais.length > 0) exibirFeedback(gerais.join(" "), "erro");
+  if (gerais.length > 0) exibirMensagem(gerais.join(" "), "erro");
 }
 
 function exibirErroCampo(id, mensagem) {
@@ -436,18 +434,4 @@ function limparErros() {
   form.querySelectorAll(".field-group--has-error").forEach((el) => el.classList.remove("field-group--has-error"));
   form.querySelectorAll(".field-input--invalid").forEach((el) => el.classList.remove("field-input--invalid"));
   form.querySelectorAll(".field-error").forEach((el) => { el.textContent = ""; });
-}
-
-function exibirFeedback(texto, tipo) {
-  const el = $("mensagemFeedbackConsulta");
-  if (!el) return;
-  el.textContent = texto;
-  el.className = `cons-form-feedback ${tipo}`;
-}
-
-function esconderFeedback() {
-  const el = $("mensagemFeedbackConsulta");
-  if (!el) return;
-  el.textContent = "";
-  el.className = "cons-form-feedback";
 }

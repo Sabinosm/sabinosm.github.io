@@ -29,6 +29,7 @@
 // backend devolve ({cursor_data, cursor_uuid}) e devolvemos intacto
 // na próxima chamada. Sem cursor = primeira página (mais recentes).
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import { ApiError, detalheProfissional } from "./auditoriaApi.js";
 import {
   badgeOperacaoAcesso,
@@ -79,7 +80,6 @@ export function abrirDetalheProfissional(item) {
   filtrosDetalhe = { dataInicio: '', dataFim: '', acao: '', operacaoAcesso: '' };
   definirTipoFiltro('ambos');
   resetarBlocos();
-  esconderFeedback();
 
   mostrarViewDetalhe(true);
   carregarAmbosBlocos();
@@ -138,7 +138,7 @@ function configurarAplicarLimpar() {
 
     const validacao = validarJanelaDias(dataInicio, dataFim);
     if (!validacao.ok) {
-      exibirFeedback(validacao.mensagem, 'erro');
+      exibirMensagem(validacao.mensagem, 'erro');
       return;
     }
 
@@ -149,7 +149,6 @@ function configurarAplicarLimpar() {
       operacaoAcesso: document.getElementById('aud-detalhe-operacao-acesso').value,
     };
 
-    esconderFeedback();
     resetarBlocos();
     carregarAmbosBlocos();
   });
@@ -157,7 +156,6 @@ function configurarAplicarLimpar() {
   document.getElementById('aud-btn-limpar-detalhe')?.addEventListener('click', () => {
     limparCamposDetalhe();
     filtrosDetalhe = { dataInicio: '', dataFim: '', acao: '', operacaoAcesso: '' };
-    esconderFeedback();
     resetarBlocos();
     carregarAmbosBlocos();
   });
@@ -237,7 +235,7 @@ async function carregarBloco(bloco, appendar = false) {
       lista.innerHTML = '';
       lista.appendChild(criarEstadoVazio('Não foi possível carregar', mensagem));
     }
-    exibirFeedback(mensagem, 'erro');
+    exibirMensagem(mensagem, 'erro');
   } finally {
     carregandoBloco[bloco] = false;
   }
@@ -360,21 +358,4 @@ function linhaDiff(rotulo, valor, classeExtra = '') {
 
   row.append(label, val);
   return row;
-}
-
-// ============================================
-// Feedback (erros de validação de período / falha de API)
-// ============================================
-function exibirFeedback(texto, tipo) {
-  const fb = document.getElementById('aud-detalhe-feedback');
-  if (!fb) return;
-  fb.textContent = texto;
-  fb.className = `aud-feedback ${tipo}`;
-}
-
-function esconderFeedback() {
-  const fb = document.getElementById('aud-detalhe-feedback');
-  if (!fb) return;
-  fb.textContent = '';
-  fb.className = 'aud-feedback';
 }
