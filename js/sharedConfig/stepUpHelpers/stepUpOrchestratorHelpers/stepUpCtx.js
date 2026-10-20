@@ -47,6 +47,7 @@ export function montarCtx(acao, resolve, reject) {
       formTotp: document.getElementById("stepup-form-totp"),
       inputTotp: document.getElementById("stepup-totp-codigo"),
       inputSenha: document.getElementById("stepup-senha"),
+      feedback: document.getElementById("stepup-feedback"),
       btnTentarWebauthnNovamente: document.getElementById("stepup-tentar-novamente"),
     },
   };
