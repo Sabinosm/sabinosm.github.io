@@ -762,32 +762,6 @@
   --status-bg: var(--palette-status-neutral-bg);
 }
 
-/* ===== Feedback (erro de período / falha de API) =====
-   Cores derivadas dos tokens de status (sem fixas). */
-.aud-feedback {
-  display: none;
-  font-size: calc(13px * var(--font-scale, 1));
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  margin-bottom: 14px;
-}
-
-.aud-feedback.erro {
-  display: block;
-  background: color-mix(in srgb, var(--palette-status-red) 12%, transparent);
-  color: var(--palette-status-red);
-  border: 1px solid color-mix(in srgb, var(--palette-status-red) 30%, transparent);
-  animation: aud-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-}
-
-.aud-feedback.sucesso {
-  display: block;
-  background: color-mix(in srgb, var(--palette-status-green) 12%, transparent);
-  color: var(--palette-status-green);
-  border: 1px solid color-mix(in srgb, var(--palette-status-green) 30%, transparent);
-  animation: aud-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
-}
-
 /* ===== RESPONSIVO ===== */
 @media (max-width: 900px) {
   .detalhe-blocos {

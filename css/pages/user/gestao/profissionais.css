@@ -422,44 +422,6 @@
   display: block;
 }
 
-.prof-form-feedback {
-  font-size: calc(13px * var(--font-scale, 1));
-  border-radius: var(--radius-sm);
-  padding: 0;
-  margin-bottom: 0;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.15s ease, opacity 0.15s ease, margin-bottom 0.15s ease, padding 0.15s ease;
-}
-
-.prof-form-feedback.erro,
-.prof-form-feedback.sucesso,
-.prof-form-feedback.info {
-  max-height: 80px;
-  opacity: 1;
-  margin-bottom: 16px;
-  padding: 10px 14px;
-}
-
-.prof-form-feedback.erro {
-  background: rgba(224, 98, 91, 0.12);
-  color: var(--danger, #e0625b);
-  border: 1px solid rgba(224, 98, 91, 0.3);
-}
-
-.prof-form-feedback.sucesso {
-  background: var(--status-bg);
-  color: var(--status-fg);
-  border: 1px solid rgba(127, 216, 138, 0.3);
-}
-
-.prof-form-feedback.info {
-  background: var(--bg-elevated);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
-
 /* ===== Bloco condicional (CRM x COREN, conforme tipo) ===== */
 .prof-conditional-block {
   display: flex;

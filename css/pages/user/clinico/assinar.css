@@ -154,13 +154,3 @@ body {
 .ass-botao--sec:hover:not(:disabled) { background: #e9f1fe; }
 .ass-botao--link { margin-top: 12px; }
 
-/* ===== Mensagens ===== */
-.ass-feedback {
-  display: none;
-  margin: 0 0 12px;
-  padding: 12px 14px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-}
-.ass-feedback.erro { display: block; background: var(--ass-erro-bg); color: var(--ass-erro); border: 1px solid var(--ass-erro); }
-.ass-feedback.info { display: block; background: #eef3f8; color: var(--ass-suave); border: 1px solid var(--ass-borda); }

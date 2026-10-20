@@ -156,49 +156,6 @@
   margin-left: auto;
 }
 
-/* ===== Mensagens (lista e formulário) ===== */
-.cons-feedback,
-.cons-form-feedback {
-  font-size: calc(13px * var(--font-scale, 1));
-  border-radius: var(--radius-sm);
-  padding: 0;
-  margin-bottom: 0;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: max-height 0.15s ease, opacity 0.15s ease, margin-bottom 0.15s ease, padding 0.15s ease;
-}
-
-.cons-feedback.erro,
-.cons-feedback.sucesso,
-.cons-feedback.info,
-.cons-form-feedback.erro,
-.cons-form-feedback.sucesso,
-.cons-form-feedback.info {
-  max-height: 120px;
-  opacity: 1;
-  margin-bottom: 16px;
-  padding: 10px 14px;
-}
-
-.cons-feedback.erro,
-.cons-form-feedback.erro {
-  background: rgba(224, 98, 91, 0.12);
-  color: var(--danger, #e0625b);
-  border: 1px solid rgba(224, 98, 91, 0.3);
-}
-.cons-feedback.sucesso,
-.cons-form-feedback.sucesso {
-  background: var(--status-bg);
-  color: var(--status-fg);
-  border: 1px solid var(--border);
-}
-.cons-feedback.info,
-.cons-form-feedback.info {
-  background: var(--bg-elevated);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-}
 
 /* ===== Cards da lista =====
    O card em si usa as classes de homePage.css (consult-card,

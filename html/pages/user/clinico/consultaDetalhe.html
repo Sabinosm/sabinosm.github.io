@@ -29,7 +29,6 @@
       <span data-i18n="consulta.detalhe.voltar">Consultas</span>
     </a>
 
-    <div id="cons-det-feedback" class="cons-feedback" role="alert" aria-live="polite"></div>
 
     <!-- Erro ao carregar (consulta inexistente, outra empresa, falha de rede) -->
     <div id="cons-det-erro" hidden></div>
@@ -138,7 +137,6 @@
         </button>
       </div>
       <div class="cons-modal-body">
-        <div id="cons-disp-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
         <p class="field-hint" data-i18n="consulta.consentimento.dispensar_hint">
           A dispensa vale apenas para esta consulta (LGPD, art. 11, II, “f”) e fica registrada com o motivo.
         </p>
@@ -171,7 +169,6 @@
         </button>
       </div>
       <div class="cons-modal-body">
-        <div id="cons-enc-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
         <div class="field-group">
           <label class="field-label" for="cons-enc-desfecho" data-i18n="consulta.detalhe.desfecho">Desfecho</label>
           <select class="field-input" id="cons-enc-desfecho">
@@ -212,7 +209,6 @@
         </button>
       </div>
       <div class="cons-modal-body">
-        <div id="cons-eva-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
         <p class="field-hint" data-i18n="consulta.detalhe.evadir_hint">
           O paciente deixou o serviço sem alta. Os atendimentos em andamento serão cancelados e a consulta será encerrada com desfecho “evasão”. Não dá para desfazer.
         </p>
@@ -245,8 +241,6 @@
         </button>
       </div>
       <div class="cons-modal-body">
-        <div id="cons-ident-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
-
         <div class="field-group">
           <label class="field-label" for="cons-pac-nome" data-i18n="campo.nome_completo">Nome completo</label>
           <input class="field-input" type="text" id="cons-pac-nome" autocomplete="off">
@@ -317,8 +311,6 @@
     </div>
 
     <div class="cons-modal-body">
-      <div id="cons-qr-feedback" class="cons-form-feedback" role="alert" aria-live="polite"></div>
-
       <div class="cons-qr-painel" data-painel="gerando">
         <p class="field-hint" data-i18n="consulta.assinatura.gerando">Gerando o link de assinatura…</p>
       </div>
