@@ -17,6 +17,7 @@
   /* ocupa a altura visível abaixo do header da página, para o conteúdo
      centralizar de verdade na tela, não só na largura */
   min-height: calc(100vh - 200px);
+  padding-bottom: 7%;
 }
 
 .panel-card {
