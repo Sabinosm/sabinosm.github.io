@@ -42,6 +42,12 @@
   display: flex;
   flex-direction: column;
   padding-top: 3%;
+  align-items: center;
+}
+
+.app .main h2{
+  width: 100%;
+  justify-content: left;
 }
 
 .app .main > header,

@@ -12,7 +12,7 @@
 
 .section--centered {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
   /* ocupa a altura visível abaixo do header da página, para o conteúdo
      centralizar de verdade na tela, não só na largura */
