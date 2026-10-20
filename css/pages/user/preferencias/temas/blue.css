@@ -6,16 +6,16 @@
   --palette-gray-200: #ccd8ee;
   --palette-gray-300: #8fa0c6;
   --palette-gray-400: #6b7fae;
-  --palette-gray-600: #a9b8dd;
-  --palette-gray-800: #1d2740;
-  --palette-gray-850: #161e33;
-  --palette-gray-900: #0f1524;
+  --palette-gray-600: #96a6cf;
+  --palette-gray-800: #1a2240;
+  --palette-gray-850: #0c1122;
+  --palette-gray-900: #070b16;
 
   --palette-white:        #eef1f8;
   --palette-white-strong: #ffffff;
 
-  --palette-accent-600: #4d8fe0;
-  --palette-accent-700: #3d78c9;
+  --palette-accent-600: #5a94e8;                     /* mais luminoso no escuro */
+  --palette-accent-700: #3f79cf;
 
   /* cor secundária complementar — usar com parcimônia (gráficos, badges, detalhes) */
   --palette-secondary-600: #e0785a;
@@ -62,12 +62,19 @@
   --accent-tint: color-mix(in srgb, var(--accent) 12%, transparent);
 
   /* superfícies tonais */
-  --surface-2: #20294a;
-  --surface-sunken: #111827;
-  --highlight-top: rgba(160,190,255,0.08);
+  --surface-2: #212b4e;
+  --surface-sunken: #090e1c;
+  --highlight-top: rgba(139, 111, 240, 0.10);
   --shadow-ambient: 0 10px 30px rgba(0,0,6,0.32);
 
   /* partículas de fundo (particles.js lê como "r, g, b") */
   --particle-line: 205, 215, 235;
   --particle-dot: 205, 215, 235;
+
+    /* NOVO: suporte violeta */
+  --palette-support-600: #8b6ff0;
+  --palette-support-700: #6d4fd6;
+  --support: var(--palette-support-600);
+  --support-hover: var(--palette-support-700);
+  --support-tint: color-mix(in srgb, var(--support) 12%, transparent);
 }

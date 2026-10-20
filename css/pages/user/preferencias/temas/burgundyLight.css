@@ -1,14 +1,14 @@
 /* ===== TEMA "BURGUNDY-LIGHT" — vinho claro + petróleo ===== */
 
 [data-theme="burgundy-light"] {
-  --palette-gray-50: #fbf6f7;
-  --palette-gray-100: #f6e9ed;
-  --palette-gray-200: #ecd6dd;
+  --palette-gray-50:  #fbf3f4;
+  --palette-gray-100: #f6e7ea;
+  --palette-gray-200: #edd5da;
   --palette-gray-300: #d9b7c2;
   --palette-gray-400: #b28c99;
   --palette-gray-600: #845f6d;
   --palette-gray-800: #40262f;
-  --palette-gray-900: #221117;
+  --palette-gray-900: #241016;
 
   --palette-white:        #ffffff;
   --palette-white-strong: #ffffff;
@@ -61,12 +61,19 @@
   --accent-tint: color-mix(in srgb, var(--accent) 7%, transparent);
 
   /* superfícies tonais */
-  --surface-2: #f6eef1;
-  --surface-sunken: #eee1e6;
+  --surface-2: #f7ebee;
+  --surface-sunken: #f2e2e6;
   --highlight-top: rgba(255,255,255,0.9);
   --shadow-ambient: 0 8px 24px rgba(34,17,23,0.07);
 
   /* partículas de fundo (particles.js lê como "r, g, b") */
   --particle-line: 70, 80, 120;
   --particle-dot: 70, 80, 120;
+
+    /* NOVO: suporte dourado */
+  --palette-support-600: #c2941f;
+  --palette-support-700: #a17818;
+  --support: var(--palette-support-600);
+  --support-hover: var(--palette-support-700);
+  --support-tint: color-mix(in srgb, var(--support) 10%, transparent);
 }

@@ -1,9 +1,9 @@
 /* ===== TEMA "BLUE-LIGHT" — azul claro + coral suave ===== */
 
 [data-theme="blue-light"] {
-  --palette-gray-50: #f3f6fc;
-  --palette-gray-100: #e7edf8;
-  --palette-gray-200: #d2ddf1;
+  --palette-gray-50:  #edf2fc;
+  --palette-gray-100: #e2e9f8;
+  --palette-gray-200: #cfdbf2;
   --palette-gray-300: #a8b8de;
   --palette-gray-400: #7c90c4;
   --palette-gray-600: #4d619b;
@@ -61,12 +61,20 @@
   --accent-tint: color-mix(in srgb, var(--accent) 7%, transparent);
 
   /* superfícies tonais */
-  --surface-2: #eef1f9;
-  --surface-sunken: #e3e8f4;
+  --surface-2: #e7eefb;
+  --surface-sunken: #dde6f6;
   --highlight-top: rgba(255,255,255,0.9);
   --shadow-ambient: 0 8px 24px rgba(16,26,48,0.07);
 
   /* partículas de fundo (particles.js lê como "r, g, b") */
   --particle-line: 70, 80, 120;
   --particle-dot: 70, 80, 120;
+
+    /* NOVO: suporte violeta */
+  --palette-support-600: #7c5cd6;
+  --palette-support-700: #6445b8;
+  --support: var(--palette-support-600);
+  --support-hover: var(--palette-support-700);
+  --support-tint: color-mix(in srgb, var(--support) 10%, transparent);
+
 }

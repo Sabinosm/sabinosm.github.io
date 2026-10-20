@@ -1,14 +1,14 @@
 /* ===== TEMA "TEAL-LIGHT" — petróleo claro + terracota suave ===== */
 
 [data-theme="teal-light"] {
-  --palette-gray-50: #f3f8f8;
-  --palette-gray-100: #e6f1f1;
-  --palette-gray-200: #d1e4e3;
+  --palette-gray-50:  #edf6f3;
+  --palette-gray-100: #e0efe9;
+  --palette-gray-200: #cce4db;
   --palette-gray-300: #a5cbc9;
   --palette-gray-400: #75a19f;
   --palette-gray-600: #487271;
   --palette-gray-800: #213c3b;
-  --palette-gray-900: #0f1f1e;
+  --palette-gray-900: #0f201e;
 
   --palette-white:        #ffffff;
   --palette-white-strong: #ffffff;
@@ -61,12 +61,19 @@
   --accent-tint: color-mix(in srgb, var(--accent) 7%, transparent);
 
   /* superfícies tonais */
-  --surface-2: #edf5f4;
-  --surface-sunken: #e2edec;
+  --surface-2: #e6f3ee;
+  --surface-sunken: #dbece5;
   --highlight-top: rgba(255,255,255,0.9);
   --shadow-ambient: 0 8px 24px rgba(15,31,30,0.07);
 
   /* partículas de fundo (particles.js lê como "r, g, b") */
   --particle-line: 70, 80, 120;
   --particle-dot: 70, 80, 120;
+
+    /* NOVO: suporte ouro */
+  --palette-support-600: #c99727;
+  --palette-support-700: #a87a1e;
+  --support: var(--palette-support-600);
+  --support-hover: var(--palette-support-700);
+  --support-tint: color-mix(in srgb, var(--support) 10%, transparent);
 }

@@ -1,14 +1,14 @@
 /* ===== TEMA "LIGHT" — branco + cinza quente escuro + azul + esmeralda ===== */
 
 [data-theme="light"] {
-  --palette-gray-50: #f7f7f6;
-  --palette-gray-100: #efeeec;
-  --palette-gray-200: #e0deda;
+  --palette-gray-50:  #fbfaf8;
+  --palette-gray-100: #f3f1ed;
+  --palette-gray-200: #e5e1d9;         
   --palette-gray-300: #c9c6c0;
   --palette-gray-400: #9d998f;
   --palette-gray-600: #5f5a52;
   --palette-gray-800: #2e2b27;
-  --palette-gray-900: #171512;
+  --palette-gray-900: #191512; 
 
   --palette-white:        #ffffff;
   --palette-white-strong: #ffffff;
@@ -45,7 +45,7 @@
   --text: var(--palette-gray-900);
   --text-strong: var(--palette-gray-900);
   --text-muted: var(--palette-gray-600);
-  --border: var(--palette-gray-200);
+  --border: #ddd8cf;
   --accent: var(--palette-accent-600);
   --accent-hover: var(--palette-accent-700);
   --secondary: var(--palette-secondary-600);
@@ -61,12 +61,19 @@
   --accent-tint: color-mix(in srgb, var(--accent) 7%, transparent);
 
   /* superfícies tonais */
-  --surface-2: #f1f0ed;
-  --surface-sunken: #e9e7e2;
+  --surface-2: #f4f2ee;
+  --surface-sunken: #edeae3;
   --highlight-top: rgba(255,255,255,0.9);
   --shadow-ambient: 0 8px 24px rgba(23,21,18,0.07);
 
   /* partículas de fundo (particles.js lê como "r, g, b") */
   --particle-line: 70, 80, 120;
   --particle-dot: 70, 80, 120;
+
+    /* NOVO: suporte âmbar */
+  --palette-support-600: #d97706;
+  --palette-support-700: #b45309;
+  --support: var(--palette-support-600);
+  --support-hover: var(--palette-support-700);
+  --support-tint: color-mix(in srgb, var(--support) 10%, transparent);
 }
