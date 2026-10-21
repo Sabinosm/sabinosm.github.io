@@ -6,7 +6,6 @@
 <title data-i18n="pagina.empresa.titulo">B-íon — Empresa</title>
 <script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/comumCss.css">
-<link rel="stylesheet" href="../../../../css/pages/enterprise/empresa.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
 </head>
 <body data-requer="gerenciar">
@@ -77,15 +76,9 @@
               </div>
             </div>
 
-          </div>
-
-          <!-- Bloco DPO (encarregado de dados). Wrapper só visual.
-               Se não informado no cadastro, o back preenche com nome e
-               e-mail do admin fundador; editável aqui. -->
-          <div class="empresa-bloco empresa-bloco--dpo">
-
-            <div class="section-label">Encarregado de dados (DPO)</div>
-
+            <!-- DPO (encarregado de dados): nome sob o CNPJ, e-mail sob o CNES.
+                 Se não informado no cadastro, o back usa nome/e-mail do admin
+                 fundador; editável aqui. -->
             <div class="row-2">
               <div class="field-group field">
                 <label class="field-label" for="empresa-dpo-nome">Nome do DPO</label>
