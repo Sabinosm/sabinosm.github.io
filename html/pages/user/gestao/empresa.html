@@ -79,6 +79,29 @@
 
           </div>
 
+          <!-- Bloco DPO (encarregado de dados). Wrapper só visual.
+               Se não informado no cadastro, o back preenche com nome e
+               e-mail do admin fundador; editável aqui. -->
+          <div class="empresa-bloco empresa-bloco--dpo">
+
+            <div class="section-label">Encarregado de dados (DPO)</div>
+
+            <div class="row-2">
+              <div class="field-group field">
+                <label class="field-label" for="empresa-dpo-nome">Nome do DPO</label>
+                <input class="field-input" type="text" id="empresa-dpo-nome" data-track readonly>
+                <p class="error-msg" id="err-empresa-dpo-nome"></p>
+              </div>
+
+              <div class="field-group field">
+                <label class="field-label" for="empresa-dpo-email">E-mail do DPO</label>
+                <input class="field-input" type="email" id="empresa-dpo-email" data-track readonly>
+                <p class="error-msg" id="err-empresa-dpo-email"></p>
+              </div>
+            </div>
+
+          </div>
+
           <!-- Bloco 2 (bento): endereço. Wrapper só visual. -->
           <div class="empresa-bloco empresa-bloco--endereco">
 
