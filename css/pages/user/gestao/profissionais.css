@@ -2,8 +2,19 @@
    B-íon — Profissionais
    Busca + filtros, paginação, modal de cadastro/edição.
    Reusa os tokens de preferencias.css e os padrões de
-   homePage.css / settings.css (neumorfismo).
+   homePage.css / settings.css.
+
+   v2 — tonal surfaces + profundidade interna:
+   - Toolbar/filtros/paginação no mesmo padrão das demais
+     listas (campos afundados, painel tonal, destaque no topo).
+   - Modal com borda + highlight + animação de entrada.
+   - A lista em si é o padrão "admin table" do homePage.css.
    ============================================ */
+
+@keyframes prof-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* ===== Centralização do conteúdo ===== */
 .main {
@@ -12,14 +23,15 @@
   margin-right: auto;
 }
 
-/* .sidebar é fixa (position: fixed), então .main precisa manter o
-   respiro à esquerda mesmo estando centralizado dentro do espaço
-   restante da tela. */
 @media (min-width: 761px) {
   .main {
     margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
     margin-right: auto;
   }
+}
+
+.section {
+  animation: prof-pop 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 /* ===== Status (herda .consult-status/.status-dot de homePage.css;
@@ -58,11 +70,12 @@
   height: 16px;
   color: var(--text-muted);
   pointer-events: none;
+  transition: color 0.15s ease;
 }
 
 .search-input {
   width: 100%;
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg) 60%, var(--bg-elevated));
   border: 1px solid var(--border);
   color: var(--text);
   font-size: calc(14px * var(--font-scale, 1));
@@ -70,13 +83,24 @@
   padding: 11px 14px 11px 40px;
   border-radius: var(--radius-sm);
   box-shadow:
-    inset 3px 3px 8px var(--neu-shadow-dark),
-    inset -3px -3px 8px var(--neu-shadow-light);
-  transition: border-color 0.15s ease;
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.search-input::placeholder {
+  color: var(--text-muted);
 }
 .search-input:focus {
   outline: none;
   border-color: var(--accent);
+  background: var(--bg-elevated);
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light),
+    0 0 0 3px var(--focus-ring, color-mix(in srgb, var(--accent) 18%, transparent));
+}
+.search-field:focus-within .search-icon {
+  color: var(--accent);
 }
 
 .btn-filter {
@@ -92,17 +116,27 @@
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  box-shadow: inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 6%, transparent));
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .btn-filter:hover {
   border-color: var(--accent);
   color: var(--accent);
+  transform: translateY(-1px);
+}
+.btn-filter:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .btn-filter--active {
   border-color: var(--accent);
   color: var(--accent);
-  background: var(--status-bg);
+  background: var(--accent-tint, color-mix(in srgb, var(--accent) 10%, var(--bg-elevated)));
 }
 
 .btn-filter-icon {
@@ -130,18 +164,17 @@
   display: none;
   gap: 14px;
   flex-wrap: wrap;
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--bg-elevated) 60%, var(--bg));
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 16px 18px;
   margin-top: 10px;
-  box-shadow:
-    inset 2px 2px 6px var(--neu-shadow-dark),
-    inset -2px -2px 6px var(--neu-shadow-light);
+  box-shadow: inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 5%, transparent));
 }
 
 .filter-panel--visible {
   display: flex;
+  animation: prof-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 .filter-field {
@@ -166,6 +199,15 @@
   font-family: inherit;
   padding: 8px 10px;
   border-radius: var(--radius-sm);
+  box-shadow:
+    inset 1px 1px 4px var(--neu-shadow-dark),
+    inset -1px -1px 4px var(--neu-shadow-light);
+  transition: border-color 0.15s ease;
+}
+.filter-field select:focus,
+.filter-field input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .filter-panel-actions {
@@ -208,24 +250,32 @@
   font-size: calc(13px * var(--font-scale, 1));
   font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  box-shadow: inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 5%, transparent));
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 .page-btn:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
+  transform: translateY(-1px);
+}
+.page-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 .page-btn:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.page-btn--active {
+.page-btn--active,
+.page-btn--active:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--palette-white);
-}
-.page-btn--active:hover {
-  color: var(--palette-white);
+  transform: none;
 }
 
 .page-btn svg {
@@ -243,6 +293,10 @@
   gap: 6px;
   padding: 56px 20px;
   color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg-elevated) 45%, transparent);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  animation: prof-pop 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
 .empty-state-icon {
@@ -264,8 +318,7 @@
 }
 
 /* ===== Modal de Cadastrar/Editar profissional =====
-   Reusa .settings-overlay como base (mesmo overlay escurecido),
-   com um modal próprio menor, sem abas. */
+   Reusa .settings-overlay como base, com modal próprio menor. */
 .prof-modal {
   position: relative;
   width: 100%;
@@ -277,16 +330,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 5%, transparent)),
+    var(--shadow-ambient, 0 20px 60px rgba(0, 0, 0, 0.45));
+  animation: prof-pop 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 
-/* O <form> envolve header + body + footer (ver HTML), então ele
-   precisa ser, ele mesmo, um flex-column dentro do .prof-modal --
-   senão vira um bloco de altura livre que deixa o body crescer sem
-   limite e empurra o footer (com o botão Salvar/Enviar convite) pra
-   fora da área visível, já que .prof-modal tem overflow:hidden.
-   Essa era a causa do botão de salvar "sumir": ele não desaparecia,
-   ficava cortado abaixo do fim do modal. */
 #form-profissional {
   display: flex;
   flex-direction: column;
@@ -305,12 +354,9 @@
 .prof-modal-body {
   padding: 20px 28px 28px;
   overflow-y: auto;
-  min-height: 0; /* essencial em flex: sem isso o body ignora o limite de altura e empurra o footer pra fora */
+  min-height: 0;
 }
 
-/* Hint do e-mail, movido do meio do formulário para o rodapé do
-   modal (fica logo acima da barra de botões, fora da área que rola
-   junto com os campos). */
 .prof-modal-footer-hint {
   flex-shrink: 0;
   padding: 12px 28px 18px;
@@ -336,18 +382,25 @@
 
 .btn-danger {
   background: transparent;
-  color: var(--danger, #e0625b);
-  border: 1px solid var(--danger, #e0625b);
+  color: var(--palette-status-red, var(--danger, #e0625b));
+  border: 1px solid var(--palette-status-red, var(--danger, #e0625b));
   padding: 8px 14px;
   border-radius: var(--radius-sm);
   font-size: calc(13px * var(--font-scale, 1));
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 .btn-danger:hover {
-  background: var(--danger, #e0625b);
+  background: var(--palette-status-red, var(--danger, #e0625b));
   color: var(--palette-white-strong);
+  transform: translateY(-1px);
+}
+.btn-danger:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .btn-danger--ativar {
@@ -359,29 +412,15 @@
   color: var(--palette-white-strong);
 }
 
-/* CORRIGIDO (múltiplos admins por empresa): #prof-modal-save é
-   escondido/mostrado via atributo [hidden] em JS (profissionaisModal.js),
-   mas botões dentro de .prof-modal-footer-right provavelmente herdam
-   `display: inline-flex` de uma regra genérica de .btn-primary/.btn-ghost
-   em settings.css ou homePage.css -- essa regra tem a mesma
-   especificidade (ou maior) que o UA stylesheet aplica a [hidden]
-   (que é só `display: none`), então o botão ficava visível mesmo com
-   hidden=true. Reforça aqui com !important para garantir que [hidden]
-   sempre vence, independente de outras folhas de estilo. */
+/* [hidden] precisa vencer display de .btn-primary/.btn-ghost
+   (ver comentário original — mantido). */
 #prof-modal-save[hidden],
 .prof-modal-footer [hidden] {
   display: none !important;
 }
 
-/* settings.css define .field-group { max-width: 420px } pensando no
-   modal de configurações (mais largo). Aqui no modal de profissional
-   isso faz os campos fora de .field-row (telefone, tipo, RQE,
-   especialidade) ficarem mais estreitos que os de dentro de
-   .field-row (que já zeram esse max-width logo abaixo) -- resultado:
-   inputs com larguras diferentes e desalinhados entre si. Como todo
-   campo aqui já vive dentro de um .prof-modal-body mais estreito que
-   420px, zeramos o limite pra todo .field-group deste modal, não só
-   os de dentro de .field-row. */
+/* Largura total dos campos neste modal (ver comentário original —
+   mantido). */
 #form-profissional .field-group {
   max-width: none;
 }
@@ -405,24 +444,24 @@
   text-transform: none;
 }
 
-/* ===== Validação de formulário (modal de profissional) ===== */
+/* ===== Validação de formulário ===== */
 .field-error {
   font-size: calc(12px * var(--font-scale, 1));
-  color: var(--danger, #e0625b);
+  color: var(--palette-status-red, var(--danger, #e0625b));
   margin-top: 6px;
   min-height: 0;
   display: none;
 }
 
 .field-input--invalid {
-  border-color: var(--danger, #e0625b);
+  border-color: var(--palette-status-red, var(--danger, #e0625b));
 }
 
 .field-group--has-error .field-error {
   display: block;
 }
 
-/* ===== Bloco condicional (CRM x COREN, conforme tipo) ===== */
+/* ===== Bloco condicional (CRM x COREN) ===== */
 .prof-conditional-block {
   display: flex;
   flex-direction: column;
@@ -433,9 +472,7 @@
   display: none;
 }
 
-/* ===== Checkbox "É administrador" (criação) =====
-   Junto ao select de tipo de profissional -- ver
-   profissionaisModal.js (checkboxAdmin). */
+/* ===== Checkbox "É administrador" ===== */
 .field-checkbox {
   display: flex;
   align-items: center;
@@ -455,10 +492,7 @@
   cursor: pointer;
 }
 
-/* ===== RESPONSIVO =====
-   Modal mais largo (720px) em telas médias/grandes; abaixo de 820px
-   (largura do modal + respiro lateral) ainda cabe cair para 100% de
-   largura da tela, sem exigir o breakpoint mobile completo. */
+/* ===== RESPONSIVO ===== */
 @media (max-width: 820px) {
   .prof-modal { max-width: calc(100vw - 32px); }
 }
@@ -468,30 +502,22 @@
   .toolbar-row { flex-wrap: wrap; }
   .filter-panel-actions { margin-left: 0; width: 100%; }
   .pagination { flex-direction: column; align-items: stretch; }
-  .prof-modal { max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; }
+  .prof-modal { max-width: 100%; height: 100%; max-height: 100%; border-radius: 0; animation: none; }
   .field-row { flex-direction: column; gap: 0; }
 }
 
-/* ============================================
-   CORREÇÃO: reordena hint e footer no modal
-   ============================================ */
-
-/* O hint deve aparecer DEPOIS (abaixo) dos botões de ação */
+/* ===== Ordem hint/footer (mantido do original) ===== */
 .prof-modal-footer {
   order: 1;
 }
 
 .prof-modal-footer-hint {
   order: 2;
-  /* mantém a separação visual que antes era feita pela border-top do footer */
   border-top: 1px solid var(--border);
   padding-top: 16px;
 }
 
-/* ===== Ações administrativas (resetar senha / 2FA / tudo) =====
-   Bloco próprio dentro do modal de edição, visível só para admin
-   (ver profissionaisModal.js). Os 3 botões reusam .btn-ghost e
-   .btn-danger já existentes -- só o wrapper flex é novo. */
+/* ===== Ações administrativas ===== */
 .prof-modal-acoes-botoes {
   display: flex;
   flex-wrap: wrap;
@@ -509,5 +535,15 @@
 @media (max-width: 480px) {
   .prof-modal-acoes-botoes {
     flex-direction: column;
+  }
+}
+
+/* ===== Acessibilidade: menos movimento ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
