@@ -4,7 +4,9 @@ import {
   setError, clearError, pintarErros, pintarMensagemBackend, ligarCampo,
 } from "../../sharedConfig/validacoes/domErros.js";
 
-const CAMPOS = ["cnpj", "cnes", "nome_fantasia", "razao_social", "cep", "bairro", "numero", "complemento"];
+const CAMPOS = ["cnpj", "cnes", "nome_fantasia", "razao_social", "cep", "bairro", "numero", "complemento", "dpo_nome", "dpo_email"];
+
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 // Obrigatórios só no formulário (no back são opcionais).
 const EXIGIDOS = { cep: "Informe o CEP", bairro: "Informe o bairro", numero: "Informe o número" };
@@ -20,6 +22,9 @@ function ler() {
     bairro: v("bairro"),
     numero: v("numero"),
     complemento: v("complemento") || null,
+    // Opcionais: vazio vira null; o back preenche com nome/e-mail do admin.
+    dpo_nome: v("dpo_nome").trim() || null,
+    dpo_email: v("dpo_email").trim() || null,
   };
 }
 
@@ -32,6 +37,13 @@ function avaliar() {
     if (vazio(strip(dados[campo]))) setErro(erros, campo, msg);
   }
   checarFormatosUi(dados, erros);
+
+  if (dados.dpo_nome && dados.dpo_nome.trim().length < 2) {
+    setErro(erros, "dpo_nome", "Nome muito curto.");
+  }
+  if (dados.dpo_email && !REGEX_EMAIL.test(dados.dpo_email)) {
+    setErro(erros, "dpo_email", "E-mail inválido.");
+  }
 
   // A única regra sem campo é "CNPJ ou CNES": aparece no input do CNPJ.
   if (erros._geral) {
@@ -56,7 +68,7 @@ export function validarFormularioEmpresa() {
 }
 
 export function ligarValidacaoEmTempoReal() {
-  ["cnes", "nome_fantasia", "razao_social", "bairro", "numero", "complemento"]
+  ["cnes", "nome_fantasia", "razao_social", "bairro", "numero", "complemento", "dpo_nome", "dpo_email"]
     .forEach((id) => ligarCampo(id, validarUm));
 
   const cnpjInput = document.getElementById("cnpj");

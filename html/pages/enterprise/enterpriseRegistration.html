@@ -95,6 +95,22 @@
       </div>
     </div>
 
+    <div class="section-label">Encarregado de dados (DPO) <span style="opacity:.6">(opcional)</span></div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="dpo_nome">Nome do DPO</label>
+        <input type="text" id="dpo_nome" name="dpo_nome" placeholder="Nome completo" maxlength="255"/>
+        <div class="error-msg" id="err-dpo_nome"></div>
+      </div>
+      <div class="field">
+        <label for="dpo_email">E-mail do DPO</label>
+        <input type="email" id="dpo_email" name="dpo_email" placeholder="dpo@empresa.com.br" maxlength="255"/>
+        <div class="hint">Se deixar em branco, usaremos o nome e o e-mail do administrador. Você pode alterar depois.</div>
+        <div class="error-msg" id="err-dpo_email"></div>
+      </div>
+    </div>
+
     <div class="section-label">Plano</div>
 
     <div class="plan-options">

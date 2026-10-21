@@ -5,9 +5,11 @@ import {
 
 // campo do schema -> id do DOM ("nome_fantasia" -> "empresa-nome-fantasia")
 const ID = (campo) => `empresa-${campo.replace(/_/g, "-")}`;
-const CAMPOS_SCHEMA = ["nome_fantasia", "cep", "bairro", "numero", "complemento"];
-// cnes ainda existe na tela, mas NÃO está em AtualizacaoEmpresaSchema (ver nota
-// no fim): fica fora do schema e é checado só pelo formato.
+const CAMPOS_SCHEMA = ["nome_fantasia", "cep", "bairro", "numero", "complemento", "dpo_nome", "dpo_email"];
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// cnes é identificador (EmpresaIdentificador), não coluna: o back o valida em
+// AtualizacaoEmpresaSchema, mas o validador compartilhado do front pode não
+// conhecê-lo, então aqui ele é checado só pelo formato (7 dígitos).
 const CAMPOS = [...CAMPOS_SCHEMA, "cnes"];
 const IDS = CAMPOS.map(ID);
 const CAMPO_DE_ID = Object.fromEntries(CAMPOS.map((c) => [ID(c), c]));
@@ -21,6 +23,13 @@ function avaliar() {
   }
   const { erros } = validarAtualizacaoEmpresa(dados);
   checarFormatosUi(dados, erros);
+
+  if (dados.dpo_nome && dados.dpo_nome.length < 2 && !erros.dpo_nome) {
+    erros.dpo_nome = "Nome muito curto.";
+  }
+  if (dados.dpo_email && !REGEX_EMAIL.test(dados.dpo_email) && !erros.dpo_email) {
+    erros.dpo_email = "E-mail inválido.";
+  }
 
   const cnes = document.getElementById(ID("cnes"))?.value.trim();
   if (cnes && !/^\d{7}$/.test(cnes)) erros.cnes = "CNES deve conter 7 dígitos.";
@@ -36,7 +45,7 @@ function validarUm(id) {
 }
 
 export function ligarValidacaoEmTempoReal() {
-  ["nome_fantasia", "cnes", "bairro", "numero", "complemento"]
+  ["nome_fantasia", "cnes", "bairro", "numero", "complemento", "dpo_nome", "dpo_email"]
     .forEach((campo) => ligarCampo(ID(campo), validarUm));
   document.getElementById(ID("cep"))?.addEventListener("blur", () => validarUm(ID("cep")));
 }
@@ -59,7 +68,7 @@ export function aplicarErrosPorCampo(erros) {
   return pintarErros(erros, (c) => ID(c), IDS);
 }
 
-// NOTA: se o PUT enviar `cnes`, o AtualizacaoEmpresaSchema (extra="forbid")
-// responde "cnes: ..." como campo não permitido. CAMPO_DE_ID fica exportado
-// só para depuração.
+// NOTA: o AtualizacaoEmpresaSchema agora aceita `cnes` (7 dígitos) e também
+// o endereço aninhado em `endereco`. CAMPO_DE_ID fica exportado só para
+// depuração.
 export { CAMPO_DE_ID };

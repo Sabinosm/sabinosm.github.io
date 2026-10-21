@@ -25,6 +25,8 @@ export function preencherPainelEmpresa(empresa) {
 
   setValor('empresa-nome-fantasia', empresa.nome_fantasia);
   setValor('empresa-cnes', empresa.cnes);
+  setValor('empresa-dpo-nome', empresa.dpo_nome);
+  setValor('empresa-dpo-email', empresa.dpo_email);
 
   const endereco = empresa.endereco ?? {};
   setValor('empresa-cep', formatarCep(endereco.cep));
@@ -69,6 +71,8 @@ export function lerFormularioEmpresa() {
   return {
     nome_fantasia: valor('empresa-nome-fantasia'),
     cnes: valor('empresa-cnes') || null,
+    dpo_nome: valor('empresa-dpo-nome') || null,
+    dpo_email: valor('empresa-dpo-email') || null,
     endereco: {
       cep: valor('empresa-cep'),
       bairro: valor('empresa-bairro'),

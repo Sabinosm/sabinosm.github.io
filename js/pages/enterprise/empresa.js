@@ -37,6 +37,8 @@ const URL_BASE = `${URL_BASE_API}/empresas`;
 const CAMPOS_EDITAVEIS = [
   'empresa-nome-fantasia',
   'empresa-cnes',
+  'empresa-dpo-nome',
+  'empresa-dpo-email',
   'empresa-cep',
   'empresa-bairro',
   'empresa-numero',
@@ -213,6 +215,8 @@ function lerFormularioComFallback() {
   return {
     nome_fantasia: getValorEfetivo('empresa-nome-fantasia'),
     cnes: getValorEfetivo('empresa-cnes') || null,
+    dpo_nome: getValorEfetivo('empresa-dpo-nome') || null,
+    dpo_email: getValorEfetivo('empresa-dpo-email') || null,
     endereco: {
       cep: getValorEfetivo('empresa-cep'),
       bairro: getValorEfetivo('empresa-bairro'),

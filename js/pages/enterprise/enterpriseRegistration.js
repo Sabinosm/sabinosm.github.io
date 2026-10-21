@@ -85,7 +85,7 @@ ligarValidacaoEmTempoReal();
   if (Date.now() - registro.salvoEm > TTL_SESSION_EMPRESA_MS) return;
 
   const dados = registro.dados;
-  ['cnpj', 'cnes', 'nome_fantasia', 'razao_social', 'cep', 'bairro', 'numero', 'complemento']
+  ['cnpj', 'cnes', 'nome_fantasia', 'razao_social', 'cep', 'bairro', 'numero', 'complemento', 'dpo_nome', 'dpo_email']
     .forEach((id) => {
       if (dados[id] != null) document.getElementById(id).value = dados[id];
     });
@@ -406,6 +406,8 @@ document.getElementById('form-empresa').addEventListener('submit', async functio
       bairro: document.getElementById('bairro').value.trim(),
       numero: document.getElementById('numero').value.trim(),
       complemento: document.getElementById('complemento').value.trim() || null,
+      dpo_nome: document.getElementById('dpo_nome').value.trim() || null,
+      dpo_email: document.getElementById('dpo_email').value.trim() || null,
       plano: document.querySelector('input[name="plano"]:checked').value,
     };
 
