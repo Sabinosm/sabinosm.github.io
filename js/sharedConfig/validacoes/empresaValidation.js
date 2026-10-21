@@ -9,18 +9,34 @@ import {
 
 const REGEX_NUMERO_ENDERECO = /^[A-Za-z0-9°ºª\s\-/.,]{1,20}$/;
 const STATUS_PLANO = ["ativo", "inativo", "suspenso", "cancelado"];
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 const CAMPOS_CADASTRO = new Set([
   "nome_fantasia", "razao_social", "cnpj", "cnes", "numero", "bairro",
-  "complemento", "cep", "status_plano", "plano",
+  "complemento", "cep", "status_plano", "plano", "dpo_nome", "dpo_email",
 ]);
 // Só os autogerenciáveis. Restritos (cnpj, razao_social, status_plano, plano) são barrados.
-const CAMPOS_ATUALIZACAO = new Set(["nome_fantasia", "numero", "bairro", "complemento", "cep"]);
+// cnes (identificador, escrito via definir_cnes no back) e DPO são editáveis.
+const CAMPOS_ATUALIZACAO = new Set([
+  "nome_fantasia", "numero", "bairro", "complemento", "cep",
+  "cnes", "dpo_nome", "dpo_email",
+]);
 
 function normalizaCep(erros, d) {
   if (vazio(d.cep)) { d.cep = null; return; }
   if (!validarCep(d.cep)) setErro(erros, "cep", "CEP inválido.");
   else d.cep = limparDigitos(d.cep);
+}
+
+/** DPO (opcional): vazio vira null -- o back preenche com nome/e-mail do admin. */
+function validaDpo(erros, d) {
+  checarTamanho(erros, "dpo_nome", d.dpo_nome, { max: 255 });
+  checarTamanho(erros, "dpo_email", d.dpo_email, { max: 255 });
+  if ("dpo_nome" in d && vazio(d.dpo_nome)) d.dpo_nome = null;
+  if ("dpo_email" in d) {
+    if (vazio(d.dpo_email)) d.dpo_email = null;
+    else if (!REGEX_EMAIL.test(d.dpo_email)) setErro(erros, "dpo_email", "E-mail inválido.");
+  }
 }
 
 /** POST /empresas */
@@ -52,6 +68,7 @@ export function validarCadastroEmpresa(payload) {
   }
 
   normalizaCep(erros, d);
+  validaDpo(erros, d);
 
   // status_plano (default "ativo")
   d.status_plano ??= "ativo";
@@ -87,6 +104,16 @@ export function validarAtualizacaoEmpresa(payload) {
     }
   }
   if ("cep" in d) normalizaCep(erros, d);
+
+  checarTamanho(erros, "cnes", d.cnes, { max: 20 });
+  if ("cnes" in d) {
+    if (vazio(d.cnes)) d.cnes = null;
+    else {
+      d.cnes = limparDigitos(d.cnes);
+      if (d.cnes.length !== 7) setErro(erros, "cnes", "CNES deve conter 7 dígitos.");
+    }
+  }
+  validaDpo(erros, d);
 
   return resultado(d, erros);
 }
