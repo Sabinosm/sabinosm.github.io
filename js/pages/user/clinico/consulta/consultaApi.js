@@ -6,7 +6,7 @@
 //
 //   GET  /consultas?abertas=true          -> listarConsultas({ abertas })
 //   GET  /consultas/<uuid>                 -> buscarConsulta(uuid)
-//   POST /consultas/                       -> abrirConsulta(payload)
+//   POST /consultas                     -> abrirConsulta(payload)
 //   POST /consultas/<uuid>/encerrar        -> encerrarConsulta(uuid, payload)
 //   POST /consultas/<uuid>/evadir          -> evadirConsulta(uuid, payload)
 //   GET  /consultas/<uuid>/consentimento   -> situacaoConsentimento(uuid)
@@ -91,7 +91,7 @@ export function buscarConsulta(uuid) {
 }
 
 /**
- * POST /consultas/ — abre uma consulta. O corpo tem EXATAMENTE UMA destas formas
+ * POST /consultas — abre uma consulta. O corpo tem EXATAMENTE UMA destas formas
  * (validado por validarAberturaConsulta antes de chamar):
  *   { uuid_paciente }
  *   { paciente: {...} }
@@ -102,7 +102,7 @@ export function buscarConsulta(uuid) {
  * (o uuid da aberta vem só na mensagem).
  */
 export function abrirConsulta(payload) {
-  return requisitar(BASE_CONSULTAS, "/", { method: "POST", body: JSON.stringify(payload) });
+  return requisitar(BASE_CONSULTAS, "", { method: "POST", body: JSON.stringify(payload) });
 }
 
 /**
