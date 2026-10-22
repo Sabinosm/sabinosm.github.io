@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="../../../../css/pages/comumCss.css">
 <link rel="stylesheet" href="../../../../css/pages/user/shared/pacientesDetalhe.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+<base target="_blank">
 </head>
 <body data-requer="gerenciar,atenderClinicamente">
 <canvas id="c" aria-hidden="true"></canvas>
@@ -26,12 +27,12 @@
       <span data-i18n="paciente.voltar">Voltar para Pacientes</span>
     </a>
 
-    <!-- Estado de carregamento (step-up + fetch em andamento) -->
+    <!-- Estado de carregamento (fetch em andamento) -->
     <div id="estado-carregando" class="empty-state" style="padding: 64px 20px;">
       <p class="empty-state-text" data-i18n="paciente.carregando">Carregando ficha do paciente…</p>
     </div>
 
-    <!-- Estado de erro/cancelamento -->
+    <!-- Estado de erro -->
     <div id="estado-erro" class="empty-state" hidden style="padding: 64px 20px;">
       <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
         <circle cx="12" cy="12" r="9" stroke-linecap="round"/>
@@ -41,7 +42,7 @@
       <p class="empty-state-text" id="estado-erro-texto"></p>
     </div>
 
-    <!-- Conteúdo da ficha, só aparece depois do step-up + fetch OK -->
+    <!-- Conteúdo da ficha, só aparece depois do fetch OK -->
     <div id="ficha-paciente" hidden>
 
       <!-- ===== HEADER ===== -->
@@ -58,12 +59,7 @@
         </div>
       </header>
 
-      <!-- ===== PAINEL: PESSOAL (gerenciamento + dados pessoais) =====
-           Única seção da ficha por enquanto -- alergias, medicamentos,
-           doenças crônicas e consentimento LGPD passaram a ser
-           registrados durante a CONSULTA, não geridos aqui (decisão de
-           produto). Ver bloco "Dados clínicos" (placeholder) logo
-           abaixo e o TODO em pacientesDetalheLista.js. -->
+      <!-- ===== PAINEL: PESSOAL (gerenciamento + dados pessoais) ===== -->
       <section id="painel-pessoal">
         <div class="block-header">
           <h2 data-i18n="secao.dados_pessoais">Dados pessoais</h2>
@@ -152,6 +148,20 @@
         </dl>
       </section>
 
+      <!-- ===== HISTÓRICO: últimas consultas (o repository limita a 5) =====
+           Visível para os três papéis que acessam a ficha (admin, médico,
+           enfermeiro). O botão "Ver detalhes" só é renderizado para o eixo
+           clínico -- a rota GET /consultas/<uuid> só aceita médico/enfermeiro
+           (admin vê a lista do histórico, não o conteúdo da consulta). -->
+      <section id="painel-historico" style="margin-top: 28px;">
+        <div class="block-header">
+          <h2 data-i18n="paciente.historico_titulo">Histórico de consultas</h2>
+        </div>
+        <div class="card-list" id="lista-historico-consultas">
+          <p class="empty-state-text" style="padding: 12px 0;" data-i18n="paciente.historico_carregando">Carregando histórico…</p>
+        </div>
+      </section>
+
       <!-- ===== DADOS CLÍNICOS (placeholder) =====
            TODO: alergias, medicamentos em uso, doenças crônicas e
            consentimento LGPD passaram a ser registrados durante a
@@ -163,8 +173,9 @@
            a partir de resumo_clinico, abas Alergias/Medicamentos/
            Doenças crônicas, e o banner de consentimento_ativo. Ver
            buscarDetalheClinico/buscarDetalheCompleto em
-           pacientesApi.js, que já ficaram prontas para isso. -->
-      <section class="panel-divider" style="margin-top: 28px; border: none; height: auto;">
+           pacientesApi.js, que já ficaram prontas para isso.
+           Escondida para admin (só 'gerenciar') via JS. -->
+      <section class="panel-divider" id="painel-clinico" style="margin-top: 28px; border: none; height: auto;">
         <div class="block-header" style="margin-bottom: 8px;">
           <h2 data-i18n="paciente.clinicos_titulo">Dados clínicos</h2>
         </div>
