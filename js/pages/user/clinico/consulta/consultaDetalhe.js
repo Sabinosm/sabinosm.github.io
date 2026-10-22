@@ -37,7 +37,7 @@ import { ApiError, buscarConsulta, situacaoConsentimento } from "./consultaApi.j
 import {
   DESFECHO_LABELS, EVENTO_CONSULTA_ALTERADA, ORIGEM_LABELS,
   criarBadgeConsentimento, criarChipStatus, criarEstadoVazio,
-  exibirAviso, focoDaUrl, formatarDataHora, label, nomePaciente,
+  focoDaUrl, formatarDataHora, label, nomePaciente,
   urlAtendimento, urlLista, uuidDaUrl,
 } from "./consultaHelpers.js";
 import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
@@ -188,7 +188,4 @@ function renderizar(c, consentimento, bloqueia) {
 
   // --- ações
   $("cons-painel-acoes").hidden = !aberta;
-
-  // mensagem de uma ação anterior continua visível; só limpa se era de erro de carga
-  if (document.getElementById("cons-det-feedback")?.classList.contains("erro")) exibirAviso("", "");
 }

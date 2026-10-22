@@ -14,9 +14,10 @@
 // caso de sucesso dispara EVENTO_CONSULTA_ALTERADA; quem recarrega a
 // tela é consultaDetalhe.js.
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import { ApiError, dispensarConsentimento } from "./consultaApi.js";
 import {
-  CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, exibirAviso, uuidDaUrl,
+  CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, uuidDaUrl,
 } from "./consultaHelpers.js";
 
 const MAX_MOTIVO = 2000;
@@ -53,7 +54,6 @@ function fecharModal() {
 function limpar() {
   $("form-dispensar")?.reset();
   limparErroMotivo();
-  feedback("", "");
   enviando = false;
   const salvar = $("cons-disp-save");
   if (salvar) salvar.disabled = false;
@@ -64,7 +64,6 @@ async function aoSubmeter(e) {
   if (enviando) return;
 
   limparErroMotivo();
-  feedback("", "");
 
   const motivo = $("cons-disp-motivo").value.trim();
   if (!motivo) return erroMotivo("Informe o motivo da dispensa.");
@@ -76,19 +75,19 @@ async function aoSubmeter(e) {
   try {
     await dispensarConsentimento(uuidDaUrl(), { motivo });
     fecharModal();
-    exibirAviso("Consentimento dispensado por emergência.", "sucesso");
+    exibirMensagem("Consentimento dispensado por emergência.", "sucesso");
     document.dispatchEvent(new CustomEvent(EVENTO_CONSULTA_ALTERADA));
   } catch (erro) {
     const texto = erro instanceof ApiError ? erro.message : "Não foi possível registrar a dispensa.";
     // erro de campo estruturado, se o back mandar
     if (erro instanceof ApiError && erro.erros?.motivo) erroMotivo(erro.erros.motivo);
-    else feedback(texto, "erro");
+    else exibirMensagem(texto, "erro");
     enviando = false;
     $("cons-disp-save").disabled = false;
   }
 }
 
-// ---------------------------------------------------------------- feedback
+// ---------------------------------------------------------------- erro do campo
 function erroMotivo(msg) {
   $("cons-disp-motivo")?.closest(".field-group")?.classList.add("field-group--has-error");
   $("cons-disp-motivo")?.classList.add("field-input--invalid");
@@ -100,11 +99,4 @@ function limparErroMotivo() {
   $("cons-disp-motivo")?.classList.remove("field-input--invalid");
   const el = $("cons-disp-motivo-error");
   if (el) el.textContent = "";
-}
-
-function feedback(texto, tipo) {
-  const el = $("cons-disp-feedback");
-  if (!el) return;
-  el.textContent = texto;
-  el.className = tipo ? `cons-form-feedback ${tipo}` : "cons-form-feedback";
 }

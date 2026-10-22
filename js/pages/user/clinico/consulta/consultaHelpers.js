@@ -4,6 +4,8 @@
 // de data, nome de exibição do paciente, link para o detalhe e builders
 // de elementos repetidos. Sem estado de página.
 
+import { exibirMensagem } from "/js/shared/feedback.js";
+
 // Página de detalhe da consulta (a criar). Fica numa constante só para
 // trocar o caminho em um lugar quando a página existir.
 import { ROTAS } from "../../../../sharedConfig/loaders/rotas";
@@ -172,10 +174,12 @@ export function criarEstadoVazio(titulo, texto) {
   return div;
 }
 
-/** Mensagem no topo da página de detalhe (#cons-det-feedback). tipo: "erro" | "sucesso" | "info" | "" (limpa). */
+/**
+ * @deprecated Use exibirMensagem (shared/feedback.js) direto. Mantida só para
+ * importadores que ainda não migraram; tipo vazio ("limpar") não faz nada,
+ * já que o toast some sozinho. Pode ser apagada quando nenhum arquivo
+ * importar exibirAviso.
+ */
 export function exibirAviso(texto, tipo = "info") {
-  const el = document.getElementById("cons-det-feedback");
-  if (!el) return;
-  el.textContent = tipo ? texto : "";
-  el.className = tipo ? `cons-feedback ${tipo}` : "cons-feedback";
+  if (tipo && texto) exibirMensagem(texto, tipo);
 }

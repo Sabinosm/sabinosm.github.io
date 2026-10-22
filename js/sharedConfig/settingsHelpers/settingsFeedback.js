@@ -1,48 +1,27 @@
 // ============================================
 // B-íon — Modal de Configurações: feedback (mensagem de sucesso/erro)
 // ============================================
+//
+// Agora é só uma camada fina sobre o toast compartilhado
+// (shared/feedback.js): não depende mais de nenhum elemento no HTML, não
+// tem timer próprio e não mexe em classes. Os três nomes exportados
+// continuam existindo para os módulos de configurações que já os importam.
 
 import { exibirMensagem } from '../../shared/feedback.js';
 
 const FEEDBACK_SUCESSO_DURACAO_MS = 2500;
-let feedbackTimeoutId = null;
-
-// exibirMensagem faz feedback.className = tipo, sobrescrevendo TODA a
-// classe do elemento (não só adicionando) -- isso apagaria a classe
-// base "feedback-mensagem" do CSS. Como esse comportamento é
-// compartilhado com login/onboarding e não queremos mexer nele aqui,
-// reforçamos a classe base logo em seguida, só neste módulo.
+// Antes o erro ficava até o usuário agir; no toast ele precisa de mais
+// tempo para dar para ler e corrigir.
+const FEEDBACK_ERRO_DURACAO_MS = 5000;
 
 export function exibirFeedbackConfiguracoes(texto, tipo) {
-  if (feedbackTimeoutId !== null) {
-    clearTimeout(feedbackTimeoutId);
-    feedbackTimeoutId = null;
-  }
-  exibirMensagem(texto, tipo);
-  const el = document.getElementById('mensagemFeedback');
-  if (el) el.classList.add('feedback-mensagem');
+  const duracao = tipo === 'erro' ? FEEDBACK_ERRO_DURACAO_MS : undefined;
+  exibirMensagem(texto, tipo, duracao);
 }
 
-export function limparFeedbackConfiguracoes() {
-  const el = document.getElementById('mensagemFeedback');
-  if (!el) return;
-  if (feedbackTimeoutId !== null) {
-    clearTimeout(feedbackTimeoutId);
-    feedbackTimeoutId = null;
-  }
-  el.textContent = '';
-  el.className = 'feedback-mensagem';
-}
+/** O toast some sozinho, então não há o que limpar. Mantida por compatibilidade. */
+export function limparFeedbackConfiguracoes() {}
 
-/**
- * Mostra o feedback de sucesso e some sozinho depois de um tempo --
- * erro fica até o usuário agir (corrigir e salvar de novo, ou sair).
- */
 export function exibirFeedbackSucessoTemporario(texto) {
-  exibirFeedbackConfiguracoes(texto, 'sucesso');
-  if (feedbackTimeoutId !== null) clearTimeout(feedbackTimeoutId);
-  feedbackTimeoutId = setTimeout(() => {
-    feedbackTimeoutId = null;
-    limparFeedbackConfiguracoes();
-  }, FEEDBACK_SUCESSO_DURACAO_MS);
+  exibirMensagem(texto, 'sucesso', FEEDBACK_SUCESSO_DURACAO_MS);
 }

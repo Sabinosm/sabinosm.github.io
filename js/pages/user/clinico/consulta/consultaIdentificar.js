@@ -17,9 +17,10 @@
 // Em caso de sucesso dispara EVENTO_CONSULTA_ALTERADA: a página recarrega, o
 // nome passa a aparecer no título e a coleta do termo é liberada.
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import { ApiError, identificarPaciente } from "./consultaApi.js";
 import { lerPacienteForm, mapearErrosPaciente } from "./consultaPacienteForm.js";
-import { CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, exibirAviso } from "./consultaHelpers.js";
+import { CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA } from "./consultaHelpers.js";
 import { hojeIso } from "../../../../sharedConfig/validacoes/generalValidation.js";
 
 const IDS_CAMPOS = [
@@ -61,7 +62,6 @@ function fecharModal() {
 function limpar() {
   $("form-identificar")?.reset();
   limparErros();
-  feedback("", "");
   enviando = false;
   const salvar = $("cons-ident-save");
   if (salvar) salvar.disabled = false;
@@ -72,7 +72,6 @@ async function aoSubmeter(e) {
   if (enviando) return;
 
   limparErros();
-  feedback("", "");
 
   const { paciente, erros } = lerPacienteForm();
   if (Object.keys(erros).length > 0) {
@@ -82,7 +81,7 @@ async function aoSubmeter(e) {
 
   const uuidPaciente = $("cons-btn-identificar")?.dataset.pacienteUuid;
   if (!uuidPaciente) {
-    feedback("Paciente da consulta não identificado na tela. Recarregue a página.", "erro");
+    exibirMensagem("Paciente da consulta não identificado na tela. Recarregue a página.", "erro");
     return;
   }
 
@@ -92,7 +91,7 @@ async function aoSubmeter(e) {
   try {
     await identificarPaciente(uuidPaciente, paciente);
     fecharModal();
-    exibirAviso("Paciente identificado.", "sucesso");
+    exibirMensagem("Paciente identificado.", "sucesso");
     document.dispatchEvent(new CustomEvent(EVENTO_CONSULTA_ALTERADA));
   } catch (erro) {
     tratarErro(erro);
@@ -103,7 +102,7 @@ async function aoSubmeter(e) {
 
 function tratarErro(erro) {
   if (!(erro instanceof ApiError)) {
-    feedback("Não foi possível identificar o paciente.", "erro");
+    exibirMensagem("Não foi possível identificar o paciente.", "erro");
     return;
   }
 
@@ -116,11 +115,11 @@ function tratarErro(erro) {
   const { porId, residual } = mapearErrosPaciente({ erros: erro.erros, mensagem: erro.message });
   Object.entries(porId).forEach(([id, msg]) => erroCampo(id, msg));
 
-  if (residual) feedback(residual, "erro");
-  else if (Object.keys(porId).length === 0) feedback(erro.message, "erro");
+  if (residual) exibirMensagem(residual, "erro");
+  else if (Object.keys(porId).length === 0) exibirMensagem(erro.message, "erro");
 }
 
-// ---------------------------------------------------------------- feedback
+// ---------------------------------------------------------------- erros de campo
 function erroCampo(id, msg) {
   $(id)?.closest(".field-group")?.classList.add("field-group--has-error");
   $(id)?.classList.add("field-input--invalid");
@@ -135,11 +134,4 @@ function limparErros() {
     const el = $(`${id}-error`);
     if (el) el.textContent = "";
   });
-}
-
-function feedback(texto, tipo) {
-  const el = $("cons-ident-feedback");
-  if (!el) return;
-  el.textContent = texto;
-  el.className = tipo ? `cons-form-feedback ${tipo}` : "cons-form-feedback";
 }

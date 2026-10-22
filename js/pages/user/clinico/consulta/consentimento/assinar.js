@@ -20,6 +20,7 @@
 // o back usa o User-Agent do próprio request. `hash_pdf_original` volta
 // exatamente como veio no GET (o back confere se o termo não mudou).
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import {
   ApiError, enviarAssinatura, obterDadosAssinatura, urlComprovante, urlTermoPdf,
 } from "./assinarApi.js";
@@ -300,11 +301,10 @@ async function aoEnviar(e) {
   e.preventDefault();
   if (enviando || encerrada) return;
 
-  feedback("", "");
 
-  if (!termoLido) return feedback("Role o termo até o fim antes de assinar.", "erro");
-  if (!$("ass-confirmo").checked || !$("ass-declaro").checked) return feedback("Marque as duas confirmações.", "erro");
-  if (pontos < MIN_PONTOS_ASSINATURA) return feedback("Desenhe a sua assinatura no quadro.", "erro");
+  if (!termoLido) return exibirMensagem("Role o termo até o fim antes de assinar.", "erro");
+  if (!$("ass-confirmo").checked || !$("ass-declaro").checked) return exibirMensagem("Marque as duas confirmações.", "erro");
+  if (pontos < MIN_PONTOS_ASSINATURA) return exibirMensagem("Desenhe a sua assinatura no quadro.", "erro");
 
   const escopos = [...document.querySelectorAll('input[name="escopo"]:checked')].map((c) => c.value);
 
@@ -322,7 +322,7 @@ async function aoEnviar(e) {
     });
     concluir(resposta.data);
   } catch (erro) {
-    feedback(erro instanceof ApiError ? erro.message : "Não foi possível enviar a assinatura.", "erro");
+    exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível enviar a assinatura.", "erro");
     enviando = false;
     $("ass-enviar").textContent = "Assinar o termo";
     atualizarBotao();
@@ -343,13 +343,4 @@ function concluir(resultado) {
   $("ass-copia-aviso").textContent = ate
     ? `A cópia fica disponível aqui até ${ate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}. Depois disso, peça uma cópia à clínica.`
     : "A cópia fica disponível por pouco tempo. Depois disso, peça uma cópia à clínica.";
-}
-
-// ============================================
-// Feedback
-// ============================================
-function feedback(texto, tipo) {
-  const el = $("ass-feedback");
-  el.textContent = texto;
-  el.className = tipo ? `ass-feedback ${tipo}` : "ass-feedback";
 }

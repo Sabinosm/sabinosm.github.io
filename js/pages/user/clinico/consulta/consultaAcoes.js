@@ -20,11 +20,12 @@
 // Em caso de sucesso dispara EVENTO_CONSULTA_ALTERADA; quem recarrega a
 // tela é consultaDetalhe.js.
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import { ApiError, encerrarConsulta, evadirConsulta } from "./consultaApi.js";
 import { validarEncerramentoConsulta, validarEvasaoConsulta } from "../../../../sharedConfig/validacoes/consultaValidation.js";
 import { CAMPO_GERAL } from "../../../../sharedConfig/validacoes/generalValidation.js";
 import {
-  CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, exibirAviso, uuidDaUrl,
+  CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, uuidDaUrl,
 } from "./consultaHelpers.js";
 
 const $ = (id) => document.getElementById(id);
@@ -103,7 +104,6 @@ function limpar(chave) {
   const m = MODAIS[chave];
   $(m.form)?.reset();
   limparErros(chave);
-  feedback(chave, "", "");
   enviando[chave] = false;
   const salvar = $(`${m.prefixo}-save`);
   if (salvar) salvar.disabled = false;
@@ -118,7 +118,6 @@ async function aoSubmeter(e, chave) {
 
   const m = MODAIS[chave];
   limparErros(chave);
-  feedback(chave, "", "");
 
   const validacao = m.validar(m.montar());
   if (!validacao.ok) {
@@ -132,13 +131,13 @@ async function aoSubmeter(e, chave) {
   try {
     await m.enviar(uuidDaUrl(), validacao.dados);
     fechar(chave);
-    exibirAviso(m.sucesso, "sucesso");
+    exibirMensagem(m.sucesso, "sucesso");
     document.dispatchEvent(new CustomEvent(EVENTO_CONSULTA_ALTERADA));
   } catch (erro) {
     if (erro instanceof ApiError && erro.erros && Object.keys(erro.erros).length > 0) {
       exibirErros(chave, erro.erros);
     } else {
-      feedback(chave, erro instanceof ApiError ? erro.message : "Não foi possível concluir a ação.", "erro");
+      exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível concluir a ação.", "erro");
     }
     enviando[chave] = false;
     $(`${m.prefixo}-save`).disabled = false;
@@ -146,10 +145,10 @@ async function aoSubmeter(e, chave) {
 }
 
 // ============================================
-// Erros e feedback
+// Erros
 // ============================================
 
-/** Erros por campo do schema; "_geral" e campos sem input vão para a mensagem do topo do modal. */
+/** Erros por campo do schema; "_geral" e campos sem input vão para um toast. */
 function exibirErros(chave, erros) {
   const m = MODAIS[chave];
   const gerais = [];
@@ -166,7 +165,7 @@ function exibirErros(chave, erros) {
     }
   });
 
-  if (gerais.length > 0) feedback(chave, gerais.join(" "), "erro");
+  if (gerais.length > 0) exibirMensagem(gerais.join(" "), "erro");
 }
 
 function limparErros(chave) {
@@ -176,11 +175,4 @@ function limparErros(chave) {
     const el = $(`${id}-error`);
     if (el) el.textContent = "";
   });
-}
-
-function feedback(chave, texto, tipo) {
-  const el = $(`${MODAIS[chave].prefixo}-feedback`);
-  if (!el) return;
-  el.textContent = texto;
-  el.className = tipo ? `cons-form-feedback ${tipo}` : "cons-form-feedback";
 }

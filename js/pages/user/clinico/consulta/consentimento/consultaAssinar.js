@@ -24,11 +24,12 @@
 // QR code: biblioteca qrcodejs (global QRCode), carregada por <script> em
 // consultaDetalhe.html. Se não carregar, o link continua disponível em texto.
 
+import { exibirMensagem } from "/js/shared/feedback.js";
 import {
   ApiError, baixarPdfAssinado, cancelarLinkAssinatura, gerarLinkAssinatura, statusAssinatura,
 } from "../consultaApi.js";
 import {
-  CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, exibirAviso, paraDataUtc, urlAssinaturaPaciente,
+  CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, paraDataUtc, urlAssinaturaPaciente,
 } from "../consultaHelpers.js";
 
 const INTERVALO_STATUS_MS = 3000;
@@ -67,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // Abrir / fechar
 // ============================================
 function abrirModal() {
-  feedback("", "");
   $("cons-qr-overlay").classList.add(CLASSE_OVERLAY_VISIVEL);
   gerar();
 }
@@ -102,7 +102,6 @@ async function gerar() {
   if (gerando) return;
   gerando = true;
   pararTimers();
-  feedback("", "");
   mostrarPainel("gerando");
 
   try {
@@ -138,7 +137,7 @@ function desenharQr(url) {
   const alvo = $("cons-qr-code");
   alvo.innerHTML = "";
   if (typeof QRCode === "undefined") {
-    feedback("Biblioteca de QR code indisponível: use o link abaixo.", "info");
+    exibirMensagem("Biblioteca de QR code indisponível: use o link abaixo.", "info");
     return;
   }
   // eslint-disable-next-line no-new
@@ -219,10 +218,10 @@ async function cancelarLink() {
   try {
     await cancelarLinkAssinatura(token);
     fecharModal();
-    exibirAviso("Link de assinatura cancelado.", "info");
+    exibirMensagem("Link de assinatura cancelado.", "info");
   } catch (erro) {
     // 409: o paciente acabou de assinar; o acompanhamento mostra o resultado
-    feedback(erro instanceof ApiError ? erro.message : "Não foi possível cancelar o link.", "erro");
+    exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível cancelar o link.", "erro");
   } finally {
     botao.disabled = false;
   }
@@ -231,13 +230,13 @@ async function cancelarLink() {
 async function copiarLink() {
   try {
     await navigator.clipboard.writeText(linkAtual);
-    feedback("Link copiado.", "sucesso");
+    exibirMensagem("Link copiado.", "sucesso");
   } catch {
     // sem permissão de área de transferência: seleciona para copiar à mão
     const campo = $("cons-qr-link");
     campo.focus();
     campo.select();
-    feedback("Selecione e copie o link.", "info");
+    exibirMensagem("Selecione e copie o link.", "info");
   }
 }
 
@@ -259,21 +258,11 @@ async function baixarPdf() {
     setTimeout(() => URL.revokeObjectURL(url), 10_000);
 
     if (integridade === "divergente") {
-      feedback("O PDF foi baixado, mas o hash refeito não bate com o registrado na assinatura.", "erro");
+      exibirMensagem("O PDF foi baixado, mas o hash refeito não bate com o registrado na assinatura.", "erro", 8000);
     }
   } catch (erro) {
-    feedback(erro instanceof ApiError ? erro.message : "Não foi possível baixar o PDF.", "erro");
+    exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível baixar o PDF.", "erro");
   } finally {
     botao.disabled = false;
   }
-}
-
-// ============================================
-// Feedback
-// ============================================
-function feedback(texto, tipo) {
-  const el = $("cons-qr-feedback");
-  if (!el) return;
-  el.textContent = texto;
-  el.className = tipo ? `cons-form-feedback ${tipo}` : "cons-form-feedback";
 }
