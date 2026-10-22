@@ -32,7 +32,7 @@
 
 import "./consultaConsentimento.js";
 import "./consultaAcoes.js";
-import "./consultaAssinatura.js";
+import "./consentimento/consultaAssinar.js";
 import { ApiError, buscarConsulta, situacaoConsentimento } from "./consultaApi.js";
 import {
   DESFECHO_LABELS, EVENTO_CONSULTA_ALTERADA, ORIGEM_LABELS,
