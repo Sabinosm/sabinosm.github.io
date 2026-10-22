@@ -4,7 +4,7 @@
 // de pacientes usada no modal de nova consulta. Só fetch: nenhuma
 // regra de tela aqui.
 //
-//   GET  /consultas/?abertas=true          -> listarConsultas({ abertas })
+//   GET  /consultas?abertas=true          -> listarConsultas({ abertas })
 //   GET  /consultas/<uuid>                 -> buscarConsulta(uuid)
 //   POST /consultas/                       -> abrirConsulta(payload)
 //   POST /consultas/<uuid>/encerrar        -> encerrarConsulta(uuid, payload)
@@ -82,7 +82,7 @@ async function requisitar(base, path, options = {}) {
  */
 export function listarConsultas({ abertas = false } = {}) {
   const query = abertas ? "?abertas=true" : "";
-  return requisitar(BASE_CONSULTAS, `/${query}`, { method: "GET" });
+  return requisitar(BASE_CONSULTAS, `${query}`, { method: "GET" });
 }
 
 /** GET /consultas/<uuid> — detalhe de uma consulta (404 igual para "não existe" e "outra empresa"). */
