@@ -21,7 +21,7 @@
 // O modal de nova consulta vive em consultaNova.js, que chama de volta
 // recarregarLista (exportada daqui).
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import { ApiError, listarConsultas } from "./consultaApi.js";
 import {
   DESFECHO_LABELS, ORIGEM_LABELS,

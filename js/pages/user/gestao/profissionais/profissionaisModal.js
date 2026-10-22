@@ -25,7 +25,7 @@
 // está marcado; tipo_papel só é incluído quando um tipo foi escolhido
 // -- os dois são ortogonais no backend (ver Usuario.to_dict()).
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import {
   criarProfissional,
   atualizarProfissional,

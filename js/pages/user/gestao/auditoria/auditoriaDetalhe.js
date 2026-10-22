@@ -29,7 +29,7 @@
 // backend devolve ({cursor_data, cursor_uuid}) e devolvemos intacto
 // na próxima chamada. Sem cursor = primeira página (mais recentes).
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import { ApiError, detalheProfissional } from "./auditoriaApi.js";
 import {
   badgeOperacaoAcesso,

@@ -19,7 +19,7 @@
 import { ApiError, criarPacientePessoal } from "./pacientesApi.js";
 import { validarEssencial, IDS_CAMPOS_PACIENTE } from "./pacientesCriacaoValidacoes.js";
 import { souProfissionalDeSaude } from "../../gestao/profissionais/profissionaisSessao.js";
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 
 let enviando = false;

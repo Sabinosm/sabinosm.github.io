@@ -20,7 +20,7 @@
 // Em caso de sucesso dispara EVENTO_CONSULTA_ALTERADA; quem recarrega a
 // tela é consultaDetalhe.js.
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import { ApiError, encerrarConsulta, evadirConsulta } from "./consultaApi.js";
 import { validarEncerramentoConsulta, validarEvasaoConsulta } from "../../../../sharedConfig/validacoes/consultaValidation.js";
 import { CAMPO_GERAL } from "../../../../sharedConfig/validacoes/generalValidation.js";

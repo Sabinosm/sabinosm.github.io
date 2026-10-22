@@ -4,7 +4,7 @@
 // de data, nome de exibição do paciente, link para o detalhe e builders
 // de elementos repetidos. Sem estado de página.
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 
 // Página de detalhe da consulta (a criar). Fica numa constante só para
 // trocar o caminho em um lugar quando a página existir.

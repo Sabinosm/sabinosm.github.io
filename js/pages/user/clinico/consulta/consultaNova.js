@@ -29,7 +29,7 @@
 // (PUT /pacientes/pessoal/<uuid>). A leitura e a validação do formulário ficam
 // em consultaPacienteForm.js (compartilhadas com a identificação de paciente).
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import { ApiError, abrirConsulta, listarPacientesResumo } from "./consultaApi.js";
 import { validarAberturaConsulta } from "../../../../sharedConfig/validacoes/consultaValidation.js";
 import { CAMPO_GERAL, hojeIso } from "../../../../sharedConfig/validacoes/generalValidation.js";

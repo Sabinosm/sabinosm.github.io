@@ -20,7 +20,7 @@
 // o back usa o User-Agent do próprio request. `hash_pdf_original` volta
 // exatamente como veio no GET (o back confere se o termo não mudou).
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../../shared/feedback.js";
 import {
   ApiError, enviarAssinatura, obterDadosAssinatura, urlComprovante, urlTermoPdf,
 } from "./assinarApi.js";

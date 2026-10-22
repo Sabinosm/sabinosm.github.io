@@ -24,7 +24,7 @@
 // QR code: biblioteca qrcodejs (global QRCode), carregada por <script> em
 // consultaDetalhe.html. Se não carregar, o link continua disponível em texto.
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../../shared/feedback.js";
 import {
   ApiError, baixarPdfAssinado, cancelarLinkAssinatura, gerarLinkAssinatura, statusAssinatura,
 } from "../consultaApi.js";

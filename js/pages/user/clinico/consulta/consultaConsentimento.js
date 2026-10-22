@@ -14,7 +14,7 @@
 // caso de sucesso dispara EVENTO_CONSULTA_ALTERADA; quem recarrega a
 // tela é consultaDetalhe.js.
 
-import { exibirMensagem } from "/js/shared/feedback.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 import { ApiError, dispensarConsentimento } from "./consultaApi.js";
 import {
   CLASSE_OVERLAY_VISIVEL, EVENTO_CONSULTA_ALTERADA, uuidDaUrl,
