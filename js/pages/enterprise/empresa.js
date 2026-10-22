@@ -26,6 +26,9 @@ import { ligarValidacaoEmTempoReal, validarFormularioEdicaoEmpresa, limparErros 
 import { URL_BASE_API } from '../../sharedConfig/urlConfig.js';
 import { iniciarPagina } from '../../sharedConfig/loaders/initPagina.js';
 import { exibirMensagem } from '../../shared/feedback.js';
+// Step-up: o backend exige reconfirmação de identidade para atualizar a
+// empresa (acao_sensivel "atualizar_empresa"). Ver shared/stepUp.js.
+import { pedirConfirmacao, ConfirmacaoCanceladaError } from '../../sharedConfig/stepup.js';
 // ALTERADO (múltiplos admins por empresa): edição de empresa passou a
 // ser restrita ao super admin no backend -- reaproveita o mesmo
 // helper de sessão já usado na tela de Profissionais, em vez de
@@ -71,11 +74,14 @@ async function buscarEmpresa() {
   return corpo?.data ?? corpo;
 }
 
-async function atualizarEmpresa(dados) {
+async function atualizarEmpresa(dados, tokenStepUp) {
   const resp = await fetch(URL_BASE, {
     method: 'PUT',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Stepup-Token': tokenStepUp,
+    },
     body: JSON.stringify(dados),
   });
 
@@ -239,7 +245,20 @@ async function salvarEdicao(evento) {
 
   try {
     const dados = lerFormularioComFallback();
-    empresaAtual = await atualizarEmpresa(dados);
+
+    // O nome da ação TEM que ser igual ao `acao` do decorator no backend.
+    // Sem cache: cada salvamento pede uma confirmação nova.
+    let token;
+    try {
+      token = await pedirConfirmacao('atualizar_empresa');
+    } catch (erro) {
+      // Usuário desistiu: mantém o form em modo de edição, sem mensagem de
+      // erro. O finally abaixo reabilita o botão.
+      if (erro instanceof ConfirmacaoCanceladaError) return;
+      throw erro;
+    }
+
+    empresaAtual = await atualizarEmpresa(dados, token);
     preencherPainelEmpresa(empresaAtual);
     sairModoEdicao();
     exibirMensagem('Dados da empresa atualizados.', 'sucesso');

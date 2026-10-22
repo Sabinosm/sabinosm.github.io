@@ -50,7 +50,7 @@
   display: contents;
 }
 
-.panel-header-row {
+.panel-card .panel-header-row {
   grid-area: cabecalho;
   display: flex;
   align-items: flex-start;
@@ -63,7 +63,7 @@
 .empresa-bloco--endereco { grid-area: endereco; }
 .empresa-bloco--plano    { grid-area: plano; }
 
-.form-actions {
+.panel-card .form-actions {
   grid-area: acoes;
   display: flex;
   justify-content: flex-end;
@@ -73,23 +73,23 @@
 /* O atributo hidden é o que o JS usa para mostrar/esconder as ações.
    Como .form-actions define display, garantimos que hidden continue
    vencendo. */
-.form-actions[hidden] {
+.panel-card .form-actions[hidden] {
   display: none;
 }
 
 /* O divisor antigo separava formulário e plano dentro de um cartão só.
    Com blocos separados ele não tem mais função visual (mantido no HTML). */
-.panel-divider {
+.panel-card .panel-divider {
   display: none;
 }
 
-.row-2 {
+.panel-card .row-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
 
-.row-endereco {
+.panel-card .row-endereco {
   display: grid;
   grid-template-columns: 1fr 1.4fr 0.8fr 1fr;
   gap: 14px;
@@ -97,8 +97,8 @@
 
 /* Reservado para campos que precisam ocupar a linha inteira (fora do
    row-2). */
-.field-group--full,
-.field--full {
+.panel-card .field-group--full,
+.panel-card .field--full {
   width: 100%;
 }
 
@@ -115,8 +115,8 @@
 }
 
 @media (max-width: 560px) {
-  .row-2,
-  .row-endereco {
+  .panel-card .row-2,
+  .panel-card .row-endereco {
     grid-template-columns: 1fr;
   }
 }

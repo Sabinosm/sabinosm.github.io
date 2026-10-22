@@ -108,11 +108,11 @@
 
 /* Escondido por padrão; .field.is-loading (colocada pelo JS) revela.
    A rotação está em empresa-motion.css. */
-.field {
+.panel-card .field {
   position: relative;
 }
 
-.field-spinner {
+.panel-card .field-spinner {
   display: none;
   position: absolute;
   right: 12px;
@@ -124,14 +124,14 @@
   border-radius: 50%;
 }
 
-.field.is-loading .field-spinner {
+.panel-card .field.is-loading .field-spinner {
   display: block;
 }
 
 /* ----- Mensagem de erro por campo ----- */
 
 /* Vermelho só como sinal real de erro, não decoração. */
-.error-msg {
+.panel-card .error-msg {
   color: var(--status-danger-fg, var(--palette-status-red));
   font-size: calc(12px * var(--font-scale, 1) * var(--empresa-escala, 0.9));
   margin-top: 4px;
