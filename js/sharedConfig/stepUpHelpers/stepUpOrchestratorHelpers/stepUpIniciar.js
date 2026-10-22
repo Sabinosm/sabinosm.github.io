@@ -47,13 +47,11 @@ export async function iniciar(ctx) {
 }
 
 /**
- * Botão "Tentar novamente" do painel WebAuthn: limpa o feedback e
- * recomeça do zero (nova chamada a /stepup/iniciar -- o backend pode
- * até já ter mudado de método, e recomeçar de fora pega isso).
+ * Botão "Tentar novamente" do painel WebAuthn: recomeça do zero (nova
+ * chamada a /stepup/iniciar -- o backend pode até já ter mudado de
+ * método, e recomeçar de fora pega isso). O toast de erro anterior some
+ * sozinho, não há feedback dentro do modal para limpar.
  */
 export function onTentarWebauthnNovamente(ctx) {
-  const { feedback } = ctx.refs;
-  feedback.textContent = "";
-  feedback.className = "stepup-feedback";
   iniciar(ctx);
 }

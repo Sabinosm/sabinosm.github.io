@@ -9,6 +9,7 @@
 import { URL_BASE_API, FRONT_ORIGIN } from "../../urlConfig.js";
 import { PopupBloqueadoError, mensagemParaErroCallback } from "../stepUpErros.js";
 import { mostrarErro } from "./stepUpUi.js";
+import { exibirMensagem } from "../../../shared/feedback.js";
 import { resolverComToken } from "./stepUpCicloDeVida.js";
 
 // Origin exata do frontend em produção -- usada para travar tanto o
@@ -30,12 +31,9 @@ const MENSAGENS_ERRO_SENHA = {
 
 export async function onSubmitSenha(ctx, e) {
   e.preventDefault();
-  const { inputSenha, feedback } = ctx.refs;
+  const { inputSenha } = ctx.refs;
   const senha = inputSenha.value;
   if (!senha) return;
-
-  feedback.textContent = "";
-  feedback.className = "stepup-feedback";
 
   let dados;
   try {
@@ -56,8 +54,6 @@ export async function onSubmitSenha(ctx, e) {
 }
 
 function abrirPopupGoogle(ctx, redirectUrl) {
-  const { feedback } = ctx.refs;
-
   const largura = 480;
   const altura = 640;
   const esquerda = window.screenX + (window.outerWidth - largura) / 2;
@@ -74,8 +70,7 @@ function abrirPopupGoogle(ctx, redirectUrl) {
     return;
   }
 
-  feedback.textContent = "Complete a confirmação na janela que abrimos.";
-  feedback.className = "stepup-feedback info";
+  exibirMensagem("Complete a confirmação na janela que abrimos.", "info", 4000);
 
   // Registrado com { signal: ctx.signal } -- encerrar() remove via
   // abort(), como todos os outros listeners do modal.

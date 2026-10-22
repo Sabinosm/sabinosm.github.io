@@ -4,18 +4,22 @@
 // Só tocam o DOM via ctx.refs -- nenhum estado, nenhuma chamada de
 // rede. (Eram limparEstadoVisual/mostrarErro/mostrarPainelSenha na
 // closure original.)
+//
+// O feedback de erro não vive mais dentro do modal: usa o toast
+// compartilhado (shared/feedback.js), então não há elemento
+// #stepup-feedback para procurar nem limpar.
+
+import { exibirMensagem } from "../../../shared/feedback.js";
+
+const DURACAO_ERRO_MS = 4000; // erro de confirmação merece mais tempo que os 2s padrão
 
 export function limparEstadoVisual(ctx) {
-  const { painelCarregando, painelWebauthn, painelTotp, painelSenha, feedback } = ctx.refs;
+  const { painelCarregando, painelWebauthn, painelTotp, painelSenha } = ctx.refs;
   [painelCarregando, painelWebauthn, painelTotp, painelSenha].forEach(p => p.hidden = true);
-  feedback.textContent = "";
-  feedback.className = "stepup-feedback";
 }
 
 export function mostrarErro(ctx, mensagem) {
-  const { feedback } = ctx.refs;
-  feedback.textContent = mensagem;
-  feedback.className = "stepup-feedback erro";
+  exibirMensagem(mensagem, "erro", DURACAO_ERRO_MS);
 }
 
 export function mostrarPainelSenha(ctx) {

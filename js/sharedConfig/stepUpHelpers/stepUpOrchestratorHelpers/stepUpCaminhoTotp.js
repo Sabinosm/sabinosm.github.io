@@ -33,13 +33,11 @@ import { resolverComToken } from "./stepUpCicloDeVida.js";
  * então esse caminho continua chamando iniciarStepUpTOTP normalmente.
  */
 export async function iniciarPainelTotp(ctx, { ocultarWebauthn = false, jaIniciado = false } = {}) {
-  const { painelWebauthn, painelTotp, inputTotp, feedback } = ctx.refs;
+  const { painelWebauthn, painelTotp, inputTotp } = ctx.refs;
 
   const mostrarPainel = () => {
     if (ocultarWebauthn) painelWebauthn.hidden = true;
     painelTotp.hidden = false;
-    feedback.textContent = "";
-    feedback.className = "stepup-feedback";
     inputTotp.value = "";
     inputTotp.focus();
   };
