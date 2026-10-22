@@ -98,6 +98,14 @@
             <dd id="pf-view-sangue"></dd>
           </div>
           <div class="field-readonly">
+            <dt>Peso (kg)</dt>
+            <dd id="pf-view-peso"></dd>
+          </div>
+          <div class="field-readonly">
+            <dt>Altura (cm)</dt>
+            <dd id="pf-view-altura"></dd>
+          </div>
+          <div class="field-readonly">
             <dt data-i18n="settings.user.telefone">Telefone</dt>
             <dd id="pf-view-telefone"></dd>
           </div>
@@ -148,11 +156,7 @@
         </dl>
       </section>
 
-      <!-- ===== HISTÓRICO: últimas consultas (o repository limita a 5) =====
-           Visível para os três papéis que acessam a ficha (admin, médico,
-           enfermeiro). O botão "Ver detalhes" só é renderizado para o eixo
-           clínico -- a rota GET /consultas/<uuid> só aceita médico/enfermeiro
-           (admin vê a lista do histórico, não o conteúdo da consulta). -->
+      <!-- ===== HISTÓRICO: últimas consultas (o repository limita a 5) ===== -->
       <section id="painel-historico" style="margin-top: 28px;">
         <div class="block-header">
           <h2 data-i18n="paciente.historico_titulo">Histórico de consultas</h2>
@@ -162,19 +166,7 @@
         </div>
       </section>
 
-      <!-- ===== DADOS CLÍNICOS (placeholder) =====
-           TODO: alergias, medicamentos em uso, doenças crônicas e
-           consentimento LGPD passaram a ser registrados durante a
-           CONSULTA (fluxo ainda não implementado -- ver
-           pacientesCriacao.js, botão "Salvar e iniciar consulta").
-           Quando o módulo de Consultas existir, esta seção deve voltar
-           a exibir (e possivelmente editar) esses dados, nos moldes do
-           que já existia aqui antes desta simplificação: alertas fixos
-           a partir de resumo_clinico, abas Alergias/Medicamentos/
-           Doenças crônicas, e o banner de consentimento_ativo. Ver
-           buscarDetalheClinico/buscarDetalheCompleto em
-           pacientesApi.js, que já ficaram prontas para isso.
-           Escondida para admin (só 'gerenciar') via JS. -->
+      <!-- ===== DADOS CLÍNICOS (placeholder) ===== -->
       <section class="panel-divider" id="painel-clinico" style="margin-top: 28px; border: none; height: auto;">
         <div class="block-header" style="margin-bottom: 8px;">
           <h2 data-i18n="paciente.clinicos_titulo">Dados clínicos</h2>
@@ -189,6 +181,136 @@
     </div>
 
   </main>
+</div>
+
+<!-- ===== MODAL: EDITAR DADOS DO PACIENTE =====
+     Dois grupos num único modal, mas DOIS submits separados no JS:
+       - "Dados pessoais"  -> PUT /pacientes/pessoal/<uuid>
+       - "Dados clínicos"  -> PUT /pacientes/clinico/<uuid> (peso/altura)
+                              + POST /pacientes/clinico/<uuid>/tipo-sanguineo
+                                (só se o tipo mudou -- cada mudança gera
+                                uma observação nova no histórico, não
+                                sobrescreve a anterior) -->
+<div class="settings-overlay" id="pac-edit-overlay">
+  <div class="cons-modal" role="dialog" aria-modal="true" aria-labelledby="pac-edit-titulo">
+    <form id="form-editar-paciente" novalidate>
+      <div class="cons-modal-header">
+        <h2 class="panel-title" id="pac-edit-titulo" data-i18n="paciente.editar_titulo">Editar dados do paciente</h2>
+        <button type="button" class="settings-close" id="pac-edit-close" aria-label="Fechar" style="position: static;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <path d="M18 6L6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cons-modal-body">
+
+        <!-- ===== Grupo 1: dados pessoais (PUT /pessoal/<uuid>) ===== -->
+        <p class="creation-section-title" data-i18n="secao.dados_pessoais">Dados pessoais</p>
+
+        <div class="field-group">
+          <label class="field-label" for="pac-edit-nome" data-i18n="campo.nome_completo">Nome completo</label>
+          <input class="field-input" type="text" id="pac-edit-nome" autocomplete="off">
+          <p class="field-error" id="pac-edit-nome-error"></p>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-telefone" data-i18n="settings.user.telefone">Telefone</label>
+            <input class="field-input" type="tel" id="pac-edit-telefone" placeholder="(11) 91234-5678">
+            <p class="field-error" id="pac-edit-telefone-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-email"><span data-i18n="settings.user.email">E-mail</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
+            <input class="field-input" type="email" id="pac-edit-email" autocomplete="off">
+            <p class="field-error" id="pac-edit-email-error"></p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="pac-edit-logradouro" data-i18n="criacao.logradouro">Logradouro</label>
+          <input class="field-input" type="text" id="pac-edit-logradouro" placeholder="Rua, número">
+          <p class="field-error" id="pac-edit-logradouro-error"></p>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group field-group--sm">
+            <label class="field-label" for="pac-edit-numero" data-i18n="criacao.numero">Número</label>
+            <input class="field-input" type="text" id="pac-edit-numero">
+            <p class="field-error" id="pac-edit-numero-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-cep" data-i18n="empresa.cep">CEP</label>
+            <input class="field-input" type="text" id="pac-edit-cep" placeholder="00000-000" inputmode="numeric">
+            <p class="field-error" id="pac-edit-cep-error"></p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-rg" data-i18n="criacao.rg">RG</label>
+            <input class="field-input" type="text" id="pac-edit-rg" placeholder="Ex: MG-12.345.678">
+            <p class="field-error" id="pac-edit-rg-error"></p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-emergencia-nome" data-i18n="criacao.nome">Contato de emergência</label>
+            <input class="field-input" type="text" id="pac-edit-emergencia-nome">
+            <p class="field-error" id="pac-edit-emergencia-nome-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-emergencia-telefone" data-i18n="settings.user.telefone">Telefone de emergência</label>
+            <input class="field-input" type="tel" id="pac-edit-emergencia-telefone" placeholder="(11) 91234-5678">
+            <p class="field-error" id="pac-edit-emergencia-telefone-error"></p>
+          </div>
+        </div>
+
+        <!-- ===== Grupo 2: dados clínicos (PUT /clinico/<uuid> + POST tipo-sanguineo) ===== -->
+        <p class="creation-section-title" data-i18n="paciente.clinicos_titulo" style="margin-top: 20px;">Dados clínicos</p>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-peso">Peso (kg)</label>
+            <input class="field-input" type="number" id="pac-edit-peso" min="0" step="0.1" inputmode="decimal" placeholder="Ex: 70.5">
+            <p class="field-error" id="pac-edit-peso-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-altura">Altura (cm)</label>
+            <input class="field-input" type="number" id="pac-edit-altura" min="0" step="1" inputmode="numeric" placeholder="Ex: 175">
+            <p class="field-error" id="pac-edit-altura-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-edit-tipo-sanguineo" data-i18n="criacao.tipo_sanguineo">Tipo sanguíneo</label>
+            <select class="field-input" id="pac-edit-tipo-sanguineo">
+              <option value="" data-i18n="criacao.nao_informar_agora">Não informar agora</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="desconhecido" data-i18n="criacao.sangue_desconhecido">Desconhecido</option>
+            </select>
+            <p class="field-error" id="pac-edit-tipo-sanguineo-error"></p>
+            <p class="field-hint" data-i18n="paciente.tipo_sanguineo_hint">Cada alteração registra uma nova observação no histórico (não sobrescreve a anterior).</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="cons-modal-footer">
+        <button type="button" class="btn-ghost" id="pac-edit-cancel" data-i18n="btn.cancelar">Cancelar</button>
+        <div class="cons-modal-footer-right">
+          <button type="button" class="btn-secondary" id="pac-edit-salvar-pessoal" data-i18n="paciente.salvar_pessoal">Salvar dados pessoais</button>
+          <button type="submit" class="btn-primary" id="pac-edit-salvar-tudo" data-i18n="paciente.salvar_tudo">Salvar tudo</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="../../../../js/shared/particles.js"></script>

@@ -8,6 +8,8 @@
 //   GET  /pacientes/pessoal/resumo?...            -> listarPacientes({...})
 //   GET  /pacientes/pessoal/<uuid>                -> buscarDetalhePessoal(uuid)
 //   GET  /pacientes/clinico/<uuid>                -> buscarDetalheClinico(uuid)
+//   PUT  /pacientes/pessoal/<uuid>                -> atualizarPacientePessoal(uuid, payload)
+//   PUT  /pacientes/clinico/<uuid>                -> atualizarPacienteClinico(uuid, payload)
 //   GET  /consultas/paciente/historico/<uuid>     -> listarHistoricoConsultas(uuidPaciente)
 //   POST /pacientes/pessoal/                      -> criarPacientePessoal(payload)
 //   ... (blocos clínicos e LGPD mantidos abaixo)
@@ -19,10 +21,7 @@
 // LEITURA SEM STEP-UP: as rotas de detalhe (pessoal e clínico) usam
 // acesso_auditado no back (só registram LogAcesso) -- decisão registrada
 // nos controllers: leitura pura não exige reconfirmação de identidade.
-// Step-up fica reservado para ESCREVER/deletar (acao_sensivel). Versões
-// anteriores deste arquivo pediam token de step-up nessas leituras; isso
-// ficou desalinhado com o back e foi removido (menos fricção, mesmo
-// nível de segurança: o acesso continua auditado).
+// Step-up fica reservado para ESCREVER/deletar sensível (acao_sensivel).
 //
 // ============================================
 // LISTAGEM — modelo Paciente.to_dict_few()
@@ -104,10 +103,9 @@ export function listarPacientes({ pagina = 0, status, sexoBiologico } = {}) {
  *
  * ATENÇÃO (permissões do back): a PII (nome, cpf, telefone, email,
  * endereço) só vem em `data.pessoal` para médico/enfermeiro
- * (com_pii); admin recebe só o to_dict() base -- que AINDA INCLUI
- * tipo_sanguineo, peso e altura (ver flag no pacientesDetalheLista.js:
- * o front não exibe esses campos pra admin, mas endurecer a
- * serialização no back é um TODO recomendado lá).
+ * (com_pii); admin recebe só o to_dict() base -- que INCLUI
+ * tipo_sanguineo, peso e altura (decisão de produto: exibir para
+ * todos os papéis).
  *
  * @param {string} uuid
  */
@@ -158,11 +156,9 @@ export function buscarDetalheCompleto(uuid) {
 // clínico do atendimento vem aqui -- é só o resumo do ciclo da
 // consulta (origem, status, datas, desfecho).
 //
-// PERMISSÃO: a rota precisa aceitar admin também (regra de produto:
-// admin vê o histórico, só não vê os detalhes clínicos). Se o back
-// ainda estiver com @requer_papel_clinico puro, admin recebe 403 --
-// trocar para @requer_admin_ou_papel_clinico("enfermeiro", "medico")
-// no controller de consulta (ver diff no plano).
+// PERMISSÃO: a rota aceita admin também (regra de produto: admin vê
+// o histórico, só não vê os detalhes clínicos). O decorator foi
+// ajustado para @requer_admin_ou_papel_clinico("enfermeiro", "medico").
 
 /**
  * @param {string} uuidPaciente
@@ -200,6 +196,58 @@ export function listarHistoricoConsultas(uuidPaciente) {
 export function criarPacientePessoal(payload) {
   return requisitar('/pessoal/', {
     method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+// ============================================
+// EDIÇÃO DE DADOS PESSOAIS
+// ============================================
+//
+//   PUT /pacientes/pessoal/<uuid> — PATCH parcial (só o que vier é
+//   aplicado; ver PacienteAtualizarPessoalSchema / campos_informados).
+//
+// PERMISSÃO (back): a rota aceita médico, enfermeiro E admin -- e a
+// regra de produto atual é que os três editam (admin incluído).
+//
+// CAMPOS: nome_completo, telefone, email, logradouro, cep,
+// numero_residencia, rg, contato_emergencia_nome,
+// contato_emergencia_telefone. (cpf e data_nascimento nem existem no
+// schema de atualização -- são imutáveis por natureza do contrato.)
+
+/**
+ * @param {string} uuid
+ * @param {object} payload — só os campos alterados
+ */
+export function atualizarPacientePessoal(uuid, payload) {
+  return requisitar(`/pessoal/${encodeURIComponent(uuid)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+// ============================================
+// EDIÇÃO DE DADOS CLÍNICOS (peso, altura)
+// ============================================
+//
+//   PUT /pacientes/clinico/<uuid> — PATCH parcial do eixo clínico.
+//
+// PERMISSÃO (back): aceita médico, enfermeiro E admin (com auditoria
+// de exceção para admin -- auditar_excecao_por). Schema:
+// PacienteAtualizarClinicoSchema (extra="forbid": só peso, altura,
+// status passam; status só 'ativo'|'inativo' -- óbito tem rotas
+// próprias).
+//
+// TIPO SANGUÍNEO NÃO VAI AQUI: ele é histórico de observações
+// (ObservacaoTipoSanguineo), registrado via POST separado abaixo.
+
+/**
+ * @param {string} uuid
+ * @param {object} payload — só os campos alterados ({ peso?, altura? })
+ */
+export function atualizarPacienteClinico(uuid, payload) {
+  return requisitar(`/clinico/${encodeURIComponent(uuid)}`, {
+    method: 'PUT',
     body: JSON.stringify(payload),
   });
 }
@@ -310,46 +358,19 @@ export const TIPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-
 
 /**
  * POST /pacientes/clinico/<uuid>/tipo-sanguineo — registra nova
- * observação de tipo sanguíneo (histórico).
+ * observação de tipo sanguíneo (histórico: cada chamada cria uma
+ * observação nova, não sobrescreve a anterior).
  *
  * NÃO é usada no fluxo de CRIAÇÃO (o back ignora tipo_sanguineo no
- * POST /pessoal/) -- existe para registrar/atualizar depois, pela
- * ficha ou pelo fluxo de consulta.
+ * POST /pessoal/) -- usada pela EDIÇÃO da ficha (quando o tipo muda)
+ * e pelo futuro fluxo de consulta.
+ *
+ * @param {string} uuid
+ * @param {string} tipoSanguineo — um de TIPOS_SANGUINEOS
  */
 export function registrarTipoSanguineo(uuid, tipoSanguineo) {
   return requisitar(`/clinico/${uuid}/tipo-sanguineo`, {
     method: 'POST',
     body: JSON.stringify({ tipo_sanguineo: tipoSanguineo }),
-  });
-}
-
-// ============================================
-// EDIÇÃO DE DADOS PESSOAIS
-// ============================================
-//
-//   PUT /pacientes/pessoal/<uuid> — PATCH parcial (só o que vier é
-//   aplicado; ver PacienteAtualizarPessoalSchema / campos_informados).
-//
-// PERMISSÃO (back): a rota aceita médico, enfermeiro E admin -- mas a
-// regra de produto é que ADMIN NÃO EDITA paciente (só vê). O front
-// não exibe o botão de editar para admin; endurecer o back (tirar
-// "admin" do requer_papel_clinico) é um TODO recomendado lá.
-//
-// CAMPOS IMUTÁVEIS (regra de produto): nome_completo, cpf e
-// data_nascimento não são editáveis por médico/enfermeiro. O schema
-// do back já rejeita cpf e data_nascimento (nem existem no schema de
-// atualização); nome_completo AINDA ACEITA -- decidir se remove do
-// schema ou se a restrição fica só no front (ver plano).
-
-/**
- * @param {string} uuid
- * @param {object} payload — só os campos alterados
- *   (telefone, email, logradouro, cep, numero_residencia, rg,
- *    contato_emergencia_nome, contato_emergencia_telefone)
- */
-export function atualizarPacientePessoal(uuid, payload) {
-  return requisitar(`/pessoal/${encodeURIComponent(uuid)}`, {
-    method: 'PUT',
-    body: JSON.stringify(payload),
   });
 }
