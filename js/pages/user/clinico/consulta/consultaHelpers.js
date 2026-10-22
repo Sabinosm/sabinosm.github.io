@@ -8,7 +8,8 @@ import { exibirMensagem } from "../../../../shared/feedback.js";
 
 // Página de detalhe da consulta (a criar). Fica numa constante só para
 // trocar o caminho em um lugar quando a página existir.
-import { ROTAS } from "../../../../sharedConfig/loaders/rotas";
+import { ROTAS } from "../../../../sharedConfig/loaders/rotas.js";
+
 const PAGINA_DETALHE = ROTAS.consultaDetalhe;
 // Página de atendimento (a criar, Bloco 2); recebe o uuid da consulta.
 const PAGINA_ATENDIMENTO = ROTAS.atendimento;
