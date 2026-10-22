@@ -5,7 +5,7 @@
 // DOMContentLoaded, e chama iniciarPagina() -- mesmo padrão de
 // auditoria.js.
 //
-// O acesso é declarado no <body> de consulta.html:
+// O acesso é declarado no <body> de consultas.html:
 //   <body data-requer="atenderClinicamente">   (médico ou enfermeiro)
 //
 // Estrutura da tela:
