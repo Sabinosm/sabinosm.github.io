@@ -1,0 +1,304 @@
+/* pacienteEditModal.css
+ *
+ * Estilo do modal "Editar dados do paciente" (#pac-edit-overlay em
+ * pacientesDetalhe.html). Tudo escopado no id do overlay para não
+ * brigar com .field-input / .btn-* de outras telas.
+ *
+ * Usa os tokens do tema do projeto (--bg, --border, --radius-md,
+ * --neu-shadow-dark, --palette-white). Os demais (--text, --text-muted,
+ * --accent, --danger, --radius-sm) têm fallback: se o seu theme.css usa
+ * outros nomes, troque só as variáveis do bloco :root do modal abaixo.
+ *
+ * O overlay em si (fundo escurecido, blur, centralização) vem de
+ * .settings-overlay / .settings-overlay--visible no CSS comum.
+ */
+
+#pac-edit-overlay {
+  /* ---- mapeamento de tokens: ajuste aqui se os nomes forem outros ---- */
+  --pe-bg: var(--bg);
+  --pe-border: var(--border);
+  --pe-text: var(--text, var(--text-primary, #e8eaed));
+  --pe-muted: var(--text-muted, var(--text-secondary, #8a8f98));
+  --pe-accent: var(--accent, var(--primary, #4f8cff));
+  --pe-danger: var(--danger, var(--error, #e5484d));
+  --pe-radius: var(--radius-md, 12px);
+  --pe-radius-sm: var(--radius-sm, 8px);
+  --pe-field-bg: color-mix(in srgb, var(--pe-text) 5%, var(--pe-bg));
+}
+
+/* ------------------------------------------------------------ caixa */
+#pac-edit-overlay .cons-modal {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  max-height: min(88vh, 760px);
+  display: flex;
+  flex-direction: column;
+  background: var(--pe-bg);
+  color: var(--pe-text);
+  border: 1px solid var(--pe-border);
+  border-radius: var(--pe-radius);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent),
+    0 24px 64px color-mix(in srgb, var(--neu-shadow-dark, #000) 80%, transparent);
+  animation: set-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* o <form> envolve header + body + footer: precisa ocupar a caixa
+   inteira para o body rolar e o footer ficar fixo embaixo */
+#pac-edit-overlay #form-editar-paciente {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+/* ----------------------------------------------------------- header */
+#pac-edit-overlay .cons-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--pe-border);
+}
+
+#pac-edit-overlay .cons-modal-header .panel-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+#pac-edit-overlay .settings-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--pe-muted);
+  border: 1px solid transparent;
+  border-radius: var(--pe-radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+#pac-edit-overlay .settings-close:hover {
+  background: var(--pe-field-bg);
+  color: var(--pe-text);
+  border-color: var(--pe-border);
+}
+
+/* ------------------------------------------------------------- body */
+#pac-edit-overlay .cons-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px 24px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#pac-edit-overlay .creation-section-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pe-muted);
+  letter-spacing: 0.01em;
+}
+
+/* dica logo abaixo do título da seção (a do campo nome usa a mesma classe) */
+#pac-edit-overlay .field-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--pe-muted);
+}
+
+/* ----------------------------------------------------------- campos */
+#pac-edit-overlay .field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* "Número" é estreito, ao lado do CEP */
+#pac-edit-overlay .field-row:has(.field-group--sm) {
+  grid-template-columns: 140px 1fr;
+}
+
+#pac-edit-overlay .field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+#pac-edit-overlay .field-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--pe-text);
+}
+
+#pac-edit-overlay .field-optional {
+  font-weight: 400;
+  color: var(--pe-muted);
+}
+
+#pac-edit-overlay .field-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--pe-text);
+  background: var(--pe-field-bg);
+  border: 1px solid var(--pe-border);
+  border-radius: var(--pe-radius-sm);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+/* O placeholder aqui carrega o DADO ATUAL do paciente: precisa ser
+   legível, só um pouco mais apagado que texto digitado. */
+#pac-edit-overlay .field-input::placeholder {
+  color: color-mix(in srgb, var(--pe-text) 55%, transparent);
+  opacity: 1;
+}
+
+#pac-edit-overlay .field-input:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--pe-text) 28%, var(--pe-border));
+}
+
+#pac-edit-overlay .field-input:focus-visible {
+  border-color: var(--pe-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pe-accent) 25%, transparent);
+}
+
+/* nome (imutável) e campos marcados para limpar */
+#pac-edit-overlay .field-input:disabled {
+  cursor: not-allowed;
+  background: transparent;
+  border-style: dashed;
+}
+
+/* ------------------------------------------------- link "Limpar" */
+#pac-edit-overlay .field-clear {
+  align-self: flex-start;
+  margin: 0;
+  padding: 2px 0;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--pe-muted);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+#pac-edit-overlay .field-clear:hover {
+  color: var(--pe-danger);
+}
+
+#pac-edit-overlay .field-clear:focus-visible {
+  outline: 2px solid var(--pe-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+#pac-edit-overlay .field-clear[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------- erro */
+#pac-edit-overlay .field-error {
+  margin: 0;
+  min-height: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--pe-danger);
+}
+
+#pac-edit-overlay .field-error:empty {
+  display: none;
+}
+
+#pac-edit-overlay .field-group--has-error .field-input {
+  border-color: var(--pe-danger);
+}
+
+#pac-edit-overlay .field-group--has-error .field-input:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pe-danger) 25%, transparent);
+}
+
+/* ----------------------------------------------------------- footer */
+#pac-edit-overlay .cons-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--pe-border);
+  background: color-mix(in srgb, var(--pe-text) 3%, var(--pe-bg));
+}
+
+#pac-edit-overlay .cons-modal-footer-right {
+  display: flex;
+  gap: 8px;
+}
+
+#pac-edit-overlay .cons-modal-footer .btn-ghost,
+#pac-edit-overlay .cons-modal-footer .btn-primary {
+  min-height: 40px;
+  padding: 0 18px;
+}
+
+#pac-edit-overlay .cons-modal-footer .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ----------------------------------------------------------- mobile */
+@media (max-width: 560px) {
+  #pac-edit-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  #pac-edit-overlay .cons-modal {
+    max-width: none;
+    max-height: 94vh;
+    border-radius: var(--pe-radius) var(--pe-radius) 0 0;
+  }
+
+  #pac-edit-overlay .cons-modal-header,
+  #pac-edit-overlay .cons-modal-body,
+  #pac-edit-overlay .cons-modal-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  #pac-edit-overlay .field-row,
+  #pac-edit-overlay .field-row:has(.field-group--sm) {
+    grid-template-columns: 1fr;
+  }
+
+  #pac-edit-overlay .cons-modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  #pac-edit-overlay .cons-modal-footer-right {
+    justify-content: stretch;
+  }
+
+  #pac-edit-overlay .cons-modal-footer-right .btn-primary {
+    flex: 1;
+  }
+}
