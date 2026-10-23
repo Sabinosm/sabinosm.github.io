@@ -13,6 +13,9 @@
 // o nome do arquivo/parâmetro da querystring para a rota real.
 
 import { ApiError, listarHistoricoConsultas } from "./pacientesApi.js";
+import { ROTAS } from "../../../../sharedConfig/loaders/rotas.js";
+
+const ROTA_CONSULTA_DETALHE = ROTAS.consultaDetalhe;
 
 const STATUS_LABELS = {
   aguardando: 'Aguardando',
@@ -105,7 +108,7 @@ function criarCardConsulta(c) {
   btn.className = 'btn-ghost';
   btn.textContent = 'Ver detalhes';
   // TODO: ajustar para a rota real de detalhe da consulta.
-  btn.href = `consultaDetalhe.html?uuid=${encodeURIComponent(c.uuid)}`;
+  btn.href = ROTA_CONSULTA_DETALHE+`?uuid=${encodeURIComponent(c.uuid)}`;
 
   card.append(status, main, btn);
   return card;
