@@ -1,13 +1,19 @@
 /* ==========================================================================
    atendimento.css — página de Atendimento (Bloco 2)
 
-   Princípios:
-   - Funciona nos temas claro e escuro: superfícies e textos derivam de
-     `currentColor` (color-mix) em vez de cores fixas. Cada declaração com
-     color-mix tem um fallback em rgba logo antes.
-   - Estado do card = UMA variável (--st). Barra lateral, badge, destaque do
-     radio e resumo leem dela; trocar a cor de um estado é mudar 1 linha.
-   - Todas as classes antigas foram mantidas (as outras abas dependem delas).
+   Carrega DEPOIS de comumCss/consulta.css e convive com homePage.css e
+   sidebarTrilho.css. O que isto assume deles:
+   - tokens: --bg-elevated, --border, --text, --text-muted, --accent,
+     --radius-sm/-md, --palette-white, --font-scale;
+   - fonte SEMPRE como calc(Npx * var(--font-scale, 1)) (preferência de
+     tamanho de texto do usuário), igual ao homePage.css;
+   - sidebarTrilho faz o .main flex-coluna com align-items:center e só dá
+     largura a header/section FILHOS DIRETOS -> ver .aten-coluna abaixo;
+   - prefers-reduced-motion já é tratado globalmente no homePage.css.
+
+   Estado do card = UMA variável (--st): barra lateral, badge, destaque da
+   resposta e resumo leem dela. Todas as classes antigas foram mantidas
+   (as outras abas dependem delas).
    ========================================================================== */
 
 :root {
@@ -17,17 +23,18 @@
   --aten-revisao: #ea580c;
   --aten-perigo: #ef4444;
 
-  --aten-borda: var(--border-color, rgba(128, 128, 128, .28));
+  --aten-borda: var(--border, rgba(128, 128, 128, .28));
   --aten-surface: rgba(128, 128, 128, .06);
   --aten-surface-forte: rgba(128, 128, 128, .12);
-  --aten-radius: 14px;
-  --aten-radius-sm: 10px;
+  --aten-realce: inset 0 1px 0 rgba(255, 255, 255, .05);
 }
 
 @supports (color: color-mix(in srgb, red, blue)) {
   :root {
-    --aten-surface: color-mix(in srgb, currentColor 5%, transparent);
-    --aten-surface-forte: color-mix(in srgb, currentColor 10%, transparent);
+    --aten-surface: color-mix(in srgb, var(--text, currentColor) 5%, transparent);
+    --aten-surface-forte: color-mix(in srgb, var(--text, currentColor) 10%, transparent);
+    /* mesmo "brilho" interno dos cards do homePage.css */
+    --aten-realce: inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent);
   }
 }
 
@@ -35,6 +42,18 @@
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* ======================= coluna de conteúdo ============================= */
+/* O trilho centraliza os filhos do .main e só dimensiona header/section
+   diretos; #aten-conteudo é uma div, então sem isto ela encolheria ao
+   tamanho do conteúdo e a largura mudaria a cada aba. A coluna (ver
+   atendimento.html) devolve a mesma largura das demais páginas. */
+.app .main > .aten-coluna {
+  width: 100%;
+  max-width: 1040px;
+  min-width: 0;
+}
+.aten-coluna > .cons-voltar { width: fit-content; }
 
 /* ============================ abas ====================================== */
 #aten-abas {
@@ -53,7 +72,7 @@
   align-items: center;
   margin-left: 10px;
   padding: 3px 12px;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   font-weight: 600;
   letter-spacing: .01em;
   border-radius: 999px;
@@ -66,7 +85,7 @@
 
 @supports (color: color-mix(in srgb, red, blue)) {
   .aten-bin-resumo {
-    color: color-mix(in srgb, var(--st) 75%, currentColor);
+    color: color-mix(in srgb, var(--st) 75%, var(--text, currentColor));
     border-color: color-mix(in srgb, var(--st) 45%, transparent);
     background: linear-gradient(
       90deg,
@@ -84,16 +103,17 @@
   padding: 16px 18px 16px 22px;
   background: var(--aten-surface);
   border: 1px solid var(--aten-borda);
-  border-radius: var(--aten-radius);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: var(--aten-realce);
   overflow: hidden;
-  transition: border-color .2s ease, background .2s ease;
+  transition: border-color .15s ease, background .15s ease;
 }
 
 .aten-bin-card::before {
   content: "";
   position: absolute;
   inset: 0 auto 0 0;
-  width: 4px;
+  width: 3px;               /* mesma barra de 3px do .consult-card */
   background: var(--st);
 }
 
@@ -115,14 +135,15 @@
   gap: 8px;
 }
 
-.aten-bin-card-titulo { font-size: 15px; font-weight: 600; }
+.aten-bin-card-titulo { font-size: calc(15px * var(--font-scale, 1)); font-weight: 600; }
 
+/* mesma "pílula tonal" do .consult-status */
 .aten-bin-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 11px;
-  font-size: 12px;
+  padding: 4px 12px 4px 10px;
+  font-size: calc(12px * var(--font-scale, 1));
   font-weight: 600;
   white-space: nowrap;
   border-radius: 999px;
@@ -131,16 +152,17 @@
 }
 .aten-bin-badge::before {
   content: "";
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: var(--st);
+  background: currentColor;
 }
 
 @supports (color: color-mix(in srgb, red, blue)) {
   .aten-bin-badge {
-    color: color-mix(in srgb, var(--st) 72%, currentColor);
+    color: color-mix(in srgb, var(--st) 72%, var(--text, currentColor));
     background: color-mix(in srgb, var(--st) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--st) 22%, transparent);
   }
 }
 
@@ -155,7 +177,7 @@
 }
 .aten-bin-dados li {
   padding: 4px 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   line-height: 1.35;
   border: 1px solid var(--aten-borda);
   border-radius: 8px;
@@ -164,22 +186,22 @@
 .aten-bin-dados li.aten-bin-dados-mais {
   background: transparent;
   border-style: dashed;
-  opacity: .75;
+  color: var(--text-muted, inherit);
 }
 
 /* ------------------------- aviso de revisão ----------------------------- */
 .aten-bin-revisao {
   margin: 12px 0 0;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   line-height: 1.45;
-  border-radius: var(--aten-radius-sm);
+  border-radius: var(--radius-sm, 10px);
   border: 1px solid rgba(234, 88, 12, .4);
   background: rgba(234, 88, 12, .12);
   color: #c2410c;
 }
 @supports (color: color-mix(in srgb, red, blue)) {
-  .aten-bin-revisao { color: color-mix(in srgb, var(--aten-revisao) 75%, currentColor); }
+  .aten-bin-revisao { color: color-mix(in srgb, var(--aten-revisao) 75%, var(--text, currentColor)); }
 }
 
 /* =============================== form =================================== */
@@ -197,7 +219,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  font-size: 14px;
+  font-size: calc(14px * var(--font-scale, 1));
   border: 1px solid var(--aten-borda);
   border-radius: 999px;
   cursor: pointer;
@@ -223,7 +245,7 @@
   }
   .aten-bin-radio:has(input:checked)::before {
     content: "✓";
-    font-size: 12px;
+    font-size: calc(12px * var(--font-scale, 1));
     color: var(--st);
   }
   .aten-bin-radio:has(input:focus-visible) {
@@ -249,7 +271,7 @@
   margin-top: 10px;
   padding: 12px 14px;
   border: 1px solid var(--aten-borda);
-  border-radius: 12px;
+  border-radius: var(--radius-sm, 10px);
   background: var(--aten-surface);
 }
 .aten-bin-item-grid {
@@ -258,8 +280,18 @@
   gap: 10px 14px;
 }
 .aten-bin-item-erro { margin: 8px 0 0; }
-.aten-bin-item-remover { margin-top: 8px; padding: 3px 12px; font-size: 12px; }
-.aten-bin-item-remover:hover { color: var(--aten-perigo); }
+
+.aten-bin-item .aten-bin-item-remover {
+  margin-top: 8px;
+  padding: 3px 12px;
+  font-size: calc(12px * var(--font-scale, 1));
+}
+/* .btn-ghost:hover põe borda/cor --accent; aqui o hover é "destrutivo" inteiro */
+.aten-bin-item .aten-bin-item-remover:hover {
+  color: var(--aten-perigo);
+  border-color: var(--aten-perigo);
+  background: rgba(239, 68, 68, .08);
+}
 
 .aten-bin-add-item { margin-top: 10px; }
 .aten-bin-conferir { margin-top: 14px; }
@@ -269,19 +301,24 @@
   margin-top: 10px;
   overflow-x: auto;
   border: 1px solid var(--aten-borda);
-  border-radius: 12px;
+  border-radius: var(--radius-sm, 10px);
 }
 .aten-tabela-wrap .aten-tabela { min-width: 560px; margin-top: 0; }
 
 .aten-tabela { width: 100%; border-collapse: collapse; margin-top: 8px; }
 .aten-tabela th,
-.aten-tabela td { padding: 9px 12px; text-align: left; font-size: 13px; vertical-align: middle; }
+.aten-tabela td {
+  padding: 9px 12px;
+  text-align: left;
+  font-size: calc(13px * var(--font-scale, 1));
+  vertical-align: middle;
+}
 .aten-tabela th {
-  font-size: 11px;
+  font-size: calc(11px * var(--font-scale, 1));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .05em;
-  opacity: .75;
+  color: var(--text-muted, inherit);
   background: var(--aten-surface);
   border-bottom: 1px solid var(--aten-borda);
 }
@@ -291,20 +328,33 @@
 .aten-tabela select,
 .aten-tabela input:not([type="checkbox"]) { width: 100%; min-width: 80px; }
 
-.aten-sv-remover { padding: 3px 12px; font-size: 12px; }
-.aten-sv-remover:hover { color: var(--aten-perigo); }
+.aten-tabela .aten-sv-remover {
+  padding: 3px 12px;
+  font-size: calc(12px * var(--font-scale, 1));
+}
+.aten-tabela .aten-sv-remover:hover {
+  color: var(--aten-perigo);
+  border-color: var(--aten-perigo);
+  background: rgba(239, 68, 68, .08);
+}
 
 /* ================ referências de atendimentos anteriores ================ */
 #aten-sv-anteriores,
 #aten-co-anteriores {
   margin-top: 14px;
   padding: 12px 14px;
-  font-size: 13px;
+  font-size: calc(13px * var(--font-scale, 1));
   border: 1px solid var(--aten-borda);
-  border-radius: 12px;
+  border-radius: var(--radius-sm, 10px);
   background: var(--aten-surface);
 }
-.aten-lista-ref { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; opacity: .85; }
+.aten-lista-ref {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: calc(13px * var(--font-scale, 1));
+  line-height: 1.5;
+  color: var(--text-muted, inherit);
+}
 
 /* ===================== coleta clínica / conduta ========================= */
 .aten-co-item,
@@ -312,37 +362,39 @@
   margin-top: 12px;
   padding: 14px 16px;
   border: 1px solid var(--aten-borda);
-  border-radius: 12px;
+  border-radius: var(--radius-sm, 10px);
   background: var(--aten-surface);
+  box-shadow: var(--aten-realce);
 }
-.aten-cond-descricao { margin: 0 0 6px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+.aten-cond-descricao {
+  margin: 0 0 6px;
+  font-size: calc(14px * var(--font-scale, 1));
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
 
 .aten-badge-tipo {
   display: inline-block;
   padding: 2px 10px;
-  font-size: 12px;
+  font-size: calc(12px * var(--font-scale, 1));
   font-weight: 600;
   border-radius: 999px;
   background: rgba(37, 99, 235, .18);
   color: #3b82f6;
 }
 @supports (color: color-mix(in srgb, red, blue)) {
-  .aten-badge-tipo { color: color-mix(in srgb, var(--aten-auto) 70%, currentColor); }
+  .aten-badge-tipo { color: color-mix(in srgb, var(--aten-auto) 70%, var(--text, currentColor)); }
 }
 
 /* ============================= responsivo =============================== */
-@media (max-width: 640px) {
+/* 760px = breakpoint do homePage.css. Atenção: no celular o trilho de 64px
+   continua fixo (sidebarTrilho vence a regra mobile do homePage), então a
+   coluna útil é estreita; por isso a tabela rola e o grid cai p/ 1 coluna. */
+@media (max-width: 760px) {
   .aten-bin-card { padding: 14px 14px 14px 18px; }
   .aten-bin-radios { flex-direction: column; }
   .aten-bin-radio { width: 100%; }
   .aten-bin-item-grid { grid-template-columns: 1fr; }
   .aten-bin-campo select { max-width: none; }
-  .aten-bin-conferir { width: 100%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aten-aba:not([hidden]),
-  .aten-bin-campo--visivel { animation: none; }
-  .aten-bin-card,
-  .aten-bin-radio { transition: none; }
+  .aten-bin-conferir { width: 100%; justify-content: center; }
 }
