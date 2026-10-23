@@ -58,7 +58,7 @@
         </div>
       </header>
 
-      <!-- ===== PAINEL: PESSOAL (gerenciamento + dados pessoais) ===== -->
+      <!-- ===== PAINEL: PESSOAL (dados pessoais editáveis + gerenciamento) ===== -->
       <section id="painel-pessoal">
         <div class="block-header">
           <h2 data-i18n="secao.dados_pessoais">Dados pessoais</h2>
@@ -165,16 +165,39 @@
         </div>
       </section>
 
-      <!-- ===== DADOS CLÍNICOS (placeholder) ===== -->
-      <section class="panel-divider" id="painel-clinico" style="margin-top: 28px; border: none; height: auto;">
-        <div class="block-header" style="margin-bottom: 8px;">
+      <!-- ===== DADOS CLÍNICOS — LEITURA apenas (edição só durante atendimento).
+           Só é exibido para médico/enfermeiro (pacientesDetalhe.js). ===== -->
+      <section id="painel-clinico" style="margin-top: 28px;" hidden>
+        <div class="panel-divider"></div>
+        <div class="block-header">
           <h2 data-i18n="paciente.clinicos_titulo">Dados clínicos</h2>
         </div>
-        <p class="empty-state-text" style="padding: 0;" data-i18n="paciente.clinicos_texto">
-          Alergias, medicamentos em uso, doenças crônicas e consentimento LGPD são registrados
-          durante a consulta. Esta seção será exibida aqui assim que o módulo de Consultas
-          estiver disponível.
+        <p class="empty-state-text" style="padding: 0 0 12px;" data-i18n="paciente.clinicos_leitura">
+          Leitura apenas. Alergias, medicamentos, doenças crônicas e tipo sanguíneo são
+          registrados e alterados durante o atendimento.
         </p>
+
+        <dl class="field-grid">
+          <div class="field-readonly">
+            <dt data-i18n="paciente.sangue">Tipo sanguíneo</dt>
+            <dd id="clinico-view-tipo-sanguineo">Carregando…</dd>
+          </div>
+        </dl>
+
+        <div class="block-header" style="margin-top: 16px;">
+          <h2 data-i18n="paciente.alergias_titulo">Alergias</h2>
+        </div>
+        <div class="card-list" id="clinico-alergias-lista"></div>
+
+        <div class="block-header" style="margin-top: 16px;">
+          <h2 data-i18n="paciente.doencas_titulo">Doenças crônicas</h2>
+        </div>
+        <div class="card-list" id="clinico-doencas-lista"></div>
+
+        <div class="block-header" style="margin-top: 16px;">
+          <h2 data-i18n="paciente.medicamentos_titulo">Medicamentos em uso</h2>
+        </div>
+        <div class="card-list" id="clinico-medicamentos-lista"></div>
       </section>
 
     </div>
@@ -182,14 +205,10 @@
   </main>
 </div>
 
-<!-- ===== MODAL: EDITAR DADOS DO PACIENTE =====
-     Dois grupos num único modal, mas DOIS submits separados no JS:
-       - "Dados pessoais"  -> PUT /pacientes/pessoal/<uuid>
-       - "Dados clínicos"  -> PUT /pacientes/clinico/<uuid> (peso/altura)
-                              + POST /pacientes/clinico/<uuid>/tipo-sanguineo
-                                (só se o tipo mudou -- cada mudança gera
-                                uma observação nova no histórico, não
-                                sobrescreve a anterior) -->
+<!-- ===== MODAL: EDITAR DADOS PESSOAIS =====
+     Apenas o grupo "Dados pessoais" — dados clínicos (peso/altura,
+     tipo sanguíneo) NÃO são editáveis nesta tela: mudam durante o
+     atendimento. Submit único -> PUT /pacientes/pessoal/<uuid>. -->
 <div class="settings-overlay" id="pac-edit-overlay">
   <div class="cons-modal" role="dialog" aria-modal="true" aria-labelledby="pac-edit-titulo">
     <form id="form-editar-paciente" novalidate>
@@ -204,12 +223,13 @@
 
       <div class="cons-modal-body">
 
-        <!-- ===== Grupo 1: dados pessoais (PUT /pessoal/<uuid>) ===== -->
+        <!-- ===== Dados pessoais (PUT /pessoal/<uuid>) ===== -->
         <p class="creation-section-title" data-i18n="secao.dados_pessoais">Dados pessoais</p>
 
         <div class="field-group">
           <label class="field-label" for="pac-edit-nome" data-i18n="campo.nome_completo">Nome completo</label>
-          <input class="field-input" type="text" id="pac-edit-nome" autocomplete="off">
+          <input class="field-input" type="text" id="pac-edit-nome" autocomplete="off" disabled>
+          <p class="field-hint" data-i18n="paciente.nome_imutavel">O nome não pode ser alterado.</p>
           <p class="field-error" id="pac-edit-nome-error"></p>
         </div>
 
@@ -266,46 +286,12 @@
           </div>
         </div>
 
-        <!-- ===== Grupo 2: dados clínicos (PUT /clinico/<uuid> + POST tipo-sanguineo) ===== -->
-        <p class="creation-section-title" data-i18n="paciente.clinicos_titulo" style="margin-top: 20px;">Dados clínicos</p>
-
-        <div class="field-row">
-          <div class="field-group">
-            <label class="field-label" for="pac-edit-peso">Peso (kg)</label>
-            <input class="field-input" type="number" id="pac-edit-peso" min="0" step="0.1" inputmode="decimal" placeholder="Ex: 70.5">
-            <p class="field-error" id="pac-edit-peso-error"></p>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pac-edit-altura">Altura (cm)</label>
-            <input class="field-input" type="number" id="pac-edit-altura" min="0" step="1" inputmode="numeric" placeholder="Ex: 175">
-            <p class="field-error" id="pac-edit-altura-error"></p>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="pac-edit-tipo-sanguineo" data-i18n="criacao.tipo_sanguineo">Tipo sanguíneo</label>
-            <select class="field-input" id="pac-edit-tipo-sanguineo">
-              <option value="" data-i18n="criacao.nao_informar_agora">Não informar agora</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-              <option value="desconhecido" data-i18n="criacao.sangue_desconhecido">Desconhecido</option>
-            </select>
-            <p class="field-error" id="pac-edit-tipo-sanguineo-error"></p>
-            <p class="field-hint" data-i18n="paciente.tipo_sanguineo_hint">Cada alteração registra uma nova observação no histórico (não sobrescreve a anterior).</p>
-          </div>
-        </div>
-
       </div>
 
       <div class="cons-modal-footer">
         <button type="button" class="btn-ghost" id="pac-edit-cancel" data-i18n="btn.cancelar">Cancelar</button>
         <div class="cons-modal-footer-right">
-          <button type="button" class="btn-secondary" id="pac-edit-salvar-pessoal" data-i18n="paciente.salvar_pessoal">Salvar dados pessoais</button>
-          <button type="submit" class="btn-primary" id="pac-edit-salvar-tudo" data-i18n="paciente.salvar_tudo">Salvar tudo</button>
+          <button type="button" class="btn-primary" id="pac-edit-salvar" data-i18n="btn.salvar">Salvar</button>
         </div>
       </div>
     </form>
@@ -313,6 +299,6 @@
 </div>
 
 <script src="../../../../js/shared/particles.js"></script>
-<script type="module" src="../../../../js/pages/user/shared/pacientes/pacientesDetalheLista.js"></script>
+<script type="module" src="../../../../js/pages/user/shared/pacientes/detalhe/pacientesDetalhe.js"></script>
 </body>
 </html>

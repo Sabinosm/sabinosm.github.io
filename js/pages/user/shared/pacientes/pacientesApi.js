@@ -1,27 +1,35 @@
 // pacientesApi.js
 //
-// Camada de acesso às APIs de pacientes e de consultas (esta última só
-// para o histórico). Espelha os controllers reais
-// (paciente_pessoal_controller.py, paciente_clinico_controller.py,
-// controller.py de consulta).
+// Camada de acesso às APIs do domínio PACIENTE (eixo pessoal +
+// histórico de consultas + criação). Espelha os controllers reais
+// (paciente_pessoal_controller.py, controller.py de consulta).
 //
 //   GET  /pacientes/pessoal/resumo?...            -> listarPacientes({...})
 //   GET  /pacientes/pessoal/<uuid>                -> buscarDetalhePessoal(uuid)
-//   GET  /pacientes/clinico/<uuid>                -> buscarDetalheClinico(uuid)
 //   PUT  /pacientes/pessoal/<uuid>                -> atualizarPacientePessoal(uuid, payload)
 //   PUT  /pacientes/clinico/<uuid>                -> atualizarPacienteClinico(uuid, payload)
 //   GET  /consultas/paciente/historico/<uuid>     -> listarHistoricoConsultas(uuidPaciente)
 //   POST /pacientes/pessoal/                      -> criarPacientePessoal(payload)
-//   ... (blocos clínicos e LGPD mantidos abaixo)
+//   POST /pacientes/lgpd/<uuid>/consentimentos[...]                    (fluxo de consulta)
+//   POST /pacientes/lgpd/<uuid>/consentimentos/dispensar-emergencia    (fluxo de consulta)
 //
 // Resposta do backend (json_success / json_error):
 //   sucesso: { status: "success", message: "...", data: {...} | [...] }
 //   erro:    { status: "error",   message: "..." }
 //
-// LEITURA SEM STEP-UP: as rotas de detalhe (pessoal e clínico) usam
-// acesso_auditado no back (só registram LogAcesso) -- decisão registrada
-// nos controllers: leitura pura não exige reconfirmação de identidade.
-// Step-up fica reservado para ESCREVER/deletar sensível (acao_sensivel).
+// ESCOPO DESTE ARQUIVO: só o que é "do paciente em si". Os blocos
+// clínicos (alergias, doenças crônicas, medicamentos em uso, tipo
+// sanguíneo) moram em pacienteClinicoApi.js — e TODA escrita clínica
+// exige uuid_atendimento (edição só durante atendimento; a ficha do
+// paciente é leitura nesses blocos).
+//
+// ApiError é a classe de erro compartilhada: pacienteClinicoApi.js e
+// catalogoMedicamentosApi.js importam daqui (não duplicar).
+//
+// LEITURA SEM STEP-UP: a rota de detalhe pessoal usa acesso_auditado
+// no back (só registra LogAcesso) -- decisão registrada nos controllers:
+// leitura pura não exige reconfirmação de identidade. Step-up fica
+// reservado para ESCREVER/deletar sensível (acao_sensivel).
 //
 // ============================================
 // LISTAGEM — modelo Paciente.to_dict_few()
@@ -113,35 +121,6 @@ export function buscarDetalhePessoal(uuid) {
   return requisitar(`/pessoal/${encodeURIComponent(uuid)}`, { method: 'GET' });
 }
 
-/**
- * GET /pacientes/clinico/<uuid> — prontuário clínico completo:
- * paciente + alergias[] + doencas_cronicas[] + medicamentos_em_uso[]
- * + consentimento_ativo (booleano). Leitura auditada, sem step-up.
- *
- * Só médico/enfermeiro acessam (admin recebe 403 aqui no back).
- * NÃO usada pela ficha hoje -- mantida para quando a área clínica
- * (consulta ou aba clínica) precisar ler esses dados.
- *
- * @param {string} uuid
- */
-export function buscarDetalheClinico(uuid) {
-  return requisitar(`/clinico/${encodeURIComponent(uuid)}`, { method: 'GET' });
-}
-
-/**
- * Clínico + pessoal juntos (dois GETs simples, em paralelo).
- * NÃO usada pela ficha hoje -- mantida para o futuro fluxo clínico.
- *
- * @param {string} uuid
- * @returns {Promise<{clinico: object, pessoal: object}>}
- */
-export function buscarDetalheCompleto(uuid) {
-  return Promise.all([
-    buscarDetalheClinico(uuid),
-    buscarDetalhePessoal(uuid),
-  ]).then(([clinico, pessoal]) => ({ clinico, pessoal }));
-}
-
 // ============================================
 // HISTÓRICO DE CONSULTAS DO PACIENTE
 // ============================================
@@ -178,12 +157,13 @@ export function listarHistoricoConsultas(uuidPaciente) {
 //
 // SIMPLIFICADO (decisão de produto): o cadastro cobre SÓ dados
 // pessoais (POST /pacientes/pessoal/). Consentimento LGPD e blocos
-// clínicos passaram a ser registrados durante a CONSULTA. As funções
-// abaixo continuam corretas e serão usadas pelo futuro fluxo de
-// consulta; só não são chamadas durante a criação em si.
+// clínicos passaram a ser registrados durante a CONSULTA/atendimento
+// (ver pacienteClinicoApi.js).
 //
-// Nenhuma rota de escrita abaixo é protegida por step-up (diferente
-// das leituras de detalhe). Se isso mudar no backend, ajustar aqui.
+// ATENÇÃO: o PacienteCriarSchema do back IGNORA tipo_sanguineo em
+// silêncio (extra="ignore") — o select na tela de criação não
+// persiste nada hoje. Decidir: ou o front remove o select, ou o back
+// passa a aceitar o campo.
 
 /**
  * POST /pacientes/pessoal/ — cria o paciente (Paciente +
@@ -213,7 +193,8 @@ export function criarPacientePessoal(payload) {
 // CAMPOS: nome_completo, telefone, email, logradouro, cep,
 // numero_residencia, rg, contato_emergencia_nome,
 // contato_emergencia_telefone. (cpf e data_nascimento nem existem no
-// schema de atualização -- são imutáveis por natureza do contrato.)
+// schema de atualização -- são imutáveis por natureza do contrato.
+// Nome existe no schema, mas o produto tratou como imutável na ficha.)
 
 /**
  * @param {string} uuid
@@ -227,10 +208,16 @@ export function atualizarPacientePessoal(uuid, payload) {
 }
 
 // ============================================
-// EDIÇÃO DE DADOS CLÍNICOS (peso, altura)
+// EDIÇÃO DO EIXO CLÍNICO BASE (peso, altura, status)
 // ============================================
 //
-//   PUT /pacientes/clinico/<uuid> — PATCH parcial do eixo clínico.
+//   PUT /pacientes/clinico/<uuid> — PATCH parcial do eixo base.
+//
+// ATENÇÃO — escopo: isto NÃO é um bloco clínico de prontuário
+// (alergia/doença/medicamento/tipo sanguíneo). É o eixo "físico" do
+// paciente (peso/altura/status). Hoje a ficha NÃO edita peso/altura
+// (decisão: dados clínicos só mudam durante atendimento) — esta
+// função fica disponível para o fluxo de atendimento/consulta.
 //
 // PERMISSÃO (back): aceita médico, enfermeiro E admin (com auditoria
 // de exceção para admin -- auditar_excecao_por). Schema:
@@ -239,11 +226,11 @@ export function atualizarPacientePessoal(uuid, payload) {
 // próprias).
 //
 // TIPO SANGUÍNEO NÃO VAI AQUI: ele é histórico de observações
-// (ObservacaoTipoSanguineo), registrado via POST separado abaixo.
+// (ObservacaoTipoSanguineo), registrado via pacienteClinicoApi.js.
 
 /**
  * @param {string} uuid
- * @param {object} payload — só os campos alterados ({ peso?, altura? })
+ * @param {object} payload — só os campos alterados ({ peso?, altura?, status? })
  */
 export function atualizarPacienteClinico(uuid, payload) {
   return requisitar(`/clinico/${encodeURIComponent(uuid)}`, {
@@ -253,8 +240,8 @@ export function atualizarPacienteClinico(uuid, payload) {
 }
 
 // ============================================
-// CONSENTIMENTO LGPD -- NÃO usado no fluxo de criação de paciente
-// (mantido para o fluxo de consulta).
+// CONSENTIMENTO LGPD -- fluxo de consulta/atendimento (não usado na
+// criação de paciente nem na ficha).
 // ============================================
 
 /** Os 4 valores aceitos pelo enum canal_coleta (coluna do banco). */
@@ -288,89 +275,5 @@ export function dispensarConsentimentoEmergencia(uuid, motivo) {
   return requisitar(`/lgpd/${uuid}/consentimentos/dispensar-emergencia`, {
     method: 'POST',
     body: JSON.stringify({ motivo }),
-  });
-}
-
-// ============================================
-// BLOCOS CLÍNICOS (alergia, doença crônica, medicamento em uso, tipo
-// sanguíneo) -- NÃO usados no fluxo de criação de paciente (decisão
-// de produto: passaram a ser registrados durante a consulta). Mantidos
-// para uso futuro. Contratos confirmados contra os schemas Pydantic
-// reais do backend.
-//
-// Exceção: tipo_sanguineo tem UM outro caminho de entrada na criação,
-// mas o PacienteCriarSchema do back IGNORA tipo_sanguineo em silêncio
-// (extra="ignore") -- o select na tela de criação não persiste nada.
-// Decidir: ou o front remove o select, ou o back passa a aceitar o
-// campo (ver plano).
-// ============================================
-
-/** Enums de AlergiaCreateSchema/ReacaoAlergiaCreateSchema (copiados do db.Enum). */
-export const TIPOS_REACAO_ALERGIA = [
-  'cutanea', 'respiratoria', 'anafilaxia', 'gastrointestinal', 'cardiovascular', 'sistemica',
-];
-export const GRAVIDADES_ALERGIA = ['leve', 'moderada', 'grave'];
-
-/**
- * POST /pacientes/clinico/<uuid>/alergias — cria uma alergia E a
- * primeira reação juntas.
- */
-export function criarAlergia(uuid, payload) {
-  return requisitar(`/clinico/${uuid}/alergias`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-/** Enum de DoencaCronicaCreateSchema.status (copiado do db.Enum). */
-export const STATUS_DOENCA_CRONICA = ['ativa', 'em-remissao'];
-
-/**
- * POST /pacientes/clinico/<uuid>/doencas-cronicas
- */
-export function criarDoencaCronica(uuid, payload) {
-  return requisitar(`/clinico/${uuid}/doencas-cronicas`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-/** Enum de MedicamentoEmUsoCreateSchema.status_uso (copiado do db.Enum). */
-export const STATUS_USO_MEDICAMENTO = ['ativo', 'interrompido', 'concluido'];
-
-/**
- * POST /pacientes/clinico/<uuid>/medicamentos-em-uso
- *
- * ATENÇÃO: id_catalogo é OBRIGATÓRIO e precisa existir em
- * catalogo_medicamentos (o service devolve 422 se não existir) -- NÃO
- * é texto livre. Ainda não temos busca/autocomplete do catálogo no
- * front (ver TODO antigo em pacientesCriacaoClinico.js).
- */
-export function criarMedicamentoEmUso(uuid, payload) {
-  return requisitar(`/clinico/${uuid}/medicamentos-em-uso`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-/** Enum de TipoSanguineoCreateSchema.tipo_sanguineo (copiado do db.Enum). */
-export const TIPOS_SANGUINEOS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'desconhecido'];
-
-/**
- * POST /pacientes/clinico/<uuid>/tipo-sanguineo — registra nova
- * observação de tipo sanguíneo (histórico: cada chamada cria uma
- * observação nova, não sobrescreve a anterior).
- *
- * NÃO é usada no fluxo de CRIAÇÃO (o back ignora tipo_sanguineo no
- * POST /pessoal/) -- usada pela EDIÇÃO da ficha (quando o tipo muda)
- * e pelo futuro fluxo de consulta.
- *
- * @param {string} uuid
- * @param {string} tipoSanguineo — um de TIPOS_SANGUINEOS
- */
-export function registrarTipoSanguineo(uuid, tipoSanguineo) {
-  return requisitar(`/clinico/${uuid}/tipo-sanguineo`, {
-    method: 'POST',
-    body: JSON.stringify({ tipo_sanguineo: tipoSanguineo }),
   });
 }
