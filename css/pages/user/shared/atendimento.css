@@ -1,8 +1,9 @@
 /* ==========================================================================
    atendimento.css — página de Atendimento (Bloco 2)
 
-   Carrega DEPOIS de comumCss/consulta.css e convive com homePage.css e
-   sidebarTrilho.css. O que isto assume deles:
+   INDEPENDENTE do consulta.css: tudo o que a tela usava dele foi portado
+   para a seção "BASE PORTADA" abaixo. Carrega depois de comumCss.css e
+   convive com homePage.css e sidebarTrilho.css. O que assume deles:
    - tokens: --bg-elevated, --border, --text, --text-muted, --accent,
      --radius-sm/-md, --palette-white, --font-scale;
    - fonte SEMPRE como calc(Npx * var(--font-scale, 1)) (preferência de
@@ -53,27 +54,202 @@
   max-width: 1040px;
   min-width: 0;
 }
-.aten-coluna > .aten-voltar { width: fit-content; }
 
+/* ===========================================================================
+   BASE PORTADA DO consulta.css (a página não carrega mais aquele arquivo)
+   Só o que esta tela usa: centralização, [hidden], voltar/painel/chips/banner,
+   campos (opcional/erro), abas segmentadas, badge e estado vazio. Lista,
+   filtros, paginação e modais do consulta.css NÃO são usados aqui.
+   Campos base (.field-group/-label/-input/-hint) e botões (.btn-*) seguem
+   vindo do comumCss/homePage.
+   =========================================================================== */
 
-.aten-voltar {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 14px;
-    color: var(--text-muted);
-    font-size: calc(13px * var(--font-scale, 1));
-    font-weight: 600;
-    text-decoration: none;
-    transition: color 0.15s ease;
+/* centralização (era o .main do consulta.css; o trilho zera o margin-left) */
+.app .main { max-width: 1040px; margin-left: auto; margin-right: auto; }
+
+/* [hidden] sempre vence display de .btn-*, .cons-* etc. O consulta.css só
+   cobria .cons-modal; aqui o JS faz `el.hidden = ...` em botões .btn-primary. */
+.aten-coluna [hidden] { display: none !important; }
+
+/* ---- voltar ---- */
+.aten-coluna .cons-voltar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  margin-bottom: 16px;
+  padding: 6px 12px 6px 8px;
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-muted, inherit);
+  border-radius: var(--radius-sm, 10px);
+  transition: color .15s ease, background .15s ease;
 }
+.aten-coluna .cons-voltar:hover {
+  color: var(--accent);
+  background: var(--aten-surface);
+}
+
+/* ---- painel (cada aba é um painel) ---- */
+.aten-coluna .cons-panel {
+  margin-bottom: 20px;
+  padding: 20px 22px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: var(--aten-realce);
+}
+.aten-coluna .cons-panel-titulo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+  font-size: calc(17px * var(--font-scale, 1));
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text-strong, var(--text));
+}
+.aten-coluna .cons-panel-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+.aten-coluna .field-hint {
+  margin: 0 0 4px;
+  font-size: calc(13px * var(--font-scale, 1));
+  line-height: 1.5;
+  color: var(--text-muted, inherit);
+}
+
+/* ---- chips do cabeçalho (status / tipo) ---- */
+.aten-coluna .cons-det-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- banner de somente leitura ---- */
+.aten-coluna .cons-banner-encerrada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  font-size: calc(13px * var(--font-scale, 1));
+  line-height: 1.45;
+  border-radius: var(--radius-sm, 10px);
+  border: 1px solid rgba(217, 119, 6, .4);
+  background: rgba(217, 119, 6, .1);
+}
+.aten-coluna .cons-banner-encerrada strong { color: var(--aten-pendente); }
+@supports (color: color-mix(in srgb, red, blue)) {
+  .aten-coluna .cons-banner-encerrada strong {
+    color: color-mix(in srgb, var(--aten-pendente) 80%, var(--text, currentColor));
+  }
+}
+
+/* ---- campos: opcional / erro / inválido ---- */
+.aten-coluna .field-optional {
+  font-weight: 400;
+  text-transform: none;
+  color: var(--text-muted, inherit);
+}
+/* O JS preenche textContent em <p class="field-error"> soltos (itens e
+   seções do binário), fora de .field-group--has-error: mostrar quando
+   houver texto. (No consulta.css era display:none fixo -> erro invisível.) */
+.aten-coluna .field-error {
+  display: none;
+  margin-top: 6px;
+  font-size: calc(12px * var(--font-scale, 1));
+  color: var(--palette-status-red, var(--danger, #e0625b));
+}
+.aten-coluna .field-error:not(:empty),
+.aten-coluna .field-group--has-error .field-error { display: block; }
+.aten-coluna .field-input--invalid { border-color: var(--palette-status-red, var(--danger, #e0625b)); }
+
+/* ---- badge (pílula tonal; cor via --status-fg/--status-bg) ---- */
+.aten-coluna .cons-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 10px;
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 999px;
+  color: var(--status-fg);
+  background: var(--status-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-fg) 22%, transparent);
+}
+
+/* ---- estado vazio (listas de coleta/conduta/anteriores) ---- */
+.aten-coluna .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--text-muted, inherit);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md, 14px);
+  background: var(--aten-surface);
+}
+.aten-coluna .empty-state-icon { width: 32px; height: 32px; opacity: .6; }
+.aten-coluna .empty-state-title {
+  font-size: calc(14px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text);
+}
+.aten-coluna .empty-state-text { max-width: 320px; font-size: calc(13px * var(--font-scale, 1)); }
 
 /* ============================ abas ====================================== */
-#aten-abas {
+.aten-coluna .segmented {
+  display: inline-flex;
+  gap: 2px;
+  max-width: 100%;
   margin: 4px 0 16px;
+  padding: 3px;
   overflow-x: auto;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  background: color-mix(in srgb, var(--bg) 70%, var(--bg-elevated));
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
 }
+.aten-coluna .segmented::-webkit-scrollbar { display: none; }
+
+.aten-coluna .segmented-item {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+}
+.aten-coluna .segmented-item:hover { color: var(--text); }
+.aten-coluna .segmented-item--active,
+.aten-coluna .segmented-item--active:hover {
+  color: var(--palette-white);
+  background: var(--accent);
+  box-shadow:
+    2px 2px 6px var(--neu-shadow-dark),
+    -2px -2px 6px var(--neu-shadow-light);
+}
+.aten-coluna .segmented-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .aten-aba:not([hidden]) { animation: aten-entrada .18s ease; }
 
@@ -404,6 +580,10 @@
    continua fixo (sidebarTrilho vence a regra mobile do homePage), então a
    coluna útil é estreita; por isso a tabela rola e o grid cai p/ 1 coluna. */
 @media (max-width: 760px) {
+  .app .main { max-width: 100%; }
+  .aten-coluna .cons-panel { padding: 16px 16px; }
+  .aten-coluna .segmented { display: flex; width: 100%; }
+  .aten-coluna .segmented-item { flex: 1; padding: 8px 12px; }
   .aten-bin-card { padding: 14px 14px 14px 18px; }
   .aten-bin-radios { flex-direction: column; }
   .aten-bin-radio { width: 100%; }
