@@ -4,51 +4,192 @@
    profissionais.css e .prof-form-feedback. Linkar DEPOIS de
    profissionais.css.
 
+   DESIGN (v2):
+   - Material 3 tonal surfaces: elevação vem do TOM (bg → card → campo),
+     não de sombra pesada. Card com borda 1px + highlight interno
+     `inset 0 1px 0` na borda superior (estilo Linear/Vercel).
+   - Neomorfismo só nos inputs: campos levemente afundados, com sombra
+     interna suave — o relevo aparece na interação, não no card.
+   - Bento leve: blocos com pesos diferentes (Identificação + Contato em
+     2 colunas, "Mais informações" em bloco largo recolhível).
+
    Dados clínicos, consentimento LGPD e a tela de transição pós-
-   criação foram REMOVIDOS deste arquivo -- decisão de produto:
-   tudo isso passou a ser registrado durante a consulta, não no
-   cadastro do paciente. Ver conversa que motivou esta simplificação.
+   criação continuam FORA desta tela — são registrados durante a
+   consulta, não no cadastro do paciente.
    ============================================ */
 
 .main {
-  max-width: 720px;
+  max-width: 880px;
   margin-left: auto;
   margin-right: auto;
 }
 
 @media (min-width: 761px) {
   .main {
-    margin-left: calc(220px + max(0px, (100vw - 220px - 720px) / 2));
+    margin-left: calc(220px + max(0px, (100vw - 220px - 880px) / 2));
     margin-right: auto;
   }
 }
 
-.creation-card {
+/* ===== BENTO ===== */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+
+.bento-block {
+  grid-column: span 12;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 28px;
-  box-shadow:
-    4px 4px 10px var(--neu-shadow-dark),
-    -4px -4px 10px var(--neu-shadow-light);
+  padding: 22px 24px;
+  /* "material" sem sombra suja: highlight interno na borda superior */
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent);
+  transition: border-color 0.15s ease;
+}
+.bento-block:hover {
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
 }
 
-.creation-section-title {
-  font-size: calc(13px * var(--font-scale, 1));
+.bento-block--half { grid-column: span 6; }
+
+/* Título de bloco: overline pequena + linha fina que ocupa o resto */
+.block-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: calc(11px * var(--font-scale, 1));
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.07em;
   color: var(--text-muted);
-  margin: 24px 0 14px;
+  margin-bottom: 18px;
 }
-.creation-section-title:first-child { margin-top: 0; }
+.block-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
+/* ===== CAMPOS AFUNDADOS (neomorfismo só aqui) =====
+   O campo fica mais ESCURO que o card e recebe sombra interna suave —
+   parece um recorte no material, sem competir com a elevação do card. */
+.field-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: calc(14px * var(--font-scale, 1));
+  color: var(--text);
+  background: var(--surface-sunken, #12151b);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  outline: none;
+  box-shadow:
+    inset 0 2px 6px color-mix(in srgb, var(--neu-shadow-dark) 55%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--neu-shadow-dark) 40%, transparent);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+select.field-input { cursor: pointer; }
+select.field-input option { background: var(--bg-elevated); color: var(--text); }
+
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 2px 6px color-mix(in srgb, var(--neu-shadow-dark) 55%, transparent),
+    0 0 0 3px var(--focus-ring);
+}
+.field-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.field-input--invalid {
+  border-color: var(--danger, #e0625b);
+}
+
+/* Dica opcional ao lado do label (mantém compat com HTML existente) */
+.field-optional {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: calc(12px * var(--font-scale, 1));
+}
+
+.field-hint {
+  font-size: calc(12px * var(--font-scale, 1));
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ===== "Mais informações" (details como bloco bento recolhível) ===== */
+details.bento-block { padding: 0; overflow: hidden; }
+details.bento-block[open] { padding-bottom: 22px; }
+
+details.bento-block summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+details.bento-block summary::-webkit-details-marker { display: none; }
+details.bento-block summary::before {
+  content: "+";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  font-size: 12px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+details.bento-block[open] summary::before { transform: rotate(45deg); }
+details.bento-block summary:hover { background: var(--accent-tint); }
+
+/* Conteúdo interno do details volta a ter o padding lateral do bloco */
+details.bento-block > *:not(summary) {
+  margin-left: 24px;
+  margin-right: 24px;
+}
+
+/* Subseções dentro de "Mais informações" ficam mais discretas que o
+   título de bloco principal */
+details.bento-block .creation-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: calc(11px * var(--font-scale, 1));
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin: 20px 0 14px;
+}
+details.bento-block .creation-section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+details.bento-block .creation-section-title:first-of-type { margin-top: 4px; }
+
+/* ===== Footer de ações ===== */
 .creation-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .creation-footer-right {
@@ -57,9 +198,12 @@
   margin-left: auto;
 }
 
+/* ===== Responsivo ===== */
 @media (max-width: 760px) {
   .main { max-width: 100%; margin-left: 0; }
-  .creation-card { padding: 20px; }
+  .bento-block, .bento-block--half { grid-column: span 12; }
   .creation-footer { flex-direction: column-reverse; align-items: stretch; }
   .creation-footer-right { flex-direction: column-reverse; margin-left: 0; }
+  details.bento-block > *:not(summary) { margin-left: 16px; margin-right: 16px; }
+  details.bento-block summary { padding: 14px 16px; }
 }

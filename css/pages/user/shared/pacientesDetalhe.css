@@ -1,28 +1,87 @@
 /* ============================================
-   B-íon — Ficha do Paciente (detalhe)
+   B-íon — Ficha do Paciente (detalhe) — v2
    Reusa tokens de preferencias.css e os padrões de layout de
-   homePage.css/profissionais.css. Reaproveita as classes de
-   abas do modal de Configurações (.settings-tabs/.settings-panel são
-   pensadas para um modal estreito de 200px de coluna -- aqui usamos
-   uma variante própria, .patient-tabs/.patient-panel, para uma faixa
-   horizontal de abas no topo de uma página larga, não uma coluna
-   lateral dentro de um modal).
+   homePage.css/profissionais.css.
+
+   DESIGN (v2):
+   - Material 3 tonal surfaces: elevação por TOM (bg → card → campo),
+     card com borda 1px + `inset 0 1px 0` no topo (Linear/Vercel).
+   - Bento: Dados pessoais (largo) + Gerenciamento (lateral), depois
+     Histórico (largo) e Dados clínicos (destaque, tinta do accent).
+   - Neomorfismo só nos campos/valores afundados (blocos dd), não no
+     card inteiro.
+   - Área clínica preparada para dados vazios: com o 404 tolerado em
+     pacienteClinicoApi.js, data: null vira estado vazio amigável.
    ============================================ */
 
 .main {
-  max-width: 960px;
+  max-width: 1040px;
   margin-left: auto;
   margin-right: auto;
 }
 
 @media (min-width: 761px) {
   .main {
-    margin-left: calc(220px + max(0px, (100vw - 220px - 960px) / 2));
+    margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
     margin-right: auto;
   }
 }
 
-/* ===== Header da ficha: nome, status, metadados de cadastro ===== */
+/* ===== BENTO ===== */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+
+.bento-block {
+  grid-column: span 12;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 22px 24px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 5%, transparent);
+  transition: border-color 0.15s ease;
+}
+.bento-block:hover { border-color: color-mix(in srgb, var(--accent) 22%, var(--border)); }
+
+.bento-block--wide  { grid-column: span 7; }
+.bento-block--side  { grid-column: span 5; }
+
+/* Bloco de destaque: tinta suave do accent + borda tonal.
+   Usado nos Dados clínicos — a seção que o profissional mais olha. */
+.bento-block--highlight {
+  background:
+    linear-gradient(180deg,
+      var(--accent-tint) 0%,
+      color-mix(in srgb, var(--bg-elevated) 92%, transparent) 180px,
+      var(--bg-elevated) 100%); 
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+    
+}
+.bento-block--highlight:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+}
+
+.block-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: calc(11px * var(--font-scale, 1));
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+.block-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ===== Header da ficha ===== */
 .patient-header {
   display: flex;
   align-items: flex-start;
@@ -39,17 +98,20 @@
 }
 
 .patient-avatar {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: var(--accent);
+  background: linear-gradient(145deg, var(--accent), var(--accent-hover));
   color: var(--palette-white-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(18px * var(--font-scale, 1));
+  font-size: calc(19px * var(--font-scale, 1));
   font-weight: 700;
   flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--palette-white, #fff) 25%, transparent),
+    0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .patient-name-row {
@@ -84,179 +146,48 @@
 .patient-back:hover { color: var(--accent); }
 .patient-back svg { width: 16px; height: 16px; }
 
-/* ============================================
-   NÃO USADO ATUALMENTE (a partir daqui até o fim do arquivo, ou onde
-   indicado) -- dados clínicos, abas e consentimento LGPD foram
-   removidos da ficha do paciente (decisão de produto: passaram a ser
-   registrados durante a consulta, não geridos aqui). Estas classes
-   ficam reservadas para quando o módulo de Consultas existir e a
-   ficha (ou uma futura aba clínica nela) voltar a exibi-los -- ver
-   TODO em pacientesDetalheLista.js.
-   ============================================ */
-
-/* ===== Alertas clínicos fixos (sempre visíveis, independente da aba
-   ativa) -- resumo_clinico do backend já vem pronto pra isso. ===== */
-.patient-alerts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.alert-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
-  box-shadow:
-    4px 4px 10px var(--neu-shadow-dark),
-    -4px -4px 10px var(--neu-shadow-light);
-}
-
-/* Variante de destaque: usada quando há alergia grave (tem_grave) --
-   a única condição em que um alerta clínico precisa se destacar
-   visualmente mesmo antes de abrir qualquer aba. */
-.alert-card--critico {
-  border-color: var(--danger, #e0625b);
-  background: rgba(224, 98, 91, 0.08);
-}
-
-.alert-icon {
-  width: 22px;
-  height: 22px;
-  flex-shrink: 0;
-  color: var(--text-muted);
-}
-.alert-card--critico .alert-icon { color: var(--danger, #e0625b); }
-.alert-icon svg { width: 100%; height: 100%; }
-
-.alert-body { min-width: 0; }
-
-.alert-title {
-  font-size: calc(13px * var(--font-scale, 1));
-  font-weight: 700;
-  margin-bottom: 2px;
-}
-.alert-card--critico .alert-title { color: var(--danger, #e0625b); }
-
-.alert-summary {
-  font-size: calc(12px * var(--font-scale, 1));
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.alert-summary-item {
-  display: block;
-}
-
-.alert-empty {
-  font-size: calc(12px * var(--font-scale, 1));
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* ===== Abas da ficha (faixa horizontal, não coluna lateral) ===== */
-.patient-tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
-  overflow-x: auto;
-}
-
-.patient-tab {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-muted);
-  font-size: calc(14px * var(--font-scale, 1));
-  font-weight: 600;
-  font-family: inherit;
-  padding: 10px 4px;
-  margin-right: 20px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.patient-tab:hover {
-  color: var(--text);
-}
-
-.patient-tab--active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-.patient-tab-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: 700;
-  margin-left: 6px;
-}
-.patient-tab--active .patient-tab-count {
-  background: var(--status-bg);
-  border-color: transparent;
-  color: var(--accent);
-}
-
-.patient-panel {
-  display: none;
-}
-.patient-panel--active {
-  display: block;
-}
-
-/* ===== Cabeçalho de bloco dentro de uma aba (título + editar) ===== */
+/* ===== Cabeçalho de bloco (título + ação) ===== */
 .block-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 16px;
 }
-
-.block-header h2 {
-  font-size: calc(15px * var(--font-scale, 1));
-  font-weight: 700;
-}
-
-.block-header .btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
+.block-header h2 { font-size: calc(15px * var(--font-scale, 1)); font-weight: 700; }
+.block-header .btn-ghost { display: inline-flex; align-items: center; gap: 6px; }
 .block-header .btn-ghost svg { width: 14px; height: 14px; }
 
-/* ===== Grid de campos somente-leitura (aba Pessoal) ===== */
+/* ===== Valores afundados (neomorfismo só aqui) =====
+   Cada valor vira um pequeno recorte escuro no card — sensação de
+   material sem sombra pesada. */
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px 24px;
-  margin-bottom: 28px;
+  gap: 12px;
+  margin-bottom: 0;
 }
 
 .field-readonly dt {
-  font-size: calc(12px * var(--font-scale, 1));
+  font-size: calc(11px * var(--font-scale, 1));
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .field-readonly dd {
   font-size: calc(14px * var(--font-scale, 1));
   color: var(--text);
+  background: var(--surface-sunken, #12151b);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--neu-shadow-dark) 45%, transparent),
+    inset 0 2px 5px color-mix(in srgb, var(--neu-shadow-dark) 40%, transparent);
+  min-height: 20px;
 }
 
 .field-readonly dd:empty::before,
@@ -265,47 +196,63 @@
   color: var(--text-muted);
 }
 
-/* ===== Cards de item clínico (alergia, doença, medicamento) ===== */
+/* Status do paciente como pílula dentro do valor afundado */
+#pf-view-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: calc(13px * var(--font-scale, 1));
+  background: var(--accent-tint) !important;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border)) !important;
+  color: var(--accent);
+}
+#pf-view-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ===== Estado vazio amigável (data: null vindo da API) ===== */
+.clinical-empty {
+  font-size: calc(13px * var(--font-scale, 1));
+  color: var(--text-muted);
+  font-style: italic;
+  background: var(--surface-sunken, #12151b);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+/* ===== Cards de item clínico ===== */
 .clinical-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .clinical-card {
-  background: var(--bg-elevated);
+  background: var(--surface-sunken, #12151b);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 14px 18px;
   box-shadow:
-    4px 4px 10px var(--neu-shadow-dark),
-    -4px -4px 10px var(--neu-shadow-light);
+    inset 0 1px 0 color-mix(in srgb, var(--neu-shadow-dark) 45%, transparent),
+    inset 0 2px 6px color-mix(in srgb, var(--neu-shadow-dark) 35%, transparent);
+  transition: border-color 0.15s ease;
 }
+.clinical-card:hover { border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); }
 
-.clinical-card--grave {
-  border-color: var(--danger, #e0625b);
-}
+.clinical-card--grave { border-color: var(--danger, #e0625b); }
 
-.clinical-card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
+.clinical-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.clinical-card-title { font-size: calc(14px * var(--font-scale, 1)); font-weight: 700; }
 
-.clinical-card-title {
-  font-size: calc(14px * var(--font-scale, 1));
-  font-weight: 700;
-}
-
-.clinical-card-tags {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 6px;
-}
-
+.clinical-card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 .clinical-tag {
   display: inline-flex;
   align-items: center;
@@ -317,104 +264,56 @@
   border: 1px solid var(--border);
   color: var(--text-muted);
 }
+.clinical-tag--grave { background: rgba(224, 98, 91, 0.12); border-color: rgba(224, 98, 91, 0.3); color: var(--danger, #e0625b); }
+.clinical-tag--moderada, .clinical-tag--ativo, .clinical-tag--ativa { background: var(--status-bg); border-color: transparent; color: var(--status-fg); }
+.clinical-tag--interrompido, .clinical-tag--em-remissao, .clinical-tag--concluido { background: var(--bg); border-color: var(--border); color: var(--text-muted); }
 
-.clinical-tag--grave {
-  background: rgba(224, 98, 91, 0.12);
-  border-color: rgba(224, 98, 91, 0.3);
-  color: var(--danger, #e0625b);
-}
+.clinical-card-desc { font-size: calc(13px * var(--font-scale, 1)); color: var(--text-muted); margin-top: 8px; line-height: 1.5; }
+.clinical-card-meta { font-size: calc(12px * var(--font-scale, 1)); color: var(--text-muted); margin-top: 8px; }
+.clinical-card-meta strong { color: var(--text); font-weight: 600; }
 
-.clinical-tag--moderada {
-  background: var(--status-bg);
-  border-color: transparent;
-  color: var(--status-fg);
-}
+.reactions-list { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 6px; }
+.reaction-item { font-size: calc(12px * var(--font-scale, 1)); color: var(--text-muted); display: flex; justify-content: space-between; gap: 12px; }
 
-.clinical-tag--ativo,
-.clinical-tag--ativa {
-  background: var(--status-bg);
-  border-color: transparent;
-  color: var(--status-fg);
-}
-
-.clinical-tag--interrompido,
-.clinical-tag--em-remissao {
-  background: var(--bg);
-  border-color: var(--border);
-  color: var(--text-muted);
-}
-
-.clinical-tag--concluido {
-  background: var(--bg);
-  border-color: var(--border);
-  color: var(--text-muted);
-}
-
-.clinical-card-desc {
-  font-size: calc(13px * var(--font-scale, 1));
-  color: var(--text-muted);
-  margin-top: 8px;
-  line-height: 1.5;
-}
-
-.clinical-card-meta {
-  font-size: calc(12px * var(--font-scale, 1));
-  color: var(--text-muted);
-  margin-top: 8px;
-}
-
-.clinical-card-meta strong {
-  color: var(--text);
-  font-weight: 600;
-}
-
-/* Sub-lista de reações dentro de uma alergia (histórico de ocorrências) */
-.reactions-list {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.reaction-item {
-  font-size: calc(12px * var(--font-scale, 1));
-  color: var(--text-muted);
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-/* ===== Consentimento (aba Clínico) ===== */
+/* ===== Consentimento ===== */
 .consent-banner {
   display: flex;
   align-items: center;
   gap: 10px;
   font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
-  background: var(--bg-elevated);
+  background: var(--surface-sunken, #12151b);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--neu-shadow-dark) 40%, transparent);
+}
+.consent-banner svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--status-fg); }
+.consent-banner--ausente svg { color: var(--danger, #e0625b); }
+
+/* ===== Modal de edição: campos afundados também ===== */
+#pac-edit-overlay .field-input {
+  background: var(--surface-sunken, #12151b);
+  border: 1px solid var(--border);
+  box-shadow:
+    inset 0 2px 6px color-mix(in srgb, var(--neu-shadow-dark) 55%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--neu-shadow-dark) 40%, transparent);
+}
+#pac-edit-overlay .field-input:focus {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 2px 6px color-mix(in srgb, var(--neu-shadow-dark) 55%, transparent),
+    0 0 0 3px var(--focus-ring);
 }
 
-.consent-banner svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  color: var(--status-fg);
+/* ===== Responsivo ===== */
+@media (max-width: 900px) {
+  .bento-block--wide, .bento-block--side { grid-column: span 12; }
 }
-
-.consent-banner--ausente svg {
-  color: var(--danger, #e0625b);
-}
-
-/* ===== RESPONSIVO ===== */
 @media (max-width: 760px) {
   .main { max-width: 100%; margin-left: 0; }
-  .patient-alerts { grid-template-columns: 1fr; }
   .field-grid { grid-template-columns: 1fr; }
   .patient-header { flex-direction: column; }
+  .bento-block { padding: 18px; }
 }

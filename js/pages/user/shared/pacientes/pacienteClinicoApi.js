@@ -53,11 +53,20 @@ function headersPadrao() {
 }
 
 async function requisitar(url, options = {}) {
+  // `naoEncontradoOk`: para LEITURA de blocos clínicos o 404 é um estado
+  // NORMAL ("paciente ainda não tem esse dado"), não um erro. Com essa
+  // opção, 404 devolve { status: "success", data: null } e o caller
+  // renderiza o estado vazio (ex.: "Nenhuma alergia registrada")
+  // em vez de mostrar mensagem de falha.
+  const { naoEncontradoOk = false, ...fetchOptions } = options;
   let resposta;
   try {
-    resposta = await fetch(url, { credentials: "include", headers: headersPadrao(), ...options });
+    resposta = await fetch(url, { credentials: "include", headers: headersPadrao(), ...fetchOptions });
   } catch {
     throw new ApiError("Não foi possível conectar ao servidor. Verifique sua internet.", 0);
+  }
+  if (resposta.status === 404 && naoEncontradoOk) {
+    return { status: 'success', message: 'Sem dados registrados.', data: null };
   }
   let corpo;
   try {
@@ -94,7 +103,7 @@ export const TIPOS_MANIFESTACAO_ALERGIA = Object.freeze([
 export const GRAVIDADES_ALERGIA = Object.freeze(['leve', 'moderada', 'grave']);
 
 export function listarAlergias(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/alergias`, { method: 'GET' });
+  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/alergias`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function adicionarAlergia(uuidAtendimento, uuidPaciente, payload) {
@@ -156,11 +165,11 @@ export function removerReacao(uuidAtendimento, uuidPaciente, uuidReacao, motivo)
 export const STATUS_DOENCA_CRONICA = Object.freeze(['ativa', 'em-remissao']);
 
 export function listarDoencasCronicas(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/doencas-cronicas`, { method: 'GET' });
+  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/doencas-cronicas`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function listarHistoricoDoencasCronicas(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/doencas-cronicas/historico`, { method: 'GET' });
+  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/doencas-cronicas/historico`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function adicionarDoencaCronica(uuidAtendimento, uuidPaciente, payload) {
@@ -215,11 +224,11 @@ export function restaurarDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca
 // ============================================================
 export function listarMedicamentosEmUso(uuidPaciente, { apenasAtivos = false } = {}) {
   const qs = apenasAtivos ? '?ativos=true' : '';
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/medicamentos-em-uso${qs}`, { method: 'GET' });
+  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/medicamentos-em-uso${qs}`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function verificarInteracoesDoPaciente(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/medicamentos-em-uso/interacoes`, { method: 'GET' });
+  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/medicamentos-em-uso/interacoes`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function registrarMedicamentoEmUso(uuidAtendimento, uuidPaciente, payload) {
@@ -271,12 +280,15 @@ export const TIPOS_SANGUINEOS = Object.freeze([
 ]);
 
 export function buscarTipoSanguineoVigente(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/tipo-sanguineo`, { method: 'GET' });
-  // data pode ser null (nunca registrado)
+  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/tipo-sanguineo`, { method: 'GET', naoEncontradoOk: true });
+  // data pode ser null (nunca registrado). COM O 404 TOLERADO, todas as
+  // funções de LEITURA deste arquivo devolvem data: null quando o paciente
+  // ainda não tem aquele bloco — o caller deve renderizar estado vazio,
+  // não mensagem de erro.
 }
 
 export function listarHistoricoTipoSanguineo(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/tipo-sanguineo/historico`, { method: 'GET' });
+  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/tipo-sanguineo/historico`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function registrarTipoSanguineo(uuidAtendimento, uuidPaciente, tipoSanguineo) {

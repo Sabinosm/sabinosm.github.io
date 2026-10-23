@@ -29,59 +29,61 @@
       </div>
     </header>
 
+    <!-- ===== BENTO: identificação + contato lado a lado ===== -->
+    <div class="bento">
 
-    <div class="creation-card">
+      <section class="bento-block bento-block--half">
+        <p class="block-title" data-i18n="criacao.secao.identificacao">Identificação</p>
 
-      <p class="creation-section-title" data-i18n="criacao.secao.identificacao">Identificação</p>
-      <div class="field-group">
-        <label class="field-label" for="pac-nome" data-i18n="campo.nome_completo">Nome completo</label>
-        <input class="field-input" type="text" id="pac-nome" autocomplete="name">
-        <p class="field-error" id="pac-nome-error"></p>
-      </div>
-
-      <div class="field-row">
         <div class="field-group">
-          <label class="field-label" for="pac-cpf">CPF</label>
-          <input class="field-input" type="text" id="pac-cpf" placeholder="000.000.000-00" inputmode="numeric">
-          <p class="field-error" id="pac-cpf-error"></p>
+          <label class="field-label" for="pac-nome" data-i18n="campo.nome_completo">Nome completo</label>
+          <input class="field-input" type="text" id="pac-nome" autocomplete="name">
+          <p class="field-error" id="pac-nome-error"></p>
         </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="pac-cpf">CPF</label>
+            <input class="field-input" type="text" id="pac-cpf" placeholder="000.000.000-00" inputmode="numeric">
+            <p class="field-error" id="pac-cpf-error"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pac-nascimento" data-i18n="paciente.nascimento">Data de nascimento</label>
+            <input class="field-input" type="date" id="pac-nascimento">
+            <p class="field-error" id="pac-nascimento-error"></p>
+          </div>
+        </div>
+
         <div class="field-group">
-          <label class="field-label" for="pac-nascimento" data-i18n="paciente.nascimento">Data de nascimento</label>
-          <input class="field-input" type="date" id="pac-nascimento">
-          <p class="field-error" id="pac-nascimento-error"></p>
+          <label class="field-label" for="pac-sexo" data-i18n="criacao.sexo_biologico">Sexo biológico</label>
+          <select class="field-input" id="pac-sexo">
+            <option value="" data-i18n="criacao.selecione">Selecione</option>
+            <option value="F" data-i18n="criacao.sexo.feminino">Feminino</option>
+            <option value="M" data-i18n="criacao.sexo.masculino">Masculino</option>
+            <option value="I" data-i18n="criacao.sexo.indeterminado">Indeterminado</option>
+          </select>
+          <p class="field-error" id="pac-sexo-error"></p>
         </div>
-      </div>
+      </section>
 
-      <div class="field-group">
-        <label class="field-label" for="pac-sexo" data-i18n="criacao.sexo_biologico">Sexo biológico</label>
-        <select class="field-input" id="pac-sexo">
-          <option value="" data-i18n="criacao.selecione">Selecione</option>
-          <option value="F" data-i18n="criacao.sexo.feminino">Feminino</option>
-          <option value="M" data-i18n="criacao.sexo.masculino">Masculino</option>
-          <option value="I" data-i18n="criacao.sexo.indeterminado">Indeterminado</option>
-        </select>
-        <p class="field-error" id="pac-sexo-error"></p>
-      </div>
+      <section class="bento-block bento-block--half">
+        <p class="block-title" data-i18n="criacao.secao.contato">Contato</p>
 
-      <p class="creation-section-title" data-i18n="criacao.secao.contato">Contato</p>
-      <div class="field-row">
         <div class="field-group">
           <label class="field-label" for="pac-telefone" data-i18n="settings.user.telefone">Telefone</label>
           <input class="field-input" type="tel" id="pac-telefone" placeholder="(11) 91234-5678">
           <p class="field-error" id="pac-telefone-error"></p>
         </div>
+
         <div class="field-group">
           <label class="field-label" for="pac-email"><span data-i18n="settings.user.email">E-mail</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></label>
           <input class="field-input" type="email" id="pac-email" autocomplete="off">
         </div>
-      </div>
+      </section>
 
-      <!-- Campos opcionais do formulário completo -- fazem parte do
-           mesmo POST /pacientes/pessoal/ quando preenchidos. Ficam
-           recolhidos por padrão pra não pesar o fluxo rápido (ex:
-           dentro de consulta). -->
-      <details style="margin-top: 8px;">
-        <summary class="btn-ghost btn-ghost--sm" style="display: inline-block; cursor: pointer;"><span data-i18n="criacao.mais_info">+ Mais informações</span> <span data-i18n="campo.opcional">(opcional)</summary>
+      <!-- ===== Bloco recolhível: campos opcionais (mesmo POST quando preenchidos) ===== -->
+      <details class="bento-block">
+        <summary><span data-i18n="criacao.mais_info">Mais informações</span> <span class="field-optional" data-i18n="campo.opcional">(opcional)</span></summary>
 
         <p class="creation-section-title" data-i18n="criacao.secao.identificacao_adicional">Identificação adicional</p>
         <div class="field-group">
