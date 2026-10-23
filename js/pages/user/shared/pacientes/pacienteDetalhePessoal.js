@@ -17,7 +17,7 @@
 
 import { ApiError, atualizarPacientePessoal } from "./pacientesApi.js";
 // TODO: ajustar o caminho conforme onde fica pacienteValidation.js
-import { validarAtualizarPacientePessoal } from "./pacienteValidation.js";
+import { validarAtualizarPacientePessoal } from "../../../../sharedConfig/validacoes/pacienteValidation.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 // ids dos inputs do modal -> nome do campo no payload (schema do back)
