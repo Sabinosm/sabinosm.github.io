@@ -53,7 +53,23 @@
   max-width: 1040px;
   min-width: 0;
 }
-.aten-coluna > .cons-voltar { width: fit-content; }
+.aten-coluna > .aten-voltar { width: fit-content; }
+
+#aten-conteudo{
+  margin-top: 30%;
+}
+
+.aten-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    color: var(--text-muted);
+    font-size: calc(13px * var(--font-scale, 1));
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
 
 /* ============================ abas ====================================== */
 #aten-abas {
