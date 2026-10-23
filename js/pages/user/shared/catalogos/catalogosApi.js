@@ -24,8 +24,16 @@
 // (bp_protocolo em protocolo_catalogo_controller.py), então a URL
 // final é <URL_BASE_API>/protocolos... Se o registro no app usar
 // outro prefixo (ex: /protocolo sem o "s"), ajustar BASE_URL abaixo.
+//
+// STEP-UP (2FA): as ações de liberação institucional (alterarStatusProtocolo
+// e definirPadraoInstitucional) são ações sensíveis no backend. Elas pedem
+// reconfirmação via pedirConfirmacao() e enviam o token em X-Stepup-Token.
+// Se o usuário fechar o modal, pedirConfirmacao() lança
+// ConfirmacaoCanceladaError -- quem chama deve tratar (ver stepUp.js).
 
 import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
+// TODO: ajustar o caminho relativo conforme a localização deste arquivo.
+import { pedirConfirmacao } from "../../../shared/stepUp.js";
 
 // TODO: confirmar o prefixo real de registro do blueprint no app.py.
 const BASE_URL = `${URL_BASE_API}/protocolos`;
@@ -45,14 +53,17 @@ function headersPadrao() {
 /**
  * Executa o fetch e normaliza a resposta no formato do backend.
  * Lança ApiError em caso de erro de rede ou de negócio.
+ *
+ * Os headers passados em `options.headers` são MESCLADOS com os padrões
+ * (antes, substituíam o objeto inteiro e o Content-Type se perdia).
  */
 async function requisitar(base, path, options = {}) {
   let resposta;
   try {
     resposta = await fetch(`${base}${path}`, {
       credentials: "include",
-      headers: headersPadrao(),
       ...options,
+      headers: { ...headersPadrao(), ...(options.headers || {}) },
     });
   } catch (erroRede) {
     throw new ApiError("Não foi possível conectar ao servidor. Verifique sua internet.", 0);
@@ -161,29 +172,45 @@ export function removerDefaultPessoal(uuid) {
 }
 
 // ============================================
-// Liberação institucional (admin)
+// Liberação institucional (admin / super admin)
 // Devolvem EmpresaProtocolo.to_dict() + uuid_protocolo:
 //   { ativo, politica, escopo_default_institucional, aprovado_por, ... }
+//
+// Ações sensíveis: exigem step-up (2FA). Lançam ConfirmacaoCanceladaError
+// se o usuário desistir do modal.
 // ============================================
 
 /**
  * PUT /<uuid>/status { ativo, politica? } -- libera/desativa e/ou muda a política.
  * `politica` omitida = não altera. Desativar um 'obrigatorio' exige mandar
  * politica: 'opcional' junto (o back recusa caso contrário).
+ *
+ * Step-up: ação "alterar_status_protocolo" (mesmo nome do @acao_sensivel
+ * em empresa_protocolo_controller.py).
  */
-export function alterarStatusProtocolo(uuid, { ativo, politica } = {}) {
+export async function alterarStatusProtocolo(uuid, { ativo, politica } = {}) {
+  const token = await pedirConfirmacao("alterar_status_protocolo");
+
   const corpo = { ativo: Boolean(ativo) };
   if (politica !== undefined) corpo.politica = politica;
   return requisitar(BASE_LIBERACAO, `/${encodeURIComponent(uuid)}/status`, {
     method: 'PUT',
+    headers: { "X-Stepup-Token": token },
     body: JSON.stringify(corpo),
   });
 }
 
-/** PUT /<uuid>/default { escopo } -- define o padrão da instituição do escopo. */
-export function definirPadraoInstitucional(uuid, escopo) {
+/**
+ * PUT /<uuid>/default { escopo } -- define o padrão da instituição do escopo.
+ *
+ * Step-up: ação "definir_default_institucional".
+ */
+export async function definirPadraoInstitucional(uuid, escopo) {
+  const token = await pedirConfirmacao("definir_default_institucional");
+
   return requisitar(BASE_LIBERACAO, `/${encodeURIComponent(uuid)}/default`, {
     method: 'PUT',
+    headers: { "X-Stepup-Token": token },
     body: JSON.stringify({ escopo }),
   });
 }
