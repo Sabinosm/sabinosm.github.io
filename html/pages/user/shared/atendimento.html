@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pagina.atendimento.titulo">B-íon — Atendimento</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<link rel="stylesheet" href="../../../../css/pages/user/clinico/consulta.css">
+<link rel="stylesheet" href="../../../../css/pages/user/shared/atendimento.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+
+</head>
+<!-- data-requer: capacidade de userCachePermissoes.js (médico ou enfermeiro) -->
+<body data-requer="atenderClinicamente">
+<canvas id="c" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <a class="cons-voltar" id="aten-voltar" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span data-i18n="atendimento.voltar">Consulta</span>
+    </a>
+
+    <!-- Erro ao carregar -->
+    <div id="aten-erro" hidden></div>
+
+    <div id="aten-conteudo" hidden>
+
+      <header class="main-header">
+        <div>
+          <h1 id="aten-nome"></h1>
+          <p class="main-subtitle" id="aten-subtitulo"></p>
+        </div>
+        <div class="cons-det-chips">
+          <span id="aten-chip-status"></span>
+          <span id="aten-chip-tipo"></span>
+        </div>
+      </header>
+
+      <!-- Modo somente leitura (não dono / não em andamento / encerrada) -->
+      <div class="cons-banner-encerrada" id="aten-banner-leitura" hidden>
+        <strong data-i18n="atendimento.somente_leitura">Somente leitura.</strong>
+        <span id="aten-banner-leitura-texto" data-i18n="atendimento.somente_leitura_hint">
+          Apenas o profissional que abriu o atendimento pode registrar dados.
+        </span>
+      </div>
+
+      <!-- ===== ABERTURA DE ATENDIMENTO ===== -->
+      <section class="cons-panel" id="aten-secao-abertura" hidden>
+        <h2 class="cons-panel-titulo" data-i18n="atendimento.abertura.titulo">Abertura de atendimento</h2>
+        <p class="field-hint" id="aten-abertura-aviso"></p>
+        <div class="cons-panel-acoes">
+          <button type="button" class="btn-primary" id="aten-btn-triagem" data-i18n="atendimento.abrir_triagem">Iniciar triagem</button>
+          <!-- data-requer: só médico vê este botão (initPagina remove para enfermeiro) -->
+          <button type="button" class="btn-primary" id="aten-btn-avaliacao"
+                  data-requer="avaliarMedicamente" data-i18n="atendimento.abrir_avaliacao">Iniciar avaliação médica</button>
+        </div>
+      </section>
+
+      <!-- ===== ATENDIMENTO EM ANDAMENTO ===== -->
+      <section id="aten-secao-atendimento" hidden>
+
+        <div class="segmented" id="aten-abas">
+          <button type="button" class="segmented-item segmented-item--active" data-aba="binario" data-i18n="atendimento.aba.binario">Binário</button>
+          <button type="button" class="segmented-item" data-aba="sinais" data-i18n="atendimento.aba.sinais">Sinais vitais</button>
+          <button type="button" class="segmented-item" data-aba="coleta" data-i18n="atendimento.aba.coleta">Coleta clínica</button>
+          <button type="button" class="segmented-item" data-aba="conduta" data-i18n="atendimento.aba.conduta">Conduta de enfermagem</button>
+        </div>
+
+        <!-- ABA: BINÁRIO -->
+        <div class="aten-aba" id="aten-aba-binario">
+          <section class="cons-panel">
+            <h2 class="cons-panel-titulo">
+              <span data-i18n="atendimento.binario.titulo">Binário</span>
+              <span id="aten-bin-resumo" class="aten-bin-resumo"></span>
+            </h2>
+            <p class="field-hint" data-i18n="atendimento.binario.hint">
+              Confira as 4 seções. Sinais vitais não dependem do binário; coleta clínica e input de protocolo só liberam com as 4 conferidas.
+            </p>
+            <p class="field-hint" id="aten-bin-completo-hint" hidden
+               data-i18n="atendimento.binario.completo" style="color:#4ade80">
+              Binário completo — coleta clínica e input de protocolo liberados.
+            </p>
+            <div class="cons-panel-acoes">
+              <button type="button" class="btn-primary" id="aten-bin-conferir-tudo" data-i18n="atendimento.binario.conferir_tudo">Conferir todas as seções</button>
+            </div>
+            <div id="aten-bin-secoes"></div>
+          </section>
+        </div>
+
+        <!-- ABA: SINAIS VITAIS -->
+        <div class="aten-aba" id="aten-aba-sinais" hidden>
+          <section class="cons-panel">
+            <h2 class="cons-panel-titulo" data-i18n="atendimento.sinais.titulo">Sinais vitais</h2>
+            <p class="field-hint" data-i18n="atendimento.sinais.hint">
+              Registro em lote: 1 a 50 sinais por vez. Se um item for inválido, nada é gravado.
+            </p>
+            <div id="aten-sv-anteriores" hidden></div>
+            <p class="field-hint" id="aten-sv-leitura-hint" hidden
+               data-i18n="atendimento.sinais.leitura">Somente o profissional que abriu o atendimento registra sinais.</p>
+            <table class="aten-tabela">
+              <thead>
+                <tr>
+                  <th data-i18n="atendimento.sinais.tipo">Tipo</th>
+                  <th data-i18n="atendimento.sinais.valor">Valor</th>
+                  <th data-i18n="atendimento.sinais.unidade">Unidade</th>
+                  <th data-i18n="atendimento.sinais.sitio">Sítio</th>
+                  <th>DPOC</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="aten-sv-linhas"></tbody>
+            </table>
+            <div class="cons-panel-acoes">
+              <button type="button" class="btn-ghost" id="aten-sv-add" data-i18n="atendimento.sinais.adicionar">+ Adicionar sinal</button>
+              <button type="button" class="btn-primary" id="aten-sv-salvar" data-i18n="atendimento.sinais.salvar">Registrar sinais</button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ABA: COLETA CLÍNICA + INPUT -->
+        <div class="aten-aba" id="aten-aba-coleta" hidden>
+          <section class="cons-panel">
+            <h2 class="cons-panel-titulo" data-i18n="atendimento.coleta.titulo">Coleta clínica</h2>
+            <p class="field-hint" id="aten-co-gate" hidden
+               data-i18n="atendimento.coleta.gate">
+              Conclua as 4 seções do binário para registrar coleta clínica e input de protocolo.
+            </p>
+            <p class="field-hint" id="aten-co-leitura-hint" hidden
+               data-i18n="atendimento.coleta.leitura">Somente o profissional que abriu o atendimento registra coletas.</p>
+
+            <div id="aten-co-form-wrap" hidden>
+              <div class="field-group">
+                <label class="field-label" for="aten-co-desde">
+                  <span data-i18n="atendimento.coleta.desde">Desde quando os sintomas (horas)</span>
+                  <span class="field-optional" data-i18n="campo.opcional">(opcional)</span>
+                </label>
+                <input class="field-input" type="number" id="aten-co-desde" min="0" max="32767" step="1">
+                <p class="field-error" id="aten-co-desde-error"></p>
+              </div>
+              <div class="cons-panel-acoes">
+                <button type="button" class="btn-primary" id="aten-co-criar" data-i18n="atendimento.coleta.criar">Registrar coleta</button>
+              </div>
+            </div>
+
+            <div id="aten-co-lista"></div>
+            <div id="aten-co-anteriores" hidden></div>
+          </section>
+        </div>
+
+        <!-- ABA: CONDUTA DE ENFERMAGEM (só triagem) -->
+        <div class="aten-aba" id="aten-aba-conduta" hidden>
+          <section class="cons-panel">
+            <h2 class="cons-panel-titulo" data-i18n="atendimento.conduta.titulo">Conduta de enfermagem</h2>
+            <p class="field-hint" id="aten-cond-leitura-hint" hidden
+               data-i18n="atendimento.conduta.leitura">Somente o profissional que abriu o atendimento registra condutas.</p>
+
+            <div id="aten-cond-form-wrap">
+              <div class="field-group">
+                <label class="field-label" for="aten-cond-descricao" data-i18n="atendimento.conduta.descricao">Descrição da conduta</label>
+                <textarea class="field-input" id="aten-cond-descricao" rows="3"></textarea>
+                <p class="field-error" id="aten-cond-descricao-error"></p>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="aten-cond-protocolo">
+                  <span data-i18n="atendimento.conduta.protocolo">Protocolo do catálogo</span>
+                  <span class="field-optional" data-i18n="campo.opcional">(opcional)</span>
+                </label>
+                <input class="field-input" type="text" id="aten-cond-protocolo" placeholder="uuid">
+                <p class="field-error" id="aten-cond-protocolo-error"></p>
+              </div>
+              <div class="cons-panel-acoes">
+                <button type="button" class="btn-primary" id="aten-cond-salvar" data-i18n="atendimento.conduta.salvar">Registrar conduta</button>
+              </div>
+            </div>
+
+            <div id="aten-cond-lista"></div>
+          </section>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js
+     (partial compartilhado: html/partials/settingsModal.html) -->
+
+<script src="../../../../js/shared/particles.js"></script>
+<script type="module" src="../../../../js/pages/user/shared/atendimento/atendimento.js"></script>
+</body>
+</html>
