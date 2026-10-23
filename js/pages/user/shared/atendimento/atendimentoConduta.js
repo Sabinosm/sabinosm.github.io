@@ -8,7 +8,7 @@ import { registrarConduta, listarCondutasDoAtendimento, ApiError } from "./atend
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, podeEscrever, el, formatarDataHora,
 } from "./atendimentoHelpers.js";
-import { validarConduta } from "./atendimentoValidation.js";
+import { validarConduta } from "../../../../sharedConfig/validacoes/atendimentoValidation.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
