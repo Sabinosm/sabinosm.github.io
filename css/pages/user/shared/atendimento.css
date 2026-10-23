@@ -55,9 +55,6 @@
 }
 .aten-coluna > .aten-voltar { width: fit-content; }
 
-#aten-conteudo{
-  margin-top: 30%;
-}
 
 .aten-voltar {
     display: inline-flex;
