@@ -39,6 +39,7 @@ const senhaInputNova = document.getElementById('senha-nova');
 const senhaInputConfirmar = document.getElementById('senha-confirmar');
 const senhaErroEl = document.getElementById('senha-erro');
 const senhaBtnConfirmar = document.getElementById('btn-confirmar-senha');
+const logoutBtn = document.getElementById('btn-logout');
 
 ativarTogglesSenha([senhaInputNova, senhaInputConfirmar]);
 
@@ -164,5 +165,25 @@ senhaForm?.addEventListener('submit', async (e) => {
     mostrarErroSenha('Sem conexão com o servidor. Verifique sua internet e tente novamente.');
   } finally {
     senhaBtnConfirmar.disabled = false;
+  }
+});
+
+// Logout: chama o endpoint de logout e, independentemente do resultado
+// (até em falha de rede), limpa a sessão client-side redirecionando
+// para a tela de login.
+logoutBtn?.addEventListener('click', async () => {
+  logoutBtn.disabled = true;
+  try {
+    await fetch(`${URL_BASE_API}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (erro) {
+    // Mesmo com falha de rede seguimos para o login -- a sessão no
+    // servidor expira sozinha e nada crítico fica exposto client-side.
+    console.error('settingsSenha.js: erro de rede ao fazer logout', erro);
+  } finally {
+    // TODO(ajustar): trocar pelo caminho real da página de login.
+    window.location.href = '/login';
   }
 });

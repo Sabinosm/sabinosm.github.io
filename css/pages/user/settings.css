@@ -139,6 +139,22 @@ body.no-scroll {
 .settings-panels {
   padding: 32px 40px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Footer de logout fixado no final da área de painéis (ver
+   settingsModal.html). margin-top: auto empurra o bloco para o fim
+   do container flex; quando o conteúdo das abas é maior que a área
+   visível, ele simplesmente fica após o último painel no scroll. */
+.settings-logout-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-logout-footer .btn-secondary {
+  width: 100%;
 }
 
 .settings-panel {

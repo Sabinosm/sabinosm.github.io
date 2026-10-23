@@ -71,6 +71,8 @@
             <span class="field-locked-tag" data-i18n="settings.gerenciado_instituicao">Gerenciado pela instituição</span>
           </div>
         </div>
+
+        </div>
       </section>
 
       <!-- ===== SEGURANÇA ===== -->
@@ -271,6 +273,13 @@
 
         </div>
       </section>
+
+      <!-- Botão de logout fixado no final da área de painéis (sai da
+           sessão via POST /logout e redireciona para a tela de login).
+           Ver handler em settingsSenha.js. -->
+      <div class="settings-logout-footer">
+        <button class="btn-secondary" id="btn-logout" data-i18n="btn.sair">Sair</button>
+      </div>
 
     </div>
 
