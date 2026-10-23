@@ -11,8 +11,8 @@
 // "possui" grava/atualiza o dado do paciente. Este arquivo valida só a
 // ESTRUTURA da seção (resposta possui/nega/não-coletado).
 
-import { CAMPO_GERAL, resultado, setErro, strip, tam, vazio } from "../../../../sharedConfig/validacoes/generalValidation.js";
-import { SECOES_BINARIO, UNIDADE_POR_TIPO, SITIOS_POR_TIPO } from "./atendimentoHelpers.js";
+import { CAMPO_GERAL, resultado, setErro, strip, tam, vazio } from "./generalValidation.js";
+import { SECOES_BINARIO, UNIDADE_POR_TIPO, SITIOS_POR_TIPO } from "../../pages/user/shared/atendimento/atendimentoHelpers.js";
 
 // ============================================================ binário
 

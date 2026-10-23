@@ -16,7 +16,7 @@ import {
   UNIDADE_POR_TIPO, TIPO_PARAMETRO_LABELS, SITIOS_POR_TIPO, SITIO_LABELS,
   dadosPaciente, podeEscrever, el,
 } from "./atendimentoHelpers.js";
-import { validarSinaisVitais } from "./atendimentoValidation.js";
+import { validarSinaisVitais } from "../../../../sharedConfig/validacoes/atendimentoValidation.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
