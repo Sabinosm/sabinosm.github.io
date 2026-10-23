@@ -33,7 +33,7 @@
 
 import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 // TODO: ajustar o caminho relativo conforme a localização deste arquivo.
-import { pedirConfirmacao } from "../../../shared/stepUp.js";
+import { pedirConfirmacao } from "../../../../sharedConfig/stepup.js";
 
 // TODO: confirmar o prefixo real de registro do blueprint no app.py.
 const BASE_URL = `${URL_BASE_API}/protocolos`;
