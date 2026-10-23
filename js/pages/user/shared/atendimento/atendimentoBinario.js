@@ -36,7 +36,7 @@ import {
   SECOES_BINARIO, normalizarSecoesBinario, classeSecao, ESTADO_SECAO_LABELS,
   MOTIVO_REVISAO_LABELS, dadosPaciente, podeEscrever, el, textoItem,
 } from "./atendimentoHelpers.js";
-import { validarSecaoBinario, montarPayloadAgregado } from "./atendimentoValidation.js";
+import { validarSecaoBinario, montarPayloadAgregado } from "../../../../sharedConfig/validacoes/atendimentoValidation.js";
 import {
   validarCriarMedicamentoEmUso,
 } from "../../../../sharedConfig/validacoes/medicamentosEmUsoValidation.js";
