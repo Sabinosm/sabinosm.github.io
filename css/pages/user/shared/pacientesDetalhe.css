@@ -317,3 +317,15 @@
   .patient-header { flex-direction: column; }
   .bento-block { padding: 18px; }
 }
+
+.field-clear {
+  background: none;
+  border: 0;
+  padding: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted, #8a8f98);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.field-clear:hover { color: var(--danger, #e5484d); }
+.field-clear[hidden] { display: none; }
