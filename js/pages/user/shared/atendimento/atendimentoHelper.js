@@ -17,9 +17,9 @@ export const EVENTO_BINARIO_CARREGADO = "atendimento:binario-carregado";
 
 /**
  * Estado compartilhado da página. O orquestrador escreve; as abas leem.
- * `dadosNovoAtendimento` guarda a resposta INTEIRA de
- * /binario/novo-atendimento (binário derivado + dados do paciente + o que
- * mais o back mandar): o front não decide o que é útil, só expõe.
+ * `dadosNovoAtendimento` guarda a resposta de /binario/do-paciente (binario,
+ * confirmacao, pendentes, completo) + `dados_paciente` (listas por seção,
+ * lidas por dadosPaciente()). É null se a rota falhou.
  */
 export const estadoAtendimento = {
   consulta: null,
@@ -107,8 +107,7 @@ export const SITIO_LABELS = {
 // ----------------------------------------------------------------- binário
 
 /**
- * Normaliza a resposta dos GETs de binário (rota atual e /novo-atendimento)
- * num formato único. Tolerante ao shape: aceita {binario: {...}}, {secoes: [...]}
+ * Normaliza a resposta de GET /binario (estado por seção) num formato único. Tolerante ao shape: aceita {binario: {...}}, {secoes: [...]}
  * ou o dict direto {alergias: {...}}.
  *
  * Devolve { secoes: {alergias: sec|null, ...}, completo } onde sec =
@@ -158,7 +157,7 @@ export function classeSecao(sec) {
   return sec.origem === "manual" ? "manual" : "automatico";
 }
 
-/** Dados clínicos do paciente vindos em /binario/novo-atendimento ({} se ainda não carregou). */
+/** Registros ativos do paciente vindos de /binario/do-paciente ({} se ainda não carregou). */
 export function dadosPaciente() {
   return estadoAtendimento.dadosNovoAtendimento?.dados_paciente ?? {};
 }
@@ -189,9 +188,19 @@ export function el(tag, classe, texto) {
 export function textoItem(item) {
   if (item == null) return "";
   if (typeof item === "string") return item;
+  if (item.codigo_cid10) {
+    return `${item.codigo_cid10} — ${item.descricao_cid10 ?? ""}${item.status === "em-remissao" ? " (em remissão)" : ""}`;
+  }
+  if (item.substancia) {
+    // gravidade_maxima, não gravidade: uma reação grave antiga não pode sumir
+    return [item.substancia, item.tipo_reacao, item.gravidade_maxima ?? item.gravidade].filter(Boolean).join(" · ");
+  }
+  if (item.descricao && (item.dose || item.frequencia)) {
+    return [item.descricao, item.dose, item.frequencia].filter(Boolean).join(" · ");
+  }
   return (
     item.descricao ?? item.nome ??
-    item.substancia ?? item.principio_ativo ?? item.tipo_sanguineo ??
+    item.principio_ativo ?? item.tipo_sanguineo ??
     (item.tipo ? `${item.tipo}: ${item.descricao ?? ""}` : null) ??
     JSON.stringify(item)
   );

@@ -9,7 +9,7 @@
 //   POST /atendimentos/consulta/<uuid>/abrir-triagem           -> 201 (409: consentimento/consulta)
 //   POST /atendimentos/consulta/<uuid>/abrir-avaliacao-medica  -> 201 (403: só médico)
 //   GET  /atendimentos/<uuid>/binario                          -> estado + pré-preenchimento
-//   GET  /atendimentos/<uuid>/binario/novo-atendimento         -> tudo p/ pré-preencher (binário derivado + dados do paciente)
+//   GET  /atendimentos/<uuid>/binario/do-paciente              -> binário montado dos registros ativos do paciente (pré-preenchimento)
 //   POST /atendimentos/<uuid_at>/pacientes/<uuid_pac>/binario            -> conferir as 4 seções
 //   POST /atendimentos/<uuid_at>/pacientes/<uuid_pac>/binario/<secao>    -> conferir 1 seção
 //   POST .../sinais-vitais                                   -> {"sinais": [...]}
@@ -81,12 +81,12 @@ export const abrirAvaliacaoMedica = (uuidConsulta) => post(`/consulta/${enc(uuid
 export const estadoBinario = (uuidAtendimento) => get(`/${enc(uuidAtendimento)}/binario`);
 
 /**
- * GET /atendimentos/<uuid>/binario/novo-atendimento — TUDO para pré-preencher
- * um atendimento novo: binário derivado do paciente + dados clínicos + o que
- * mais o back incluir. O front guarda a resposta inteira.
+ * GET /atendimentos/<uuid>/binario/do-paciente — binário montado a partir dos
+ * registros ATIVOS do paciente (formato do BinarioIn). Só leitura.
+ * Resposta: { binario, confirmacao, pendentes, completo }.
  */
-export const dadosParaNovoAtendimento = (uuidAtendimento) =>
-  get(`/${enc(uuidAtendimento)}/binario/novo-atendimento`);
+export const binarioDoPaciente = (uuidAtendimento) =>
+  get(`/${enc(uuidAtendimento)}/binario/do-paciente`);
 
 /** POST .../binario — conferir as 4 seções (agregado). 409 em seção já conferida manualmente. */
 export const conferirBinario = (uuidAt, uuidPac, payload) =>

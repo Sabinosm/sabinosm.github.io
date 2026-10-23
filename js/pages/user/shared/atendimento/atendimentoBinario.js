@@ -19,17 +19,17 @@
 // dado do paciente). Se o dado já consta na lista vigente, basta conferir
 // sem repetir o item (itens: [] confirma o registro ativo).
 //
-// Pré-preenchimento: se o GET /binario vier 100% pendente (1º atendimento),
-// chama /binario/novo-atendimento, que devolve TUDO (binário derivado +
-// dados do paciente). A resposta inteira fica em estadoAtendimento.dadosNovoAtendimento
-// e os itens vigentes aparecem nos cards (e nas outras abas).
+// Pré-preenchimento: SEMPRE busca GET /binario/do-paciente junto com o estado
+// (não só no 1º atendimento). Os registros ativos do paciente alimentam os cards
+// (via dadosPaciente()) e pré-selecionam a resposta quando a seção ainda não
+// foi conferida neste atendimento.
 //
 // Escrita: rota granular por seção. O "Conferir todas" monta o agregado das 4
 // e só funciona quando as 4 têm resposta (nenhuma travada em manual).
 // 409 "já conferida" NÃO é erro de usuário: recarrega e segue.
 
 import {
-  estadoBinario, dadosParaNovoAtendimento, conferirSecao, conferirBinario, ApiError,
+  estadoBinario, binarioDoPaciente, conferirSecao, conferirBinario, ApiError,
 } from "./atendimentoApi.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO,
@@ -53,14 +53,22 @@ import { exibirMensagem } from "../../../../shared/feedback.js";
 //
 // Campos de cada item novo, por seção (espelho dos schemas de criação).
 // A validação de cada item é da validação de domínio correspondente.
-// TODO(alergia): o alergiaValidation.js enviado continha só o contrato de
-// REMOÇÃO; abaixo vai um validador local mínimo (descricao obrigatória).
-// Quando o schema de criação de alergia for confirmado, trocar
-// `validarCriarAlergiaLocal` pela função real em alergiaValidation.js.
+// ALERGIA: espelho local do AlergiaCreateSchema (substancia + uma reação:
+// tipo_reacao, gravidade, descricao_reacao). Quando o alergiaValidation.js
+// ganhar o contrato de criação, trocar `validarCriarAlergiaLocal` por ele.
+
+const MANIFESTACOES = [
+  ["cutanea", "Cutânea"], ["respiratoria", "Respiratória"], ["anafilaxia", "Anafilaxia"],
+  ["gastrointestinal", "Gastrointestinal"], ["cardiovascular", "Cardiovascular"], ["sistemica", "Sistêmica"],
+];
+const GRAVIDADES = [["leve", "Leve"], ["moderada", "Moderada"], ["grave", "Grave"]];
 
 const CAMPOS_ITEM = {
   alergias: [
-    { campo: "descricao", label: "Descrição da alergia", placeholder: "ex.: Dipirona" },
+    { campo: "substancia", label: "Substância", placeholder: "ex.: Dipirona" },
+    { campo: "tipo_reacao", label: "Manifestação", tipo: "select", options: MANIFESTACOES },
+    { campo: "gravidade", label: "Gravidade", tipo: "select", options: GRAVIDADES },
+    { campo: "descricao_reacao", label: "Descrição da reação" },
   ],
   medicamentos: [
     { campo: "descricao", label: "Descrição", placeholder: "ex.: Dipirona 500mg" },
@@ -86,10 +94,29 @@ const VALIDADOR_ITEM = {
 function validarCriarAlergiaLocal(payload) {
   const erros = {};
   const out = {};
-  const d = strip(payload?.descricao ?? "");
-  if (!d) setErro(erros, "descricao", "Informe a descrição da alergia.");
-  else if (tam(d) > 2000) setErro(erros, "descricao", "No máximo 2000 caracteres.");
-  else out.descricao = d;
+
+  const s = strip(payload?.substancia ?? "");
+  if (!s) setErro(erros, "substancia", "Informe a substância.");
+  else if (tam(s) > 255) setErro(erros, "substancia", "No máximo 255 caracteres.");
+  else out.substancia = s;
+
+  if (!MANIFESTACOES.some(([v]) => v === payload?.tipo_reacao)) {
+    setErro(erros, "tipo_reacao", "Selecione a manifestação.");
+  } else out.tipo_reacao = payload.tipo_reacao;
+
+  if (!GRAVIDADES.some(([v]) => v === payload?.gravidade)) {
+    setErro(erros, "gravidade", "Selecione a gravidade.");
+  } else out.gravidade = payload.gravidade;
+
+  // espelha o validador do back: anafilaxia leve é clinicamente incoerente
+  if (out.tipo_reacao === "anafilaxia" && out.gravidade === "leve") {
+    setErro(erros, "gravidade", "Anafilaxia não pode ser classificada como leve.");
+  }
+
+  const d = strip(payload?.descricao_reacao ?? "");
+  if (tam(d) > 2000) setErro(erros, "descricao_reacao", "No máximo 2000 caracteres.");
+  else if (d) out.descricao_reacao = d;
+
   return resultado(out, erros);
 }
 
@@ -110,19 +137,30 @@ async function carregar() {
   if (!a) return;
 
   try {
-    let norm = normalizarSecoesBinario((await estadoBinario(a.uuid)).data);
+    // Estado (máquina de estados) e dados do paciente em paralelo. Falha da rota
+    // do paciente não quebra a aba: segue sem pré-preenchimento.
+    const [respEstado, respPaciente] = await Promise.all([
+      estadoBinario(a.uuid),
+      binarioDoPaciente(a.uuid).catch((e) => {
+        console.warn("binario/do-paciente indisponível:", e?.message);
+        return null;
+      }),
+    ]);
 
-    // 1º atendimento (ou seção nunca derivada): puxa tudo do paciente para pré-preencher.
-    // Falha da rota nova (ainda não deployada etc.) não quebra a aba: segue com o form vazio.
-    if (!norm.completo && Object.values(norm.secoes).every((s) => !s)) {
-      try {
-        const respNovo = await dadosParaNovoAtendimento(a.uuid);
-        estadoAtendimento.dadosNovoAtendimento = respNovo.data ?? {};
-        norm = normalizarSecoesBinario(estadoAtendimento.dadosNovoAtendimento);
-      } catch (e) {
-        console.warn("binario/novo-atendimento indisponível:", e?.message);
-      }
-    }
+    const norm = normalizarSecoesBinario(respEstado.data);
+
+    // Resposta inteira + `dados_paciente`, que é o que dadosPaciente() lê
+    // (listas por seção + tipo sanguíneo vigente).
+    const p = respPaciente?.data ?? null;
+    estadoAtendimento.dadosNovoAtendimento = p && {
+      ...p,
+      dados_paciente: {
+        alergias: p.binario.alergias.itens,
+        medicamentos: p.binario.medicamentos.itens,
+        doenca_cronica: p.binario.doenca_cronica.itens,
+        tipo_sanguineo: p.binario.tipo_sanguineo.tipo_sanguineo,
+      },
+    };
 
     secoes = norm.secoes;
     estadoAtendimento.binarioCompleto = norm.completo;
@@ -168,7 +206,7 @@ function criarCard(meta) {
   head.appendChild(el("span", "aten-bin-badge", ESTADO_SECAO_LABELS[classe]));
   card.appendChild(head);
 
-  // --- pré-visualização dos dados vigentes (veio de /novo-atendimento)
+  // --- pré-visualização dos dados vigentes (vem de /binario/do-paciente)
   const dados = dadosPaciente()[meta.id];
   if (Array.isArray(dados) && dados.length > 0) {
     const ul = el("ul", "aten-bin-dados");
@@ -194,12 +232,23 @@ function criarCard(meta) {
   return card;
 }
 
+/** O estado do atendimento manda; sem ele, vale o que o paciente tem (/do-paciente). */
+function respostaPre(meta, sec, classe) {
+  if (classe === "revisao") return ""; // o dado mudou: força escolha ativa
+  if (sec && classe === "automatico") {
+    return sec.possui === true ? "possui" : sec.possui === false ? "nega" : "nao-coletado";
+  }
+  const b = estadoAtendimento.dadosNovoAtendimento?.binario?.[meta.id];
+  if (!b || b.possui === null || b.possui === undefined) return "";
+  if (b.possui) return "possui";
+  return b.nao_foi_possivel_coletar ? "nao-coletado" : "nega";
+}
+
 function criarForm(meta, sec, classe) {
   const form = el("div", "aten-bin-form");
 
-  // resposta pré-selecionada quando a seção veio derivada/automática
-  let pre = "";
-  if (sec && classe === "automatico") pre = sec.possui === true ? "possui" : sec.possui === false ? "nega" : "nao-coletado";
+  // resposta pré-selecionada (derivada/automática ou vinda dos registros do paciente)
+  const pre = respostaPre(meta, sec, classe);
 
   const nomeRadio = `aten-bin-est-${meta.id}`;
   const opcoes = meta.tipoSanguineo
@@ -279,7 +328,9 @@ function criarItemForm(meta) {
     let input;
     if (c.tipo === "select") {
       input = document.createElement("select");
-      input.appendChild(el("option", null, "Selecione"));
+      const ph = el("option", null, "Selecione");
+      ph.value = "";
+      input.appendChild(ph);
       (c.options ?? []).forEach(([valor, texto]) => {
         const opt = el("option", null, texto);
         opt.value = valor;
