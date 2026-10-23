@@ -36,7 +36,7 @@ import {
   SECOES_BINARIO, normalizarSecoesBinario, classeSecao, ESTADO_SECAO_LABELS,
   MOTIVO_REVISAO_LABELS, dadosPaciente, podeEscrever, el, textoItem,
 } from "./atendimentoHelpers.js";
-import { validarSecaoBinario, montarPayloadAgregado } from "../../../../sharedConfig/validacoes/atendimentoValidation.js";
+import { validarSecaoBinario, montarPayloadAgregado } from "./atendimentoValidation.js";
 import {
   validarCriarMedicamentoEmUso,
 } from "../../../../sharedConfig/validacoes/medicamentosEmUsoValidation.js";
@@ -183,6 +183,7 @@ function render() {
   const resumo = $("aten-bin-resumo");
   resumo.textContent = `${conferidas}/${total} conferidas`;
   resumo.classList.toggle("aten-bin-resumo--ok", conferidas === total);
+  resumo.style.setProperty("--prog", String(conferidas / total)); // enche o pill (CSS)
 
   $("aten-bin-completo-hint").hidden = conferidas !== total;
 
