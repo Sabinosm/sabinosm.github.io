@@ -144,7 +144,7 @@ export function buscarProfissional(uuid) {
  * erro.message).
  */
 export function criarProfissional(payload) {
-  return requisitar(URL_BASE_API, {
+  return requisitar("", {
     method: 'POST',
     body: JSON.stringify(payload),
   });
