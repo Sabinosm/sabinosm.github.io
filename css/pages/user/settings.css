@@ -154,7 +154,10 @@ body.no-scroll {
 }
 
 .settings-logout-footer .btn-secondary {
-  width: 100%;
+    width: 30%;
+    margin-left: 32%;
+    margin-bottom: 5%;
+    margin-top: 2%;
 }
 
 .settings-panel {
