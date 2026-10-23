@@ -19,13 +19,13 @@
 import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 // TODO: ajustar o caminho conforme onde fica userCachePermissoes.js
 import { getPermissoes } from "../../../../sharedConfig/userCacheHelpers/userCachePermissoes.js";
-import { ApiError, buscarDetalhePessoal } from "../pacientesApi.js";
+import { ApiError, buscarDetalhePessoal } from "./pacientesApi.js";
 import { inicializarPessoal } from "./pacienteDetalhePessoal.js";
 import { inicializarHistorico } from "./pacienteDetalheHistorico.js";
-import { inicializarTipoSanguineo } from "./clinico/pacienteClinicoTipoSanguineo.js";
-import { inicializarAlergias } from "./clinico/pacienteClinicoAlergias.js";
-import { inicializarDoencas } from "./clinico/pacienteClinicoDoencas.js";
-import { inicializarMedicamentos } from "./clinico/pacienteClinicoMedicamentos.js";
+import { inicializarTipoSanguineo } from "./pacienteClinicoTipoSanguineo.js";
+import { inicializarAlergias } from "./pacienteClinicoAlergias.js";
+import { inicializarDoencas } from "./pacienteClinicoDoencas.js";
+import { inicializarMedicamentos } from "./pacienteClinicoMedicamentos.js";
 
 document.addEventListener('DOMContentLoaded', () => {
   iniciarPagina();
