@@ -3,6 +3,7 @@ import { pedirConfirmacao, ConfirmacaoCanceladaError } from '../stepup.js';
 import { exibirFeedbackSucessoTemporario } from './settingsFeedback.js';
 import { ativarTogglesSenha } from '../passwordManagement/passwordToggle.js';
 import { validarSenha } from '../passwordManagement/passwordValidation.js';
+import {ROTAS} from '../../sharedConfig/loaders/rotas.js';
 
 // ============================================
 // Modal de Alterar Senha (#senha-modal-overlay, ver settingsModal.html)
@@ -174,7 +175,7 @@ senhaForm?.addEventListener('submit', async (e) => {
 logoutBtn?.addEventListener('click', async () => {
   logoutBtn.disabled = true;
   try {
-    await fetch(`${URL_BASE_API}/logout`, {
+    await fetch(`${URL_BASE_API}/auth/logout`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -184,6 +185,6 @@ logoutBtn?.addEventListener('click', async () => {
     console.error('settingsSenha.js: erro de rede ao fazer logout', erro);
   } finally {
     // TODO(ajustar): trocar pelo caminho real da página de login.
-    window.location.href = '/login';
+    window.location.href = ROTAS.login;
   }
 });
