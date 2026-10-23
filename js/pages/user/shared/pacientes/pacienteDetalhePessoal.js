@@ -188,11 +188,13 @@ function configurarModal() {
 function abrirModal() {
   preencherModal();
   limparErrosModal();
-  document.getElementById('pac-edit-overlay').classList.add('aberto'); // TODO: usar a classe real do CSS do overlay
+  document.getElementById('pac-edit-overlay').classList.add('settings-overlay--visible');
+  document.body.classList.add('no-scroll');
 }
 
 function fecharModal() {
-  document.getElementById('pac-edit-overlay').classList.remove('aberto');
+  document.getElementById('pac-edit-overlay').classList.remove('settings-overlay--visible');
+  document.body.classList.remove('no-scroll');
 }
 
 // ---------------------------------------------------------------
