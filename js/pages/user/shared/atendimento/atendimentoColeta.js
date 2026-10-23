@@ -18,7 +18,7 @@ import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO,
   dadosPaciente, podeEscrever, el, formatarDataHora,
 } from "./atendimentoHelpers.js";
-import { validarColeta, validarInputProtocolo } from "./atendimentoValidation.js";
+import { validarColeta, validarInputProtocolo } from "../../../../sharedConfig/validacoes/atendimentoValidation.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
