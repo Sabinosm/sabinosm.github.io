@@ -10,8 +10,8 @@
 //   PUT  /pacientes/clinico/<uuid>                -> atualizarPacienteClinico(uuid, payload)
 //   GET  /consultas/paciente/historico/<uuid>     -> listarHistoricoConsultas(uuidPaciente)
 //   POST /pacientes/pessoal/                      -> criarPacientePessoal(payload)
-//   POST /pacientes/lgpd/<uuid>/consentimentos[...]                    (fluxo de consulta)
-//   POST /pacientes/lgpd/<uuid>/consentimentos/dispensar-emergencia    (fluxo de consulta)
+//   POST /pacientes/consentimento-digital/<uuid>/consentimentos[...]                    (fluxo de consulta)
+//   POST /pacientes/consentimento-digital/<uuid>/consentimentos/dispensar-emergencia    (fluxo de consulta)
 //
 // Resposta do backend (json_success / json_error):
 //   sucesso: { status: "success", message: "...", data: {...} | [...] }
@@ -253,18 +253,18 @@ export const CANAIS_COLETA_CONSENTIMENTO = [
 ];
 
 /**
- * POST /pacientes/lgpd/<uuid>/consentimentos — fluxo normal de
+ * POST /pacientes/consentimento-digital/<uuid>/consentimentos — fluxo normal de
  * consentimento (paciente presente e capaz de consentir).
  */
 export function registrarConsentimento(uuid, { versao_termo, canal_coleta }) {
-  return requisitar(`/lgpd/${uuid}/consentimentos`, {
+  return requisitar(`/consentimento-digital/${uuid}/consentimentos`, {
     method: 'POST',
     body: JSON.stringify({ versao_termo, canal_coleta }),
   });
 }
 
 /**
- * POST /pacientes/lgpd/<uuid>/consentimentos/dispensar-emergencia —
+ * POST /pacientes/consentimento-digital/<uuid>/consentimentos/dispensar-emergencia —
  * quando não é possível coletar o consentimento no momento. O
  * consentimento nasce com status "dispensado_emergencia" (não "ativo").
  *
@@ -272,7 +272,7 @@ export function registrarConsentimento(uuid, { versao_termo, canal_coleta }) {
  * @param {string} motivo — justificativa da dispensa (obrigatória)
  */
 export function dispensarConsentimentoEmergencia(uuid, motivo) {
-  return requisitar(`/lgpd/${uuid}/consentimentos/dispensar-emergencia`, {
+  return requisitar(`/consentimento-digital/${uuid}/consentimentos/dispensar-emergencia`, {
     method: 'POST',
     body: JSON.stringify({ motivo }),
   });

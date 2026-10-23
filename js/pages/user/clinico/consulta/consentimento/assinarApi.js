@@ -4,10 +4,10 @@
 // celular). Não há login: o token do link é a autenticação, então nenhuma
 // chamada daqui envia cookies (credentials: "omit").
 //
-//   GET  /pacientes/lgpd/assinar/<token>                 -> obterDadosAssinatura(token)
-//   POST /pacientes/lgpd/assinar/<token>                 -> enviarAssinatura(token, payload)
-//   GET  /pacientes/lgpd/assinar/<token>/termo.pdf       -> urlTermoPdf(token)
-//   GET  /pacientes/lgpd/assinar/<token>/comprovante.pdf -> urlComprovante(token)
+//   GET  /pacientes/consentimento-digital/assinar/<token>                 -> obterDadosAssinatura(token)
+//   POST /pacientes/consentimento-digital/assinar/<token>                 -> enviarAssinatura(token, payload)
+//   GET  /pacientes/consentimento-digital/assinar/<token>/termo.pdf       -> urlTermoPdf(token)
+//   GET  /pacientes/consentimento-digital/assinar/<token>/comprovante.pdf -> urlComprovante(token)
 //
 // Resposta do backend (json_success / json_error):
 //   sucesso: { status: "success", message, data }
@@ -18,7 +18,7 @@
 
 import { URL_BASE_API } from "../../../../../sharedConfig/urlConfig.js";
 
-const BASE_ASSINAR = `${URL_BASE_API}/pacientes/lgpd/assinar`;
+const BASE_ASSINAR = `${URL_BASE_API}/pacientes/consentimento-digital/assinar`;
 
 export class ApiError extends Error {
   constructor(message, status) {

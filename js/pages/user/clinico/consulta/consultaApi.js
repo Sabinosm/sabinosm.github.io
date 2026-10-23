@@ -13,10 +13,10 @@
 //   POST /consultas/<uuid>/consentimento/dispensar -> dispensarConsentimento(uuid, payload)
 //   GET  /pacientes/pessoal/resumo         -> listarPacientesResumo({ q, pagina })
 //   POST /pacientes/pessoal/<uuid_paciente>/identificar        -> identificarPaciente(uuidPaciente, paciente)
-//   POST /pacientes/lgpd/<uuid_paciente>/gerar-link-assinatura -> gerarLinkAssinatura(uuidPaciente)
-//   GET  /pacientes/lgpd/assinatura/<token>/status             -> statusAssinatura(token)
-//   POST /pacientes/lgpd/assinatura/<token>/cancelar           -> cancelarLinkAssinatura(token)
-//   GET  /pacientes/lgpd/download-pdf/<uuid_consentimento>     -> baixarPdfAssinado(uuid)
+//   POST /pacientes/consentimento-digital/<uuid_paciente>/gerar-link-assinatura -> gerarLinkAssinatura(uuidPaciente)
+//   GET  /pacientes/consentimento-digital/assinatura/<token>/status             -> statusAssinatura(token)
+//   POST /pacientes/consentimento-digital/assinatura/<token>/cancelar           -> cancelarLinkAssinatura(token)
+//   GET  /pacientes/consentimento-digital/download-pdf/<uuid_consentimento>     -> baixarPdfAssinado(uuid)
 //
 // Resposta do backend (json_success / json_error):
 //   sucesso: { status: "success", message, data }
@@ -35,7 +35,7 @@ import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 
 const BASE_CONSULTAS = `${URL_BASE_API}/consultas`;
 const BASE_PACIENTES = `${URL_BASE_API}/pacientes/pessoal`;
-const BASE_LGPD = `${URL_BASE_API}/pacientes/lgpd`;
+const BASE_LGPD = `${URL_BASE_API}/pacientes/consentimento-digital`;
 
 export class ApiError extends Error {
   constructor(message, status, erros = null) {
@@ -166,7 +166,7 @@ export function identificarPaciente(uuidPaciente, paciente) {
 // ============================================
 
 /**
- * POST /pacientes/lgpd/<uuid_paciente>/gerar-link-assinatura
+ * POST /pacientes/consentimento-digital/<uuid_paciente>/gerar-link-assinatura
  * Cria o link de assinatura (vale poucos minutos; gerar outro cancela o
  * anterior do mesmo paciente). Falha se o paciente não tem dados pessoais
  * (não identificado ou anonimizado).
