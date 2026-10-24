@@ -178,7 +178,8 @@ function aplicarEstado() {
     const ehTriagem = a.tipo_atendimento === "triagem";
     if (abaConduta) abaConduta.hidden = !ehTriagem;
     if (!ehTriagem && abaAtiva() === "conduta") ativarAba("binario");
-    $("aten-aba-conduta").hidden = !ehTriagem;
+    // Os painéis das abas são controlados só por ativarAba(); re-sincroniza a cada render.
+    ativarAba(abaAtiva());
   } else if (aberta) {
     // nenhum atendimento em andamento: oferecer abertura
     $("aten-secao-atendimento").hidden = true;
