@@ -9,9 +9,16 @@
 //   - evadir cancela os Atendimentos em andamento e encerra com desfecho
 //     "evasao". Por isso "evasao" não aparece no select de encerrar.
 //
-// As duas rotas usam acesso_auditado no back: só registram a ação, sem
-// step-up. Validação no front: validarEncerramentoConsulta e
-// validarEvasaoConsulta (espelho dos schemas do back; o back decide).
+// As duas rotas usam acao_sensivel no back: exigem step-up recente e gravam
+// o log de alteração. Ao confirmar o modal, depois da validação, o front
+// chama pedirConfirmacao(<acao>) e envia o token no header X-Stepup-Token
+// (ver consultaApi.js). A <acao> precisa ser igual à do decorator no back
+// ("encerrar_consulta" / "evadir_consulta"). Se o usuário cancelar a
+// reconfirmação, o modal continua aberto, sem mensagem de erro. Um token
+// serve para uma única tentativa: se o back recusar (ex.: 409), a próxima
+// tentativa pede confirmação de novo.
+// Validação no front: validarEncerramentoConsulta e validarEvasaoConsulta
+// (espelho dos schemas do back; o back decide).
 //
 // Se o 409 do encerrar vier por causa de atendimento em andamento, a
 // mensagem do back já explica; o modal só a mostra e deixa o caminho
@@ -21,6 +28,7 @@
 // tela é consultaDetalhe.js.
 
 import { exibirMensagem } from "../../../../shared/feedback.js";
+import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../../../sharedConfig/stepUp.js";
 import { ApiError, encerrarConsulta, evadirConsulta } from "./consultaApi.js";
 import { validarEncerramentoConsulta, validarEvasaoConsulta } from "../../../../sharedConfig/validacoes/consultaValidation.js";
 import { CAMPO_GERAL } from "../../../../sharedConfig/validacoes/generalValidation.js";
@@ -44,6 +52,7 @@ const MODAIS = {
       return payload;
     },
     validar: validarEncerramentoConsulta,
+    acaoStepUp: "encerrar_consulta",
     enviar: encerrarConsulta,
     sucesso: "Consulta encerrada.",
   },
@@ -57,7 +66,8 @@ const MODAIS = {
       return justificativa ? { justificativa } : {};
     },
     validar: validarEvasaoConsulta,
-    enviar: (uuid, payload) => evadirConsulta(uuid, payload),
+    acaoStepUp: "evadir_consulta",
+    enviar: evadirConsulta,
     sucesso: "Evasão registrada; atendimentos em andamento cancelados.",
   },
 };
@@ -128,8 +138,21 @@ async function aoSubmeter(e, chave) {
   enviando[chave] = true;
   $(`${m.prefixo}-save`).disabled = true;
 
+  // Reconfirmação de identidade. O token vive só nesta variável local.
+  let token;
   try {
-    await m.enviar(uuidDaUrl(), validacao.dados);
+    token = await pedirConfirmacao(m.acaoStepUp);
+  } catch (erro) {
+    if (!(erro instanceof ConfirmacaoCanceladaError)) {
+      exibirMensagem(erro.message || "Não foi possível confirmar sua identidade.", "erro");
+    }
+    enviando[chave] = false;
+    $(`${m.prefixo}-save`).disabled = false;
+    return;
+  }
+
+  try {
+    await m.enviar(uuidDaUrl(), validacao.dados, token);
     fechar(chave);
     exibirMensagem(m.sucesso, "sucesso");
     document.dispatchEvent(new CustomEvent(EVENTO_CONSULTA_ALTERADA));

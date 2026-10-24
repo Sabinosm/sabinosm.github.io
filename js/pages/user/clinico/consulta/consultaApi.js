@@ -24,8 +24,10 @@
 //   `erros` (opcional) traz o erro por campo; a chave "_geral" é erro
 //   sem campo definido. Fica em ApiError.erros.
 //
-// Encerrar e evadir usam acesso_auditado no back: só registram a ação,
-// não exigem step-up (nada de X-Stepup-Token aqui).
+// Encerrar e evadir usam acao_sensivel no back: exigem step-up recente.
+// O token vem de pedirConfirmacao() (shared/stepUp.js), é obtido por quem
+// chama (consultaAcoes.js) e enviado aqui no header X-Stepup-Token. Esta
+// camada não guarda nem reutiliza token.
 //
 // IMPORTANTE: assume o blueprint de consultas registrado em
 // "/consultas" e o de pacientes em "/pacientes/pessoal" (URL_BASE_API
@@ -48,14 +50,20 @@ export class ApiError extends Error {
 
 /** Executa o fetch e normaliza a resposta. Lança ApiError em erro de rede ou de negócio. */
 async function requisitar(base, path, options = {}) {
-  const headers = options.body ? { "Content-Type": "application/json" } : {};
+  // headers extras (ex.: X-Stepup-Token) são mesclados ao Content-Type; antes,
+  // `...options` vinha depois de `headers` e um headers próprio sobrescreveria tudo.
+  const { headers: headersExtras, ...resto } = options;
+  const headers = {
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
+    ...headersExtras,
+  };
 
   let resposta;
   try {
     resposta = await fetch(`${base}${path}`, {
       credentials: "include",
+      ...resto,
       headers,
-      ...options,
     });
   } catch {
     throw new ApiError("Não foi possível conectar ao servidor. Verifique sua internet.", 0);
@@ -109,17 +117,28 @@ export function abrirConsulta(payload) {
  * POST /consultas/<uuid>/encerrar — encerra com desfecho.
  * Corpo: { desfecho_final, justificativa? }. 409 se há Atendimento em
  * andamento (finalize-o antes) ou se a consulta já está encerrada.
+ * Exige step-up: `tokenStepUp` de pedirConfirmacao("encerrar_consulta").
+ * Sem token válido o back responde 403 confirmacao_requerida.
  */
-export function encerrarConsulta(uuid, payload) {
-  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/encerrar`, { method: "POST", body: JSON.stringify(payload) });
+export function encerrarConsulta(uuid, payload, tokenStepUp) {
+  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/encerrar`, {
+    method: "POST",
+    headers: { "X-Stepup-Token": tokenStepUp },
+    body: JSON.stringify(payload),
+  });
 }
 
 /**
  * POST /consultas/<uuid>/evadir — evasão: cancela os Atendimentos em
  * andamento e encerra com desfecho "evasao". Corpo: { justificativa? }.
+ * Exige step-up: `tokenStepUp` de pedirConfirmacao("evadir_consulta").
  */
-export function evadirConsulta(uuid, payload = {}) {
-  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/evadir`, { method: "POST", body: JSON.stringify(payload) });
+export function evadirConsulta(uuid, payload = {}, tokenStepUp) {
+  return requisitar(BASE_CONSULTAS, `/${encodeURIComponent(uuid)}/evadir`, {
+    method: "POST",
+    headers: { "X-Stepup-Token": tokenStepUp },
+    body: JSON.stringify(payload),
+  });
 }
 
 /** GET /consultas/<uuid>/consentimento — data: { valido: boolean, situacao: "ativo" | "dispensado_emergencia" | null }. */
