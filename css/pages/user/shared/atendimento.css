@@ -619,3 +619,8 @@
   background: var(--accent);
   border-color: var(--accent);
 }
+
+.segmented-item[hidden],
+.aten-aba[hidden] {
+  display: none !important;
+}
