@@ -8,6 +8,8 @@
 //   GET  /atendimentos/<uuid>                                  -> detalhe (precisa de realizado_por no to_dict)
 //   POST /atendimentos/consulta/<uuid>/abrir-triagem           -> 201 (409: consentimento/consulta)
 //   POST /atendimentos/consulta/<uuid>/abrir-avaliacao-medica  -> 201 (403: só médico)
+//   POST /atendimentos/<uuid>/finalizar                        -> {observacoes?}; só o dono (403), exige binário completo (409)
+//   POST /atendimentos/<uuid>/cancelar                         -> {motivo_cancelamento?}; não exige binário
 //   GET  /atendimentos/<uuid>/binario                          -> estado + pré-preenchimento
 //   GET  /atendimentos/<uuid>/binario/do-paciente              -> binário montado dos registros ativos do paciente (pré-preenchimento)
 //   POST /atendimentos/<uuid_at>/pacientes/<uuid_pac>/binario            -> conferir as 4 seções
@@ -61,6 +63,23 @@ const post = (path, payload) =>
 
 const enc = encodeURIComponent;
 
+/**
+ * GET de COLEÇÃO onde "ainda não há nada" é situação normal (condutas, dado
+ * de atendimento anterior...). 404 vira resposta vazia e a tela simplesmente
+ * não mostra nada; qualquer outro erro (403, 500, rede) continua subindo.
+ * Rede de segurança: o certo é o back responder 200 + lista vazia (ver notas).
+ */
+async function getOuVazio(path, vazio) {
+  try {
+    return await get(path);
+  } catch (erro) {
+    if (erro instanceof ApiError && erro.status === 404) {
+      return { status: "success", data: vazio, vazio: true };
+    }
+    throw erro;
+  }
+}
+
 // ------------------------------------------------------- ciclo de vida
 
 /** GET /atendimentos/consulta/<uuid> — lista os atendimentos da consulta (cronológica). */
@@ -74,6 +93,12 @@ export const abrirTriagem = (uuidConsulta) => post(`/consulta/${enc(uuidConsulta
 
 /** POST .../abrir-avaliacao-medica — 201; 403 para não-médico (o front já esconde o botão). */
 export const abrirAvaliacaoMedica = (uuidConsulta) => post(`/consulta/${enc(uuidConsulta)}/abrir-avaliacao-medica`);
+
+/** POST /atendimentos/<uuid>/finalizar — {observacoes?}. 403 não-dono; 409 binário incompleto. */
+export const finalizarAtendimento = (uuid, payload) => post(`/${enc(uuid)}/finalizar`, payload);
+
+/** POST /atendimentos/<uuid>/cancelar — {motivo_cancelamento?}. Não exige binário. */
+export const cancelarAtendimento = (uuid, payload) => post(`/${enc(uuid)}/cancelar`, payload);
 
 // ---------------------------------------------------------------- binário
 
@@ -117,11 +142,12 @@ export const registrarConduta = (uuidAt, uuidPac, payload) =>
   post(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/condutas-enfermagem`, payload);
 
 /** GET /atendimentos/<uuid>/condutas-enfermagem — condutas do atendimento. */
-export const listarCondutasDoAtendimento = (uuidAt) => get(`/${enc(uuidAt)}/condutas-enfermagem`);
+export const listarCondutasDoAtendimento = (uuidAt) =>
+  getOuVazio(`/${enc(uuidAt)}/condutas-enfermagem`, []);
 
 /** GET /atendimentos/consulta/<uuid>/condutas-enfermagem — condutas de todos os atendimentos. */
 export const listarCondutasDaConsulta = (uuidConsulta) =>
-  get(`/consulta/${enc(uuidConsulta)}/condutas-enfermagem`);
+  getOuVazio(`/consulta/${enc(uuidConsulta)}/condutas-enfermagem`, []);
 
 /** GET .../protocolos-disponiveis — ativo, escopo compatível e liberado pela empresa. */
 export const listarProtocolosDisponiveis = (uuidAt, uuidPac) =>

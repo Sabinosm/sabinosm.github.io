@@ -140,14 +140,17 @@ async function carregar() {
     // Estado (máquina de estados) e dados do paciente em paralelo. Falha da rota
     // do paciente não quebra a aba: segue sem pré-preenchimento.
     const [respEstado, respPaciente] = await Promise.all([
-      estadoBinario(a.uuid),
+      estadoBinario(a.uuid).catch((e) => {
+        if (e instanceof ApiError && e.status === 404) return null; // "nada ainda"
+        throw e;
+      }),
       binarioDoPaciente(a.uuid).catch((e) => {
-        console.warn("binario/do-paciente indisponível:", e?.message);
+        if (!(e instanceof ApiError && e.status === 404)) console.warn("binario/do-paciente indisponível:", e?.message);
         return null;
       }),
     ]);
 
-    const norm = normalizarSecoesBinario(respEstado.data);
+    const norm = normalizarSecoesBinario(respEstado?.data ?? {});
 
     // Resposta inteira + `dados_paciente`, que é o que dadosPaciente() lê
     // (listas por seção + tipo sanguíneo vigente).
