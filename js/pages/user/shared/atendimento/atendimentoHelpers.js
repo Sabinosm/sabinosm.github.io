@@ -55,6 +55,15 @@ export const MOTIVO_REVISAO_LABELS = {
   "registro-removido": "Um registro foi removido desde a última conferência.",
 };
 
+/** Valores aceitos em motivo_cancelamento (enum do model Atendimento). */
+export const MOTIVO_CANCELAMENTO_LABELS = {
+  "erro-abertura": "Erro de abertura",
+  "paciente-nao-compareceu": "Paciente não compareceu",
+  "paciente-recusou": "Paciente recusou",
+  transferencia: "Transferência",
+  outro: "Outro",
+};
+
 export const ESTADO_SECAO_LABELS = {
   pendente: "Pendente",
   manual: "Conferido",
@@ -168,9 +177,14 @@ export function podeEscrever() {
   return Boolean(a) && a.status === "em-andamento" && !estadoAtendimento.somenteLeitura;
 }
 
-/** Dono do atendimento sou eu? Compara o realizado_por (uuid) com o usuário do cache. */
+/**
+ * Dono do atendimento sou eu? Compara o uuid do dono com o usuário do cache.
+ * O back devolve o uuid (realizado_por_uuid, ou realizado_por já como uuid);
+ * um id numérico nunca bate com o cache, então falha fechada.
+ */
 export function souDono() {
-  const rp = estadoAtendimento.atendimento?.realizado_por;
+  const a = estadoAtendimento.atendimento;
+  const rp = a?.realizado_por_uuid ?? a?.realizado_por;
   const meu = lerUuidUsuarioCache();
   return Boolean(rp && meu && String(rp) === String(meu));
 }

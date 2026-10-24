@@ -81,7 +81,8 @@ body.no-scroll {
 
 /* ===== Abas (coluna esquerda do modal) ===== */
 .settings-tabs {
-  grid-row: 1 / 3;
+  grid-column: 1;
+  grid-row: 1 / -1;
   background: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
@@ -137,6 +138,11 @@ body.no-scroll {
 
 /* ===== Painéis (coluna direita do modal) ===== */
 .settings-panels {
+  /* FIX: posicionamento explicito; auto-placement quebrava com
+     elemento extra no grid e empurrava o .save-bar para fora do lugar */
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 0;
   padding: 32px 40px;
   overflow-y: auto;
   display: flex;
@@ -151,13 +157,24 @@ body.no-scroll {
   margin-top: auto;
   padding-top: 20px;
   border-top: 1px solid var(--border);
+  /* FIX: escondido por padrao; so reaparece quando o painel ATIVO e o
+     primeiro (User). Funciona quer o rodape esteja dentro de
+     .settings-panels ou como filho direto de .settings-modal. */
+  display: none;
+}
+
+.settings-panels:has(> .settings-panel--active:first-child) > .settings-logout-footer,
+.settings-modal:has(> .settings-panels > .settings-panel--active:first-child) .settings-logout-footer,
+.settings-modal:has(> .settings-panel--active:first-child) > .settings-logout-footer {
+  display: block;
 }
 
 .settings-logout-footer .btn-secondary {
+    /* FIX: margin auto centraliza de verdade, sem numero magico */
+    display: block;
     width: 30%;
-    margin-left: 32%;
-    margin-bottom: 5%;
-    margin-top: 2%;
+    max-width: 240px;
+    margin: 2% auto 5%;
 }
 
 .settings-panel {
@@ -479,6 +496,7 @@ body.no-scroll {
 /* ===== Barra de salvar/cancelar (dentro do modal) ===== */
 .save-bar {
   grid-column: 2 / 3;
+  grid-row: 2;
   display: none;
   align-items: center;
   justify-content: space-between;
@@ -526,8 +544,8 @@ body.no-scroll {
   }
   .settings-tabs-title { display: none; }
   .settings-tab--active::before { display: none; }
-  .settings-panels { grid-row: 2; padding: 24px 20px; }
-  .save-bar { grid-column: 1; padding: 14px 20px; }
+  .settings-panels { grid-column: 1; grid-row: 2; padding: 24px 20px; }
+  .save-bar { grid-column: 1; grid-row: 3; padding: 14px 20px; }
 }
 
 

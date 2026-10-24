@@ -65,6 +65,9 @@
           <!-- data-requer: só médico vê este botão (initPagina remove para enfermeiro) -->
           <button type="button" class="btn-primary" id="aten-btn-avaliacao"
                   data-requer="avaliarMedicamente" data-i18n="atendimento.abrir_avaliacao">Iniciar avaliação médica</button>
+          <!-- reavaliação: só médico, só com a consulta em em-observacao (orquestrador controla o hidden) -->
+          <button type="button" class="btn-primary" id="aten-btn-reavaliacao" hidden
+                  data-requer="avaliarMedicamente">Iniciar reavaliação</button>
         </div>
       </section>
 
@@ -157,6 +160,24 @@
             </div>
 
             <div id="aten-co-lista"></div>
+
+            <!-- Executar protocolo sobre o input vigente do atendimento (aparece após 1 input registrado) -->
+            <div id="aten-co-exec" hidden>
+              <h3 class="cons-panel-titulo">Executar protocolo</h3>
+              <div id="aten-ex-form">
+                <p class="field-hint">Executa o protocolo sobre o input vigente deste atendimento.</p>
+                <div class="field-group">
+                  <label class="field-label" for="aten-ex-protocolo">Protocolo (uuid)</label>
+                  <input class="field-input" type="text" id="aten-ex-protocolo" placeholder="uuid">
+                  <p class="field-error" id="aten-ex-protocolo-error"></p>
+                </div>
+                <div class="cons-panel-acoes">
+                  <button type="button" class="btn-primary" id="aten-ex-executar">Executar protocolo</button>
+                </div>
+              </div>
+              <div id="aten-ex-resultados"></div>
+            </div>
+
             <div id="aten-co-anteriores" hidden></div>
           </section>
         </div>
@@ -190,6 +211,33 @@
             <div id="aten-cond-lista"></div>
           </section>
         </div>
+
+        <!-- ===== FINALIZAR / CANCELAR (só o dono, atendimento em andamento) ===== -->
+        <section class="cons-panel" id="aten-acoes" hidden>
+          <h2 class="cons-panel-titulo">Encerrar este atendimento</h2>
+          <p class="field-hint" id="aten-fin-hint" hidden>
+            Para finalizar, conclua as 4 seções do binário. Cancelar não exige binário.
+          </p>
+          <div class="field-group">
+            <label class="field-label" for="aten-fin-observacoes">
+              <span>Observações</span>
+              <span class="field-optional">(opcional)</span>
+            </label>
+            <textarea class="field-input" id="aten-fin-observacoes" rows="3"></textarea>
+            <p class="field-error" id="aten-fin-erro"></p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="aten-fin-motivo">
+              <span>Motivo do cancelamento</span>
+              <span class="field-optional">(opcional, só vale ao cancelar)</span>
+            </label>
+            <select class="field-input" id="aten-fin-motivo"></select>
+          </div>
+          <div class="cons-panel-acoes">
+            <button type="button" class="btn-ghost" id="aten-fin-cancelar">Cancelar atendimento</button>
+            <button type="button" class="btn-primary" id="aten-fin-finalizar">Finalizar atendimento</button>
+          </div>
+        </section>
 
       </section>
     </div>

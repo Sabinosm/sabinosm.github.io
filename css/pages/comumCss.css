@@ -2,8 +2,8 @@
 Arquivo que importa todos os comuns entre os arquivos
 */
 
-@import url("user/shared/homePage.css");
 @import url("user/settings.css");
+@import url("user/shared/homePage.css");
 @import url("user/shared/fundoParticulas.css");
 @import url("user/sidebar/sidebar.css");
 @import url("user/preferencias/preferencias.css");
