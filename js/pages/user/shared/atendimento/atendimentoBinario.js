@@ -7,8 +7,9 @@
 //   automatico (derivado)       -> card neutro com badge "Derivado — confirme";
 //                                  radios PRÉ-SELECIONADOS com os valores atuais
 //                                  (o POST sobrescreve automático sem 409)
-//   manual (conferido aqui)     -> card verde TRAVADO (reconferir = 409 no back;
-//                                  nem oferecemos o formulário)
+//   manual (conferido aqui)     -> card verde, EDITÁVEL: o médico pode reconferir
+//                                  quantas vezes quiser enquanto o atendimento
+//                                  estiver em andamento (a última confirmação vence)
 //   requer-revisao              -> card laranja "Requer revisão" com o motivo;
 //                                  o profissional precisa reconfirmar (não vale
 //                                  no gate do back)
@@ -25,11 +26,15 @@
 // foi conferida neste atendimento.
 //
 // Escrita: rota granular por seção. O "Conferir todas" monta o agregado das 4
-// e só funciona quando as 4 têm resposta (nenhuma travada em manual).
-// 409 "já conferida" NÃO é erro de usuário: recarrega e segue.
+// e só funciona quando as 4 têm resposta.
+//
+// Remoção: cada registro vigente de alergia / medicamento / doença crônica tem
+// um botão "remover" (exclusão lógica com motivo, passa por step-up). Tipo
+// sanguíneo é insert-only e não tem botão. "Possui" -> "Nega" exige remover
+// antes os registros ativos (regra de integridade do back).
 
 import {
-  estadoBinario, binarioDoPaciente, conferirSecao, conferirBinario, ApiError,
+  estadoBinario, binarioDoPaciente, conferirSecao, conferirBinario, removerRegistroClinico, ApiError,
 } from "./atendimentoApi.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO,
@@ -120,6 +125,31 @@ function validarCriarAlergiaLocal(payload) {
   return resultado(out, erros);
 }
 
+// ---------------------------------------------------------- remoção de registro
+//
+// `acao` é o MESMO valor do @acao_sensivel de cada rota no back (é o que o
+// step-up valida). Tipo sanguíneo não entra: é insert-only.
+const ACAO_REMOCAO = {
+  alergias: "remover_alergia",
+  doenca_cronica: "remover_doenca_cronica",
+  medicamentos: "remover_medicamento_em_uso",
+};
+
+const MOTIVOS_REMOCAO = {
+  "erro-registro": "Registrado por engano",
+  "informacao-incorreta": "Informação incorreta",
+  "paciente-nega": "Paciente nega",
+  outro: "Outro",
+};
+
+
+const CAMINHO_STEP_UP = "../../../../sharedConfig/stepUp.js";
+
+async function confirmarStepUp(acao) {
+  const { pedirConfirmacao } = await import(CAMINHO_STEP_UP);
+  return pedirConfirmacao(acao); // ajuste aqui se o retorno for outro (ex.: token)
+}
+
 const $ = (id) => document.getElementById(id);
 let secoes = null; // {alergias: sec|null, ...} (normalizado)
 let enviando = false;
@@ -190,8 +220,7 @@ function render() {
 
   $("aten-bin-completo-hint").hidden = conferidas !== total;
 
-  const travadaManual = SECOES_BINARIO.some(({ id }) => classeSecao(secoes[id]) === "manual");
-  $("aten-bin-conferir-tudo").hidden = !podeEscrever() || travadaManual;
+  $("aten-bin-conferir-tudo").hidden = !podeEscrever();
 
   const container = $("aten-bin-secoes");
   container.innerHTML = "";
@@ -212,11 +241,19 @@ function criarCard(meta) {
 
   // --- pré-visualização dos dados vigentes (vem de /binario/do-paciente)
   const dados = dadosPaciente()[meta.id];
-  if (Array.isArray(dados) && dados.length > 0) {
+  const temVigentes = Array.isArray(dados) && dados.length > 0;
+  if (temVigentes) {
     const ul = el("ul", "aten-bin-dados");
-    dados.slice(0, 8).forEach((item) => ul.appendChild(el("li", null, textoItem(item))));
+    dados.slice(0, 8).forEach((item) => ul.appendChild(criarLinhaDado(meta, item)));
     if (dados.length > 8) ul.appendChild(el("li", "aten-bin-dados-mais", `+ ${dados.length - 8} registros`));
     card.appendChild(ul);
+  }
+
+  // --- conferida como "possui", mas o último registro foi removido
+  if (classe === "manual" && sec?.estado === "preenchido" && !meta.tipoSanguineo
+      && !temVigentes && estadoAtendimento.dadosNovoAtendimento) {
+    card.appendChild(el("p", "aten-bin-revisao",
+      "⚠ Esta seção consta como preenchida, mas não há registro ativo. Reconfirme abaixo."));
   }
 
   // --- revisão: explica o que mudou
@@ -225,12 +262,15 @@ function criarCard(meta) {
     card.appendChild(el("p", "aten-bin-revisao", `⚠ ${motivo} Reconfirme abaixo.`));
   }
 
-  // --- formulário (não existe para manual nem em modo leitura)
-  if (classe !== "manual" && podeEscrever()) {
-    card.appendChild(criarForm(meta, sec, classe));
-  } else if (classe === "manual") {
+  // --- seção já conferida por você: segue editável
+  if (classe === "manual") {
     const extra = sec?.reconciliado ? " (reconciliada com registro novo)" : "";
-    card.appendChild(el("p", "field-hint", `Conferido neste atendimento${extra}. Reconferir é recusado pelo back (409).`));
+    card.appendChild(el("p", "field-hint", `Conferido neste atendimento${extra}. Você pode alterar e conferir de novo.`));
+  }
+
+  // --- formulário (só não existe em modo leitura)
+  if (podeEscrever()) {
+    card.appendChild(criarForm(meta, sec, classe));
   }
 
   return card;
@@ -239,7 +279,7 @@ function criarCard(meta) {
 /** O estado do atendimento manda; sem ele, vale o que o paciente tem (/do-paciente). */
 function respostaPre(meta, sec, classe) {
   if (classe === "revisao") return ""; // o dado mudou: força escolha ativa
-  if (sec && classe === "automatico") {
+  if (sec && (classe === "automatico" || classe === "manual")) {
     return sec.possui === true ? "possui" : sec.possui === false ? "nega" : "nao-coletado";
   }
   const b = estadoAtendimento.dadosNovoAtendimento?.binario?.[meta.id];
@@ -312,13 +352,87 @@ function criarForm(meta, sec, classe) {
   erro.id = `aten-bin-erro-${meta.id}`;
   form.appendChild(erro);
 
-  const botao = el("button", "btn-primary aten-bin-conferir", classe === "revisao" ? "Reconfirmar seção" : "Conferir seção");
+  const botao = el("button", "btn-primary aten-bin-conferir", classe === "revisao" ? "Reconfirmar seção" : classe === "manual" ? "Atualizar conferência" : "Conferir seção");
   botao.type = "button";
   botao.addEventListener("click", () => conferirSecaoClick(meta.id));
   form.appendChild(botao);
 
   atualizarCampos(meta);
   return form;
+}
+
+/** Linha de um registro vigente; com botão "remover" quando a seção admite remoção. */
+function criarLinhaDado(meta, item) {
+  const li = el("li", "aten-bin-dado");
+  li.appendChild(el("span", "aten-bin-dado-texto", textoItem(item)));
+
+  if (podeEscrever() && ACAO_REMOCAO[meta.id] && item?.uuid) {
+    const botao = el("button", "btn-ghost aten-bin-remover", "remover");
+    botao.type = "button";
+    botao.addEventListener("click", () => abrirRemocao(li, meta, item));
+    li.appendChild(botao);
+  }
+  return li;
+}
+
+/** Mini-formulário inline: motivo + observação opcional + confirmar. */
+function abrirRemocao(li, meta, item) {
+  if (li.querySelector(".aten-bin-remocao")) return;
+
+  const caixa = el("div", "aten-bin-remocao");
+
+  const motivo = document.createElement("select");
+  motivo.className = "field-input";
+  Object.entries(MOTIVOS_REMOCAO).forEach(([valor, texto]) => {
+    const opt = el("option", null, texto);
+    opt.value = valor;
+    motivo.appendChild(opt);
+  });
+
+  const obs = document.createElement("input");
+  obs.type = "text";
+  obs.className = "field-input";
+  obs.placeholder = "Observação (opcional)";
+  obs.maxLength = 500;
+
+  const erro = el("p", "field-error");
+
+  const confirmar = el("button", "btn-primary", "Remover registro");
+  confirmar.type = "button";
+  confirmar.addEventListener("click", () =>
+    removerRegistro(meta, item, motivo.value, obs.value.trim(), erro));
+
+  const cancelar = el("button", "btn-ghost", "Cancelar");
+  cancelar.type = "button";
+  cancelar.addEventListener("click", () => caixa.remove());
+
+  caixa.append(motivo, obs, confirmar, cancelar, erro);
+  li.appendChild(caixa);
+}
+
+async function removerRegistro(meta, item, motivo, observacoes, erroEl) {
+  if (enviando) return;
+  erroEl.textContent = "";
+  enviando = true;
+  try {
+    const confirmado = await confirmarStepUp(ACAO_REMOCAO[meta.id]);
+    if (confirmado === false) return; // step-up cancelado
+
+    const payload = { motivo_delete: motivo };
+    if (observacoes) payload.observacoes_delete = observacoes;
+
+    await removerRegistroClinico(
+      estadoAtendimento.atendimento.uuid, uuidPaciente(), meta.id, item.uuid, payload);
+    exibirMensagem("Registro removido.", "sucesso");
+    document.dispatchEvent(new CustomEvent(EVENTO_ATENDIMENTO_ALTERADA));
+  } catch (erro) {
+    console.error("remoção de registro do binário:", erro);
+    const msg = erro instanceof ApiError ? erro.message : "Não foi possível remover o registro.";
+    erroEl.textContent = msg;
+    exibirMensagem(msg, "erro");
+  } finally {
+    enviando = false;
+  }
 }
 
 /** Formulário de UM item novo, com os campos da seção (validação de domínio). */
@@ -512,13 +626,8 @@ async function conferirTudo() {
   }
 }
 
-/** 409 "já conferida" = evento de sincronização, não erro: recarrega e segue. */
+/** Erros de escrita chegam com mensagem pronta do back (ex.: 409 "remova o registro antes"). */
 function tratarErroEscrita(erro, idSecao) {
-  if (erro instanceof ApiError && erro.status === 409 && /j[aá] conferid/i.test(erro.message)) {
-    exibirMensagem("Seção já conferida — recarregando o estado atual.", "info");
-    document.dispatchEvent(new CustomEvent(EVENTO_ATENDIMENTO_ALTERADA));
-    return;
-  }
   if (idSecao) pintarErroSecao(idSecao, erro instanceof ApiError ? erro.message : "Não foi possível conferir.");
   exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível conferir o binário.", "erro");
 }

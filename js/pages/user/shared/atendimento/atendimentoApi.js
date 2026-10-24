@@ -14,6 +14,9 @@
 //   GET  /atendimentos/<uuid>/binario/do-paciente              -> binário montado dos registros ativos do paciente (pré-preenchimento)
 //   POST /atendimentos/<uuid_at>/pacientes/<uuid_pac>/binario            -> conferir as 4 seções
 //   POST /atendimentos/<uuid_at>/pacientes/<uuid_pac>/binario/<secao>    -> conferir 1 seção
+//        (reconferir é permitido enquanto o atendimento está em andamento: a última confirmação vence)
+//   DELETE /atendimentos/<uuid_at>/pacientes/<uuid_pac>/<alergias|doencas-cronicas|medicamentos-em-uso>/<uuid>
+//        -> exclusão lógica de um registro ativo (step-up no back; corpo {motivo_delete, observacoes_delete?})
 //   POST .../sinais-vitais                                   -> {"sinais": [...]}
 //   POST .../coleta-clinica                                  -> exige binário completo (409)
 //   POST .../coleta-clinica/<uuid_coleta>/input-protocolo    -> exige binário completo (409)
@@ -113,13 +116,35 @@ export const estadoBinario = (uuidAtendimento) => get(`/${enc(uuidAtendimento)}/
 export const binarioDoPaciente = (uuidAtendimento) =>
   get(`/${enc(uuidAtendimento)}/binario/do-paciente`);
 
-/** POST .../binario — conferir as 4 seções (agregado). 409 em seção já conferida manualmente. */
+/** POST .../binario — conferir as 4 seções (agregado). Pode ser reenviado: a última confirmação vence. */
 export const conferirBinario = (uuidAt, uuidPac, payload) =>
   post(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/binario`, payload);
 
 /** POST .../binario/<secao> — conferir 1 seção (granular). */
 export const conferirSecao = (uuidAt, uuidPac, secao, payload) =>
   post(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/binario/${enc(secao)}`, payload);
+
+// ------------------------------------------- remoção de registro clínico
+
+const SEGMENTO_REGISTRO = {
+  alergias: "alergias",
+  doenca_cronica: "doencas-cronicas",
+  medicamentos: "medicamentos-em-uso",
+};
+
+const del = (path, payload) =>
+  requisitar(path, { method: "DELETE", body: JSON.stringify(payload ?? {}) });
+
+/**
+ * DELETE .../<alergias|doencas-cronicas|medicamentos-em-uso>/<uuid> — exclusão
+ * lógica. É ação sensível no back (step-up). Corpo: {motivo_delete, observacoes_delete?}.
+ * Tipo sanguíneo é insert-only: não tem remoção.
+ */
+export const removerRegistroClinico = (uuidAt, uuidPac, secao, uuidRegistro, payload) => {
+  const segmento = SEGMENTO_REGISTRO[secao];
+  if (!segmento) throw new ApiError("Esta seção não admite remoção de registro.", 0);
+  return del(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/${segmento}/${enc(uuidRegistro)}`, payload);
+};
 
 // --------------------------------------------------------- dados clínicos
 

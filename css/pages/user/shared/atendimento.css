@@ -591,3 +591,7 @@
   .aten-bin-campo select { max-width: none; }
   .aten-bin-conferir { width: 100%; justify-content: center; }
 }
+
+.aten-bin-dado { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.aten-bin-dado-texto { flex: 1 1 auto; }
+.aten-bin-remocao { flex-basis: 100%; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
