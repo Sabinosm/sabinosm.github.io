@@ -122,3 +122,15 @@ export const listarCondutasDoAtendimento = (uuidAt) => get(`/${enc(uuidAt)}/cond
 /** GET /atendimentos/consulta/<uuid>/condutas-enfermagem — condutas de todos os atendimentos. */
 export const listarCondutasDaConsulta = (uuidConsulta) =>
   get(`/consulta/${enc(uuidConsulta)}/condutas-enfermagem`);
+
+/** GET .../protocolos-disponiveis — ativo, escopo compatível e liberado pela empresa. */
+export const listarProtocolosDisponiveis = (uuidAt, uuidPac) =>
+  get(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/protocolos-disponiveis`);
+
+/** GET .../protocolos/<uuid>/estrutura — campos esperados (para montar o formulário). */
+export const estruturaProtocolo = (uuidAt, uuidPac, uuidProt) =>
+  get(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/protocolos/${enc(uuidProt)}/estrutura`);
+
+/** POST .../protocolos/<uuid>/executar — sobre o input vigente (409 se repetido no mesmo input). */
+export const executarProtocolo = (uuidAt, uuidPac, uuidProt) =>
+  post(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/protocolos/${enc(uuidProt)}/executar`);
