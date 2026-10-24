@@ -24,11 +24,23 @@
 // de um atendimento. A lista do atendimento atual fica em sessionStorage
 // ("aten:coletas:<uuid_atendimento>"); refresh perde o que não foi
 // persistido no back — mesma ressalva de antes.
+//
+// LÓGICA DE PROTOCOLO (módulos puros, sem DOM/fetch, na mesma pasta):
+//   atendimentoProtocoloCampos.js     campo do back -> formato único (tipo, opções {valor, rótulo})
+//   atendimentoProtocoloValidacao.js  validação por campo antes do POST (tipo, opção, faixa)
+//   atendimentoProtocoloInput.js      snapshot dos campos usados (mostrado no card)
+//   atendimentoProtocoloResultado.js  execução -> classificação, escore, trilha, módulos
+// A camada de rede segue sendo o atendimentoApi.js; nada de catalogos/ é usado
+// ou alterado (a exibição fora do atendimento continua como estava).
 
 import {
   registrarColeta, registrarInputProtocolo, executarProtocolo,
   listarProtocolosDisponiveis, estruturaProtocolo, ApiError,
 } from "./atendimentoApi.js";
+import { normalizarCampo } from "./atendimentoProtocoloCampos.js";
+import { validarRespostas } from "./atendimentoProtocoloValidacao.js";
+import { montarSnapshotCampos } from "./atendimentoProtocoloInput.js";
+import { formatarResultado } from "./atendimentoProtocoloResultado.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO,
   dadosPaciente, podeEscrever, el, formatarDataHora,
@@ -40,6 +52,7 @@ const $ = (id) => document.getElementById(id);
 let enviando = false;
 let protocolos = [];              // catálogo disponível (re-lido por atendimento)
 const estruturas = {};            // uuid_protocolo -> {campos: [...]} (cache)
+const camposPorProtocolo = {};    // uuid_protocolo -> campos normalizados (cache)
 
 document.addEventListener("DOMContentLoaded", () => {
   $("aten-co-criar")?.addEventListener("click", criarColeta);
@@ -47,11 +60,18 @@ document.addEventListener("DOMContentLoaded", () => {
   $("aten-co-lista")?.addEventListener("click", (e) => {
     const card = e.target.closest(".aten-co-item");
     if (e.target.closest(".aten-ip-salvar")) salvarInput(card);
+    const fav = e.target.closest(".aten-ip-fav");
+    if (fav) escolherFavorito(card, fav.dataset.uuid);
     if (e.target.closest(".aten-exec-executar")) executar(card);
   });
   $("aten-co-lista")?.addEventListener("change", (e) => {
     if (e.target.closest(".aten-ip-protocolo")) {
-      aoEscolherProtocolo(e.target.closest(".aten-co-item"), e.target.value);
+      const cardEscolha = e.target.closest(".aten-co-item");
+      marcarFavoritoAtivo(cardEscolha, e.target.value);
+      aoEscolherProtocolo(cardEscolha, e.target.value);
+    }
+    if (e.target.closest(".aten-exec-protocolo")) {
+      avisarProtocoloDiferente(e.target.closest(".aten-co-item"), e.target.value);
     }
   });
   document.addEventListener(EVENTO_ATENDIMENTO_ALTERADA, carregar);
@@ -108,41 +128,44 @@ async function aoEscolherProtocolo(card, uuidProtocolo) {
   }
 
   area.innerHTML = "";
-  const campos = est.campos ?? [];
+  const campos = (camposPorProtocolo[uuidProtocolo] ??= (est.campos ?? []).map(normalizarCampo));
   campos.forEach((c) => area.appendChild(campoDinamico(c)));
   if (!campos.length) {
     area.appendChild(el("p", "field-hint", "Este protocolo não declara campos de entrada."));
   }
 }
 
-/** Um campo do protocolo, conforme tipo_campo/opcoes. O nome do campo
- *  vai em data-campo e vira chave do input_json. */
+/** <option> com value explícito. O placeholder usa value "" — sem isso o value
+ *  seria o próprio texto ("—", "Selecione") e iria para o input_json. */
+function opcaoSelect(valor, texto) {
+  const opt = el("option", null, texto);
+  opt.value = valor;
+  return opt;
+}
+
+/** Um campo do protocolo (já normalizado), conforme tipo/opções. O nome do
+ *  campo vai em data-campo e vira chave do input_json. */
 function campoDinamico(campo) {
   const grupo = el("div", "field-group");
-  grupo.appendChild(el("label", "field-label", campo.label ?? campo.campo));
+  const titulo = campo.unidade ? `${campo.rotulo} (${campo.unidade})` : campo.rotulo;
+  grupo.appendChild(el("label", "field-label", campo.obrigatorio ? `${titulo} *` : titulo));
+
   let input;
-  if (campo.tipo_campo === "booleano") {
+  if (campo.tipo === "booleano") {
     input = document.createElement("select");
-    input.appendChild(el("option", null, "—"));
-    [["sim", "Sim"], ["nao", "Não"]].forEach(([v, t]) => {
-      const opt = el("option", null, t);
-      opt.value = v;
-      input.appendChild(opt);
-    });
-  } else if (campo.opcoes?.length) {
+    input.appendChild(opcaoSelect("", "—"));
+    input.appendChild(opcaoSelect("sim", "Sim"));
+    input.appendChild(opcaoSelect("nao", "Não"));
+  } else if (campo.tipo === "categorico" || campo.opcoes.length) {
     input = document.createElement("select");
-    input.appendChild(el("option", null, "Selecione"));
-    campo.opcoes.forEach((o) => {
-      const valor = typeof o === "object" ? (o.valor ?? o.value) : o;
-      const texto = typeof o === "object" ? (o.texto ?? o.label ?? valor) : o;
-      const opt = el("option", null, texto);
-      opt.value = valor;
-      input.appendChild(opt);
-    });
-  } else if (campo.tipo_campo === "numerico") {
+    input.appendChild(opcaoSelect("", "Selecione"));
+    campo.opcoes.forEach((o) => input.appendChild(opcaoSelect(o.valor, o.rotulo)));
+  } else if (campo.tipo === "numerico") {
     input = document.createElement("input");
     input.type = "number";
     input.step = "any";
+    if (campo.min != null) input.min = String(campo.min);
+    if (campo.max != null) input.max = String(campo.max);
   } else {
     input = document.createElement("input");
     input.type = "text";
@@ -150,17 +173,36 @@ function campoDinamico(campo) {
   input.className = "field-input aten-ip-campo";
   input.dataset.campo = campo.campo;
   grupo.appendChild(input);
+
+  const erro = el("p", "field-error aten-ip-campo-erro");
+  erro.dataset.campo = campo.campo;
+  grupo.appendChild(erro);
   return grupo;
 }
 
-/** input_json = {campo: valor} só com o que foi respondido. */
-function montarInputJson(idx) {
+/** Respostas CRUAS do formulário: {campo: valor} só com o que foi preenchido.
+ *  A conversão/validação é de validarRespostas. */
+function lerRespostas(idx) {
   const json = {};
   $(`aten-ip-campos-${idx}`)?.querySelectorAll(".aten-ip-campo").forEach((input) => {
     const v = input.value;
     if (v !== "" && v !== null && v !== undefined) json[input.dataset.campo] = v;
   });
   return json;
+}
+
+function limparErrosCampos(idx) {
+  $(`aten-ip-campos-${idx}`)?.querySelectorAll(".aten-ip-campo-erro").forEach((p) => {
+    p.textContent = "";
+  });
+}
+
+function mostrarErrosCampos(idx, erros) {
+  const area = $(`aten-ip-campos-${idx}`);
+  Object.entries(erros).forEach(([campo, msg]) => {
+    const p = area?.querySelector(`.aten-ip-campo-erro[data-campo="${CSS.escape(campo)}"]`);
+    if (p) p.textContent = msg;
+  });
 }
 
 // ============================================
@@ -206,6 +248,16 @@ function renderColetas() {
   }
 
   lista.forEach((coleta, idx) => container.appendChild(criarCardColeta(coleta, idx)));
+
+  // Protocolo já pré-selecionado (padrão pessoal/institucional ou escolhido antes):
+  // carrega os campos sem exigir um clique extra.
+  container.querySelectorAll(".aten-co-item").forEach((card) => {
+    const valor = card.querySelector(".aten-ip-protocolo")?.value;
+    if (valor) {
+      marcarFavoritoAtivo(card, valor);
+      aoEscolherProtocolo(card, valor);
+    }
+  });
 }
 
 function criarCardColeta(coleta, idx) {
@@ -218,6 +270,7 @@ function criarCardColeta(coleta, idx) {
 
   if (coleta.input_registrado) {
     card.appendChild(el("p", "field-hint", "Input de protocolo registrado para esta coleta."));
+    if (coleta.campos_usados?.length) card.appendChild(criarListaCamposUsados(coleta.campos_usados));
     card.appendChild(criarAreaExecucao(coleta, idx));
     return card;
   }
@@ -243,22 +296,142 @@ function criarCardColeta(coleta, idx) {
   return card;
 }
 
+/** Campos registrados no input (snapshot guardado junto da coleta). */
+function criarListaCamposUsados(campos) {
+  const caixa = el("div", "aten-ip-usados");
+  caixa.appendChild(el("h4", "cons-panel-titulo", "Campos registrados no input"));
+  const ul = el("ul", "aten-lista-ref");
+  campos.forEach((c) => {
+    ul.appendChild(el("li", null,
+      c.ausente ? `${c.rotulo}: não informado` : `${c.rotulo}: ${c.valor_exibido}`));
+  });
+  caixa.appendChild(ul);
+  return caixa;
+}
+
+// ============================================
+// Escolha do protocolo: liberados pela empresa + favoritos do profissional
+// ============================================
+// Cada item de `protocolos` (GET .../protocolos-disponiveis) traz, além do
+// catálogo: favorito (true/false), default_pessoal e padrao_institucional
+// (escopo em que é padrão, ou null), politica ("obrigatorio"/"opcional").
+// O back já ordena os favoritos primeiro.
+
+/** Escopo de uso do atendimento atual (mesmo mapa do back: triagem -> triagem, o resto -> consulta). */
+function escopoDoAtendimento() {
+  return estadoAtendimento.atendimento?.tipo_atendimento === "triagem" ? "triagem" : "consulta";
+}
+
+const servePara = (escopoDoProtocolo, escopo) => escopoDoProtocolo === escopo || escopoDoProtocolo === "ambos";
+
+/** Protocolo a pré-selecionar: o padrão PESSOAL do escopo; sem ele, o padrão da INSTITUIÇÃO. */
+function protocoloPadrao() {
+  const escopo = escopoDoAtendimento();
+  return protocolos.find((p) => p.default_pessoal && servePara(p.default_pessoal, escopo))
+    ?? protocolos.find((p) => p.padrao_institucional && servePara(p.padrao_institucional, escopo))
+    ?? null;
+}
+
+function rotuloProtocolo(p) {
+  const escopo = escopoDoAtendimento();
+  const nome = p.nome_protocolo ?? p.sigla ?? p.uuid;
+  const partes = [`${p.favorito ? "★ " : ""}${nome}`];
+  if (p.sigla && p.sigla !== nome) partes[0] += ` (${p.sigla})`;
+  if (p.default_pessoal && servePara(p.default_pessoal, escopo)) partes.push("meu padrão");
+  else if (p.padrao_institucional && servePara(p.padrao_institucional, escopo)) partes.push("padrão da instituição");
+  if (p.politica === "obrigatorio") partes.push("obrigatório");
+  return partes.join(" · ");
+}
+
+function opcaoProtocolo(p, selecionado) {
+  const opt = el("option", null, rotuloProtocolo(p));
+  opt.value = p.uuid;
+  if (p.uuid === selecionado) opt.selected = true;
+  return opt;
+}
+
+/** Preenche o <select> com os liberados; favoritos num grupo próprio, no topo.
+ *  O placeholder tem value "" (sem isso o value seria o próprio texto, que é truthy). */
+function preencherSelectProtocolos(select, selecionado) {
+  select.innerHTML = "";
+  const placeholder = el("option", null,
+    protocolos.length ? "Selecione o protocolo" : "Nenhum protocolo liberado para este atendimento");
+  placeholder.value = "";
+  select.appendChild(placeholder);
+  select.disabled = protocolos.length === 0;
+
+  const favoritos = protocolos.filter((p) => p.favorito);
+  if (!favoritos.length) {
+    protocolos.forEach((p) => select.appendChild(opcaoProtocolo(p, selecionado)));
+    return;
+  }
+  const gFav = document.createElement("optgroup");
+  gFav.label = "★ Meus favoritos";
+  favoritos.forEach((p) => gFav.appendChild(opcaoProtocolo(p, selecionado)));
+  select.appendChild(gFav);
+
+  const outros = protocolos.filter((p) => !p.favorito);
+  if (outros.length) {
+    const gOutros = document.createElement("optgroup");
+    gOutros.label = "Outros protocolos liberados";
+    outros.forEach((p) => gOutros.appendChild(opcaoProtocolo(p, selecionado)));
+    select.appendChild(gOutros);
+  }
+}
+
+/** Atalhos de um clique para os favoritos (só aparece se houver). */
+function criarAtalhosFavoritos() {
+  const favoritos = protocolos.filter((p) => p.favorito);
+  if (!favoritos.length) return null;
+  const linha = el("div", "aten-ip-favoritos");
+  linha.appendChild(el("span", "aten-ip-favoritos-rotulo", "★ Favoritos:"));
+  favoritos.forEach((p) => {
+    const btn = el("button", "btn-ghost aten-ip-fav", p.sigla ?? p.nome_protocolo ?? p.uuid);
+    btn.type = "button";
+    btn.dataset.uuid = p.uuid;
+    btn.title = p.nome_protocolo ?? "";
+    linha.appendChild(btn);
+  });
+  return linha;
+}
+
+function marcarFavoritoAtivo(card, uuid) {
+  card?.querySelectorAll(".aten-ip-fav").forEach((b) => {
+    const ativo = b.dataset.uuid === uuid;
+    b.classList.toggle("aten-ip-fav--ativo", ativo);
+    b.setAttribute("aria-pressed", String(ativo));
+  });
+}
+
+function escolherFavorito(card, uuid) {
+  const select = card?.querySelector(".aten-ip-protocolo");
+  if (!select || select.disabled) return;
+  select.value = uuid;
+  marcarFavoritoAtivo(card, uuid);
+  aoEscolherProtocolo(card, uuid);
+}
+
 function campoSelectProtocolo(coleta, idx) {
   const grupo = el("div", "field-group");
   const label = el("label", "field-label", "Protocolo");
   label.htmlFor = `aten-ip-protocolo-${idx}`;
   grupo.appendChild(label);
+
+  const atalhos = criarAtalhosFavoritos();
+  if (atalhos) grupo.appendChild(atalhos);
+
   const select = document.createElement("select");
   select.className = "field-input aten-ip-protocolo";
   select.id = `aten-ip-protocolo-${idx}`;
-  select.appendChild(el("option", null, "Selecione o protocolo"));
-  protocolos.forEach((p) => {
-    const opt = el("option", null, p.nome_protocolo ?? p.sigla ?? p.uuid);
-    opt.value = p.uuid;
-    if (p.uuid === coleta.protocolo_uuid) opt.selected = true;
-    select.appendChild(opt);
-  });
+  // já escolhido nesta coleta > padrão pessoal > padrão da instituição
+  preencherSelectProtocolos(select, coleta.protocolo_uuid ?? protocoloPadrao()?.uuid ?? null);
   grupo.appendChild(select);
+
+  // quem tem papel clínico mas ainda não favoritou nada: ensina onde fazer
+  if (protocolos.length && !protocolos.some((p) => p.favorito) && protocolos.some((p) => p.favorito === false)) {
+    grupo.appendChild(el("p", "field-hint",
+      "Dica: adicione protocolos aos favoritos na página de catálogo para vê-los aqui em destaque."));
+  }
   return grupo;
 }
 
@@ -269,12 +442,7 @@ function criarAreaExecucao(coleta, idx) {
   const area = el("div", "aten-exec-area");
 
   if (coleta.resultado) {
-    area.appendChild(el("p", "field-hint",
-      `Resultado (${coleta.resultado.nome_protocolo ?? "protocolo"}): ${textoResultado(coleta.resultado)}`));
-    if (coleta.resultado.ausentes?.length) {
-      area.appendChild(el("p", "field-hint",
-        `Dados ausentes: ${coleta.resultado.ausentes.join(", ")}`));
-    }
+    renderizarResultado(area, coleta.resultado);
     return area;
   }
 
@@ -282,15 +450,13 @@ function criarAreaExecucao(coleta, idx) {
   const select = document.createElement("select");
   select.className = "field-input aten-exec-protocolo";
   select.id = `aten-exec-protocolo-${idx}`;
-  select.appendChild(el("option", null, "Selecione o protocolo"));
-  protocolos.forEach((p) => {
-    const opt = el("option", null, p.nome_protocolo ?? p.sigla ?? p.uuid);
-    opt.value = p.uuid;
-    if (p.uuid === coleta.protocolo_uuid) opt.selected = true;
-    select.appendChild(opt);
-  });
+  preencherSelectProtocolos(select, coleta.protocolo_uuid);
   grupo.appendChild(select);
   area.appendChild(grupo);
+
+  const aviso = el("p", "field-hint");
+  aviso.id = `aten-exec-aviso-${idx}`;
+  area.appendChild(aviso);
 
   const erro = el("p", "field-error");
   erro.id = `aten-exec-erro-${idx}`;
@@ -307,11 +473,58 @@ function criarAreaExecucao(coleta, idx) {
   return area;
 }
 
-function textoResultado(r) {
-  const d = r.dados ?? {};
-  if (d.resultado_json) return JSON.stringify(d.resultado_json);
-  if (d.resultado != null) return String(d.resultado);
-  return "registrado (ver detalhe no back)";
+/** O input só traz os campos do protocolo em que foi preenchido. Executar outro
+ *  protocolo é permitido pelo back, mas sai incompleto — avisa antes do clique. */
+function avisarProtocoloDiferente(card, uuidEscolhido) {
+  const idx = Number(card?.dataset.idx);
+  const aviso = $(`aten-exec-aviso-${idx}`);
+  if (!aviso) return;
+  const coleta = lerColetas()[idx];
+  const diferente = uuidEscolhido && coleta?.protocolo_uuid && uuidEscolhido !== coleta.protocolo_uuid;
+  aviso.textContent = diferente
+    ? "Este input foi preenchido com os campos de outro protocolo: a execução tende a sair incompleta. " +
+      "Para um resultado completo, registre um novo input com os campos deste protocolo."
+    : "";
+}
+
+/** Resultado da execução: classificação, escore, ação, trilha, módulos e ausentes. */
+function renderizarResultado(area, resultado) {
+  const nome = resultado.nome_protocolo ?? "protocolo";
+  const r = formatarResultado(resultado.dados);
+
+  const resumo = [];
+  if (r.classificacao) resumo.push(r.classificacao);
+  if (r.multiplos) resumo.push("vários resultados (ver módulos)");
+  if (r.escoreTotal != null) resumo.push(`escore ${r.escoreTotal}${r.escoreParcial ? " (parcial)" : ""}`);
+  area.appendChild(el("p", "field-hint",
+    resumo.length ? `Resultado (${nome}): ${resumo.join(" · ")}` : `Resultado (${nome}): registrado.`));
+
+  if (r.overrideDisparado) {
+    area.appendChild(el("p", "field-hint", "Regra de override disparada: a classificação foi elevada por um parâmetro isolado."));
+  }
+  if (r.acao) area.appendChild(el("p", "field-hint", `Ação recomendada: ${r.acao}`));
+  if (r.status === "incompleta") {
+    area.appendChild(el("p", "field-hint", "Execução incompleta: faltaram dados."));
+  }
+
+  if (r.passos.length) {
+    const ul = el("ul", "aten-lista-ref");
+    r.passos.forEach((p) => ul.appendChild(el("li", null, `${p.rotulo}: ${p.valor} → ${p.resultado}`)));
+    area.appendChild(ul);
+  }
+
+  if (r.modulos.length) {
+    const ul = el("ul", "aten-lista-ref");
+    r.modulos.forEach((m) => {
+      const partes = [m.sigla, m.status, m.saida].filter(Boolean).join(" — ");
+      ul.appendChild(el("li", null, m.motivo ? `${partes} (${m.motivo})` : partes));
+    });
+    area.appendChild(ul);
+  }
+
+  if (r.ausentes.length) {
+    area.appendChild(el("p", "field-hint", `Dados ausentes: ${r.ausentes.join(", ")}`));
+  }
 }
 
 async function executar(card) {
@@ -455,10 +668,24 @@ async function salvarInput(card) {
     return;
   }
 
+  // validação por campo (tipo, opção, faixa) antes de ir ao back
+  const campos = camposPorProtocolo[uuidProt];
+  if (!campos) {
+    $(`aten-ip-erro-${idx}`).textContent = "Aguarde o carregamento dos campos do protocolo.";
+    return;
+  }
+  limparErrosCampos(idx);
+  const respostas = validarRespostas(campos, lerRespostas(idx));
+  if (!respostas.ok) {
+    mostrarErrosCampos(idx, respostas.erros);
+    $(`aten-ip-erro-${idx}`).textContent = "Corrija os campos destacados.";
+    return;
+  }
+
   const validacao = validarInputProtocolo({
     queixa: $(`aten-ip-queixa-${idx}`)?.value,
     avpu: $(`aten-ip-avpu-${idx}`)?.value,
-    jsonTexto: JSON.stringify(montarInputJson(idx)), // mantém o contrato atual do validator
+    jsonTexto: JSON.stringify(respostas.validados), // mantém o contrato atual do validator
   });
   if (!validacao.ok) {
     $(`aten-ip-erro-${idx}`).textContent =
@@ -474,7 +701,13 @@ async function salvarInput(card) {
       coleta.uuid,
       validacao.dados,
     );
-    lista[idx] = { ...coleta, input_registrado: true, protocolo_uuid: uuidProt };
+    lista[idx] = {
+      ...coleta,
+      input_registrado: true,
+      protocolo_uuid: uuidProt,
+      input_json: respostas.validados,                          // o que foi enviado ao back
+      campos_usados: montarSnapshotCampos(campos, respostas),   // para exibir no card
+    };
     gravarColetas(lista);
     exibirMensagem("Input de protocolo registrado.", "sucesso");
     renderColetas();

@@ -595,3 +595,27 @@
 .aten-bin-dado { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
 .aten-bin-dado-texto { flex: 1 1 auto; }
 .aten-bin-remocao { flex-basis: 100%; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+/* ============ escolha de protocolo: atalhos dos favoritos ============ */
+.aten-ip-favoritos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+.aten-ip-favoritos-rotulo {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text-muted, inherit);
+}
+.aten-ip-favoritos .aten-ip-fav {
+  padding: 3px 12px;
+  font-size: calc(12px * var(--font-scale, 1));
+  border-radius: 999px;
+}
+.aten-ip-favoritos .aten-ip-fav--ativo,
+.aten-ip-favoritos .aten-ip-fav--ativo:hover {
+  color: var(--palette-white, #fff);
+  background: var(--accent);
+  border-color: var(--accent);
+}
