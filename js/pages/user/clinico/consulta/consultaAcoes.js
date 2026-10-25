@@ -28,7 +28,7 @@
 // tela é consultaDetalhe.js.
 
 import { exibirMensagem } from "../../../../shared/feedback.js";
-import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../../../sharedConfig/stepUp.js";
+import { pedirConfirmacao, ConfirmacaoCanceladaError } from "../../../../sharedConfig/stepup.js";
 import { ApiError, encerrarConsulta, evadirConsulta } from "./consultaApi.js";
 import { validarEncerramentoConsulta, validarEvasaoConsulta } from "../../../../sharedConfig/validacoes/consultaValidation.js";
 import { CAMPO_GERAL } from "../../../../sharedConfig/validacoes/generalValidation.js";
