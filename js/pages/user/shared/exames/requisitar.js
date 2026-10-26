@@ -12,7 +12,7 @@
 // de rede e de negócio. Autenticação por cookie de sessão
 // (credentials: "include"), como em profissionaisApi.js.
 
-import { URL_BASE_API } from "../../../sharedConfig/urlConfig.js";
+import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 
 export class ApiError extends Error {
   constructor(message, status) {
