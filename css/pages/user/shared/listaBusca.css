@@ -1,0 +1,355 @@
+/* ============================================
+   B-íon — Lista com busca, filtros e paginação (Medicamentos e Exames)
+   Trechos reaproveitados de profissionais.css (centralização, toolbar,
+   busca, filtros, paginação e estado vazio). Sem o modal de profissionais.
+   ============================================ */
+
+@keyframes prof-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===== Centralização do conteúdo ===== */
+.main {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 761px) {
+  .main {
+    margin-left: calc(220px + max(0px, (100vw - 220px - 1040px) / 2));
+    margin-right: auto;
+  }
+}
+
+.section {
+  animation: prof-pop 0.4s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+/* ===== Status (herda .consult-status/.status-dot de homePage.css;
+   adiciona a variante "inativo" usada só nesta tela) ===== */
+.status--inativo {
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+}
+
+/* ===== Barra de busca + filtros ===== */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 20px;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.15s ease;
+}
+
+.search-input {
+  width: 100%;
+  background: color-mix(in srgb, var(--bg) 60%, var(--bg-elevated));
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: calc(14px * var(--font-scale, 1));
+  font-family: inherit;
+  padding: 11px 14px 11px 40px;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg-elevated);
+  box-shadow:
+    inset 2px 2px 6px var(--neu-shadow-dark),
+    inset -2px -2px 6px var(--neu-shadow-light),
+    0 0 0 3px var(--focus-ring, color-mix(in srgb, var(--accent) 18%, transparent));
+}
+.search-field:focus-within .search-icon {
+  color: var(--accent);
+}
+
+.btn-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 11px 16px;
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 6%, transparent));
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.btn-filter:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+.btn-filter:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-filter--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-tint, color-mix(in srgb, var(--accent) 10%, var(--bg-elevated)));
+}
+
+.btn-filter-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--palette-white);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ===== Painel de filtros (expande abaixo da busca) ===== */
+.filter-panel {
+  display: none;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: color-mix(in srgb, var(--bg-elevated) 60%, var(--bg));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-top: 10px;
+  box-shadow: inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 5%, transparent));
+}
+
+.filter-panel--visible {
+  display: flex;
+  animation: prof-pop 0.3s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.filter-field label {
+  font-size: calc(12px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.filter-field select,
+.filter-field input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-family: inherit;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 1px 1px 4px var(--neu-shadow-dark),
+    inset -1px -1px 4px var(--neu-shadow-light);
+  transition: border-color 0.15s ease;
+}
+.filter-field select:focus,
+.filter-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.filter-panel-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ===== Paginação ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pagination-info {
+  font-size: calc(13px * var(--font-scale, 1));
+  color: var(--text-muted);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 var(--highlight-top, color-mix(in srgb, var(--palette-white, #fff) 5%, transparent));
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+.page-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-btn--active,
+.page-btn--active:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--palette-white);
+  transform: none;
+}
+
+.page-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Estado vazio ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding: 56px 20px;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--bg-elevated) 45%, transparent);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  animation: prof-pop 0.35s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.empty-state-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 6px;
+  opacity: 0.6;
+}
+
+.empty-state-title {
+  font-size: calc(14px * var(--font-scale, 1));
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state-text {
+  font-size: calc(13px * var(--font-scale, 1));
+  max-width: 320px;
+}
+
+/* ===== Acréscimos desta lista (chips, linhas de detalhe) ===== */
+.chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.chip {
+  font-size: calc(12px * var(--font-scale, 1));
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--palette-status-blue-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.chip--perigo { background: var(--palette-status-red-bg); }
+.chip--neutro { background: var(--palette-status-neutral-bg); }
+
+.detalhe-bloco {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+.detalhe-bloco h2 { margin: 0 0 8px; font-size: calc(15px * var(--font-scale, 1)); }
+.detalhe-bloco p { margin: 4px 0; color: var(--text-muted); font-size: calc(13px * var(--font-scale, 1)); }
+.detalhe-item { padding: 8px 0; border-top: 1px solid var(--border); }
+.detalhe-item:first-of-type { border-top: 0; }
+.detalhe-item strong { color: var(--text-strong); }
+.detalhe-aviso {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--palette-status-yellow-bg);
+  font-size: calc(13px * var(--font-scale, 1));
+}
+.detalhe-voltar { margin-bottom: 12px; }
+.filter-field--largo { min-width: 240px; }
+.chip button {
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 0 2px;
+  font-size: inherit;
+}
+.chip a { color: inherit; text-decoration: underline; }

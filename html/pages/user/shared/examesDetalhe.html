@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pagina.exames_detalhe.titulo">B-íon — Detalhe do Exame</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/listaBusca.css">
+<link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<body data-requer="avaliarMedicamente">
+
+<canvas id="c" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <button class="btn-ghost detalhe-voltar" id="btn-voltar" type="button" data-i18n="exames.detalhe.voltar">← Voltar aos exames</button>
+
+    <header class="main-header">
+      <div>
+        <h1 id="detalhe-titulo">Exame</h1>
+        <p class="main-subtitle" id="detalhe-subtitulo"></p>
+      </div>
+    </header>
+
+    <section class="section" id="detalhe-conteudo">
+      <!-- Preenchido dinamicamente por examesDetalhe.js -->
+    </section>
+
+    <section class="section" id="secao-conteudo">
+      <div class="detalhe-bloco">
+        <h2 data-i18n="exames.detalhe.conteudo">Conteúdo de apoio</h2>
+        <div class="filter-field">
+          <label for="idioma-conteudo" data-i18n="exames.detalhe.idioma">Idioma</label>
+          <select id="idioma-conteudo">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+        <div id="lista-conteudo">
+          <!-- Preenchido dinamicamente por examesDetalhe.js -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="../../../../js/shared/particles.js"></script>
+<script type="module" src="../../../../js/pages/user/clinico/exames/examesDetalhe.js"></script>
+</body>
+</html>

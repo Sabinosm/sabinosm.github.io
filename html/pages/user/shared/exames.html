@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pagina.exames.titulo">B-íon — Exames</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/listaBusca.css">
+<link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<body data-requer="atenderClinicamente">
+
+<canvas id="c" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1 data-i18n="exames.titulo">Exames</h1>
+        <p class="main-subtitle" data-i18n="exames.subtitulo">Busque por nome (português ou inglês) ou sinônimo</p>
+      </div>
+    </header>
+
+    <section class="section">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="busca-exame" autocomplete="off"
+                   placeholder="Buscar por nome ou sinônimo"
+                   data-i18n-placeholder="exames.busca_placeholder">
+          </div>
+          <button class="btn-filter" id="btn-toggle-filtros" type="button">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span data-i18n="btn.filtros">Filtros</span>
+          </button>
+        </div>
+
+        <div class="filter-panel" id="filter-panel">
+          <div class="filter-field">
+            <label for="filtro-tipo" data-i18n="exames.filtro_tipo">Tipo</label>
+            <select id="filtro-tipo">
+              <option value="" data-i18n="exames.filtro_todos">Todos</option>
+            </select>
+          </div>
+
+          <div class="filter-field">
+            <label for="filtro-material" data-i18n="exames.filtro_material">Material</label>
+            <select id="filtro-material">
+              <option value="" data-i18n="exames.filtro_todos">Todos</option>
+            </select>
+          </div>
+
+          <div class="filter-field">
+            <label for="filtro-jejum" data-i18n="exames.filtro_jejum">Jejum</label>
+            <select id="filtro-jejum">
+              <option value="" data-i18n="exames.filtro_todos">Todos</option>
+              <option value="true" data-i18n="exames.jejum_exige">Exige jejum</option>
+              <option value="false" data-i18n="exames.jejum_nao">Sem jejum</option>
+            </select>
+          </div>
+
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="btn-limpar-filtros" type="button" data-i18n="btn.limpar">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-list" id="lista-exames">
+        <!-- Preenchido dinamicamente por exames.js -->
+      </div>
+
+      <div class="pagination" id="paginacao">
+        <!-- Preenchido dinamicamente por exames.js -->
+      </div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal de Configurações e sidebar injetados pelos loaders (ver initPagina.js) -->
+<script src="../../../../js/shared/particles.js"></script>
+<script type="module" src="../../../../js/pages/user/clinico/exames/exames.js"></script>
+</body>
+</html>
