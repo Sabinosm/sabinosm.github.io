@@ -79,6 +79,8 @@
           <button type="button" class="segmented-item" data-aba="sinais" data-i18n="atendimento.aba.sinais">Sinais vitais</button>
           <button type="button" class="segmented-item" data-aba="coleta" data-i18n="atendimento.aba.coleta">Coleta clínica</button>
           <button type="button" class="segmented-item" data-aba="conduta" data-i18n="atendimento.aba.conduta">Conduta de enfermagem</button>
+          <!-- só médico (initPagina remove para enfermeiro); o orquestrador esconde fora de avaliação médica/reavaliação -->
+          <button type="button" class="segmented-item" data-aba="bion" data-requer="avaliarMedicamente" hidden>Avaliação IA</button>
         </div>
 
         <!-- ABA: BINÁRIO -->
@@ -201,6 +203,29 @@
             </div>
 
             <div id="aten-cond-lista"></div>
+          </section>
+        </div>
+
+        <!-- ABA: AVALIAÇÃO IA (só avaliação médica / reavaliação; avaliacaoBion/avaliacaoBion.js) -->
+        <div class="aten-aba" id="aten-aba-bion" hidden>
+          <section class="cons-panel">
+            <h2 class="cons-panel-titulo">Avaliação por IA (Bion)</h2>
+            <p class="field-hint" id="aten-bion-aviso">
+              A IA analisa os dados já registrados neste atendimento e gera um rascunho de conduta.
+              Nada é prescrito automaticamente: a decisão clínica é sua.
+            </p>
+            <p class="field-hint" id="aten-bion-leitura-hint" hidden>
+              Somente o profissional que abriu o atendimento pode solicitar a avaliação.
+            </p>
+            <div class="cons-panel-acoes">
+              <button type="button" class="btn-primary" id="aten-bion-avaliar" hidden>Avaliar com IA</button>
+              <button type="button" class="btn-ghost" id="aten-bion-verificar" hidden>Verificar novamente</button>
+            </div>
+            <p class="field-hint" id="aten-bion-substitui-hint" hidden>
+              Uma nova avaliação substitui o rascunho de conduta da IA que ainda não foi confirmado.
+            </p>
+            <div id="aten-bion-status" role="status" aria-live="polite"></div>
+            <div id="aten-bion-resultado"></div>
           </section>
         </div>
 

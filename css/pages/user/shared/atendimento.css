@@ -624,3 +624,71 @@
 .aten-aba[hidden] {
   display: none !important;
 }
+
+/* =====================================================================
+   ABA AVALIAÇÃO IA (avaliacaoBion/) -- usa só os tokens --aten-* acima
+   ===================================================================== */
+.aten-bion-bloco { margin-top: 14px; }
+.aten-bion-texto {
+  margin: 0 0 8px;
+  font-size: calc(14px * var(--font-scale, 1));
+  line-height: 1.55;
+  white-space: pre-wrap;           /* texto da IA entra por textContent; aqui só preserva quebras */
+  overflow-wrap: anywhere;
+}
+.aten-bion-subtitulo {
+  margin: 14px 0 4px;
+  font-size: calc(13px * var(--font-scale, 1));
+  font-weight: 600;
+  opacity: .8;
+}
+.aten-bion-item {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--aten-borda);
+  border-radius: var(--radius-sm, 10px);
+  background: var(--aten-surface);
+  box-shadow: var(--aten-realce);
+}
+.aten-bion-item-titulo {
+  margin: 0 0 4px;
+  font-size: calc(14px * var(--font-scale, 1));
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.aten-bion-lista { margin: 6px 0 0; padding-left: 18px; line-height: 1.5; }
+.aten-bion-topo { margin-bottom: 4px; }
+.aten-bion-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.aten-bion-chip {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 10px;
+  border: 1px solid var(--aten-borda);
+  border-radius: 999px;
+  background: var(--aten-surface-forte);
+  font-size: calc(12px * var(--font-scale, 1));
+}
+.aten-bion-chip--destaque { border-color: var(--aten-pendente); color: var(--aten-pendente); background: transparent; }
+
+.aten-bion-metricas { display: flex; flex-wrap: wrap; gap: 12px; }
+.aten-bion-metrica {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 140px; padding: 10px 14px;
+  border: 1px solid var(--aten-borda);
+  border-radius: var(--radius-sm, 10px);
+  background: var(--aten-surface);
+}
+.aten-bion-metrica-valor { font-size: calc(22px * var(--font-scale, 1)); font-weight: 700; }
+
+.aten-bion-estado { display: flex; align-items: center; gap: 10px; margin: 14px 0 0; }
+.aten-bion-estado--falhou { color: var(--aten-perigo); }
+.aten-bion-estado--demorando { color: var(--aten-revisao); }
+.aten-bion-spinner {
+  width: 16px; height: 16px; flex: none;
+  border: 2px solid var(--aten-borda);
+  border-top-color: var(--aten-auto);
+  border-radius: 50%;
+  animation: aten-bion-gira .8s linear infinite;
+}
+@keyframes aten-bion-gira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .aten-bion-spinner { animation-duration: 2.4s; } }

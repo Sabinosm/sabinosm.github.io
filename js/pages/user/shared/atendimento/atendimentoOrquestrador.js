@@ -24,6 +24,7 @@ import {
 import {
   criarChipStatus, criarEstadoVazio, formatarDataHora, nomePaciente,
 } from "../../clinico/consulta/consultaHelpers.js";
+import { tipoComAvaliacaoBion } from "./avaliacaoBion/avaliacaoBionHelpers.js";
 import { ROTAS } from "../../../../sharedConfig/loaders/rotas.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
@@ -178,6 +179,11 @@ function aplicarEstado() {
     const ehTriagem = a.tipo_atendimento === "triagem";
     if (abaConduta) abaConduta.hidden = !ehTriagem;
     if (!ehTriagem && abaAtiva() === "conduta") ativarAba("binario");
+    // avaliação por IA só existe em avaliação médica / reavaliação
+    const abaBion = document.querySelector('#aten-abas [data-aba="bion"]');
+    const temBion = tipoComAvaliacaoBion(a);
+    if (abaBion) abaBion.hidden = !temBion;
+    if (!temBion && abaAtiva() === "bion") ativarAba("binario");
     // Os painéis das abas são controlados só por ativarAba(); re-sincroniza a cada render.
     ativarAba(abaAtiva());
   } else if (aberta) {
@@ -229,7 +235,7 @@ function ativarAba(nome) {
   document.querySelectorAll("#aten-abas .segmented-item").forEach((btn) => {
     btn.classList.toggle("segmented-item--active", btn.dataset.aba === nome);
   });
-  ["binario", "sinais", "coleta", "conduta"].forEach((aba) => {
+  ["binario", "sinais", "coleta", "conduta", "bion"].forEach((aba) => {
     const painel = $(`aten-aba-${aba}`);
     if (painel) painel.hidden = aba !== nome;
   });

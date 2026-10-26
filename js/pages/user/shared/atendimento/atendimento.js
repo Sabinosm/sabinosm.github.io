@@ -14,6 +14,7 @@
 //   atendimentoSinais.js       -> aba sinais vitais (lote)
 //   atendimentoColeta.js       -> aba coleta clínica + input de protocolo
 //   atendimentoConduta.js      -> aba conduta de enfermagem (só triagem)
+//   avaliacaoBion/             -> aba Avaliação IA (avaliação médica/reavaliação): Api, polling, render
 //   atendimentoApi.js          -> camada de fetch (espelha os blueprints)
 //   atendimentoHelpers.js      -> estado compartilhado, labels, parser do binário
 //   atendimentoValidation.js   -> espelho dos schemas do back
@@ -22,6 +23,7 @@ import "./atendimentoBinario.js";
 import "./atendimentoSinais.js";
 import "./atendimentoColeta.js";
 import "./atendimentoConduta.js";
+import "./avaliacaoBion/avaliacaoBion.js";
 import { iniciar } from "./atendimentoOrquestrador.js";
 import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 
