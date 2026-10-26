@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="pagina.medicamentos_detalhe.titulo">B-íon — Detalhe do Medicamento</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/user/shared/listaBusca.css">
+<link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<body data-requer="atenderClinicamente">
+
+<canvas id="c" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <button class="btn-ghost detalhe-voltar" id="btn-voltar" type="button" data-i18n="medicamentos.detalhe.voltar">← Voltar aos medicamentos</button>
+
+    <header class="main-header">
+      <div>
+        <h1 id="detalhe-titulo">Medicamento</h1>
+        <p class="main-subtitle" id="detalhe-subtitulo"></p>
+      </div>
+    </header>
+
+    <section class="section" id="detalhe-conteudo">
+      <!-- Preenchido dinamicamente por medicamentosDetalhe.js -->
+    </section>
+
+    <!-- Só para médico: iniciarPagina() remove esta seção de quem não tem a capacidade -->
+    <section class="section" id="secao-interacoes" data-requer="avaliarMedicamente">
+      <div class="detalhe-bloco">
+        <h2 data-i18n="medicamentos.detalhe.interacoes">Interações medicamentosas</h2>
+        <div id="lista-interacoes">
+          <!-- Preenchido dinamicamente por medicamentosDetalhe.js -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="../../../../js/shared/particles.js"></script>
+<script type="module" src="../../../../js/pages/user/shared/medicamentos/medicamentosDetalhe.js"></script>
+</body>
+</html>
