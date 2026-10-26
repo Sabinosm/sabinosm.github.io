@@ -60,7 +60,13 @@ export const ROTAS = Object.freeze({
   atendimento: pagina('user/shared/atendimento.html'),
 
   // -- Consentimento --
-  assinar: pagina('user/clinico/assinar.html')
+  assinar: pagina('user/clinico/assinar.html'),
+
+  // -- Consulta clínica --
+  medicamentos: pagina('user/clinico/medicamentos.html'),
+  medicamentosDetalhe: pagina('user/clinico/medicamentosDetalhe.html'),
+  exames: pagina('user/clinico/exames.html'),
+  examesDetalhe: pagina('user/clinico/examesDetalhe.html'),
 });
 
 /**
