@@ -12,7 +12,7 @@
 
 import { requisitar, montarQuery } from "./requisitar.js";
 
-const EXAMES = "/exames";
+const EXAMES = "/catalogo/exames";
 
 /**
  * Lista paginada de exames ativos. Devolve { itens, pagina, por_pagina, total, paginas }.

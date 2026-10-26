@@ -16,9 +16,9 @@
 
 import { requisitar, montarQuery } from "../exames/requisitar.js";
 
-const MEDICAMENTOS = "/medicamentos";
-const INDICACOES = "/indicacoes-terapeuticas";
-const CONTRAINDICACOES = "/contraindicacoes";
+const MEDICAMENTOS = "/catalogo/medicamentos";
+const INDICACOES = "/catalogo/indicacoes-terapeuticas";
+const CONTRAINDICACOES = "/catalogo/contraindicacoes";
 
 /**
  * Lista paginada. Devolve { itens, pagina, por_pagina, total, paginas }.
