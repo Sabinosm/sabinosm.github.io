@@ -33,7 +33,7 @@ export function listarExames({ q, tipo, material, exigeJejum, pagina = 1, porPag
     pagina,
     por_pagina: porPagina,
   });
-  return requisitar(EXAMES, `/${query}`);
+  return requisitar(EXAMES, `${query}`);
 }
 
 /** Valores dos filtros: { tipos: [...], materiais: [...] }. */
@@ -43,7 +43,7 @@ export function listarFiltros() {
 
 /** Detalhe do exame (só médico). */
 export function buscarExame(uuid) {
-  return requisitar(EXAMES, `/${encodeURIComponent(uuid)}`);
+  return requisitar(EXAMES, `${encodeURIComponent(uuid)}`);
 }
 
 /**

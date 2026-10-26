@@ -51,7 +51,7 @@ export function listarClasses() {
 
 /** Detalhe com indicações e contraindicações (objetos com uuid e nome). */
 export function buscarMedicamento(uuid) {
-  return requisitar(MEDICAMENTOS, `/${encodeURIComponent(uuid)}`);
+  return requisitar(MEDICAMENTOS, `${encodeURIComponent(uuid)}`);
 }
 
 /** Interações do medicamento. Só médico. Devolve { interacoes, cobertura }. */
@@ -73,12 +73,12 @@ export function verificarInteracoesEntre(uuids) {
 
 /** Sugestões de indicação (autocomplete do filtro). Devolve a lista de itens. */
 export async function sugerirIndicacoes(q) {
-  const dados = await requisitar(INDICACOES, `/${montarQuery({ q, por_pagina: 10 })}`);
+  const dados = await requisitar(INDICACOES, `${montarQuery({ q, por_pagina: 10 })}`);
   return dados.itens;
 }
 
 /** Sugestões de contraindicação (autocomplete do filtro). Devolve a lista de itens. */
 export async function sugerirContraindicacoes(q) {
-  const dados = await requisitar(CONTRAINDICACOES, `/${montarQuery({ q, por_pagina: 10 })}`);
+  const dados = await requisitar(CONTRAINDICACOES, `${montarQuery({ q, por_pagina: 10 })}`);
   return dados.itens;
 }
