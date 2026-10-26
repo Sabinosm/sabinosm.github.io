@@ -41,7 +41,7 @@ export function listarMedicamentos({
     pagina,
     por_pagina: porPagina,
   });
-  return requisitar(MEDICAMENTOS, `/${query}`);
+  return requisitar(MEDICAMENTOS, `${query}`);
 }
 
 /** Classes farmacêuticas existentes (popula o filtro). */
