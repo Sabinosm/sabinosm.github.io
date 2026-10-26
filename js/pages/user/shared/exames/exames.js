@@ -16,7 +16,7 @@ import { temAlguma } from "../../../../sharedConfig/userCacheHelpers/userCachePe
 import { ApiError } from "./requisitar.js";
 import {
   el, debounce, estadoVazio, renderizarPaginacao, lerEstado, salvarEstado,
-} from "../listaHelpers.js";
+} from "./listaHelpers.js";
 import { listarExames, listarFiltros } from "./examesApi.js";
 
 const POR_PAGINA = 20;

@@ -21,7 +21,7 @@ import { exibirMensagem } from "../../../../shared/feedback.js";
 import { ApiError } from "../exames/requisitar.js";
 import {
   el, debounce, estadoVazio, renderizarPaginacao, lerEstado, salvarEstado,
-} from "../listaHelpers.js";
+} from "../exames/listaHelpers.js";
 import {
   listarMedicamentos, listarClasses, sugerirIndicacoes, sugerirContraindicacoes,
 } from "./medicamentosApi.js";
