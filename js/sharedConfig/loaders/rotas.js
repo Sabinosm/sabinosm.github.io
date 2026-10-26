@@ -63,10 +63,10 @@ export const ROTAS = Object.freeze({
   assinar: pagina('user/clinico/assinar.html'),
 
   // -- Consulta clínica --
-  medicamentos: pagina('user/clinico/medicamentos.html'),
-  medicamentosDetalhe: pagina('user/clinico/medicamentosDetalhe.html'),
-  exames: pagina('user/clinico/exames.html'),
-  examesDetalhe: pagina('user/clinico/examesDetalhe.html'),
+  medicamentos: pagina('user/shared/medicamentos.html'),
+  medicamentosDetalhe: pagina('user/shared/medicamentosDetalhe.html'),
+  exames: pagina('user/shared/exames.html'),
+  examesDetalhe: pagina('user/shared/examesDetalhe.html'),
 });
 
 /**
