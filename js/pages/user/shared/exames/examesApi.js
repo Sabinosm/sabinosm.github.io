@@ -43,7 +43,7 @@ export function listarFiltros() {
 
 /** Detalhe do exame (só médico). */
 export function buscarExame(uuid) {
-  return requisitar(EXAMES, `${encodeURIComponent(uuid)}`);
+  return requisitar(EXAMES, `/${encodeURIComponent(uuid)}`);
 }
 
 /**

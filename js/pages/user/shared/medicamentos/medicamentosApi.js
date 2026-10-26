@@ -51,7 +51,7 @@ export function listarClasses() {
 
 /** Detalhe com indicações e contraindicações (objetos com uuid e nome). */
 export function buscarMedicamento(uuid) {
-  return requisitar(MEDICAMENTOS, `${encodeURIComponent(uuid)}`);
+  return requisitar(MEDICAMENTOS, `/${encodeURIComponent(uuid)}`);
 }
 
 /** Interações do medicamento. Só médico. Devolve { interacoes, cobertura }. */
