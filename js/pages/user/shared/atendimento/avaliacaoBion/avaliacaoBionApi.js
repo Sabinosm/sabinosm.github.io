@@ -1,4 +1,4 @@
-    // avaliacaoBionApi.js
+// avaliacaoBionApi.js
 //
 // Camada de acesso à API da avaliação por IA (Bion). Só fetch: nenhuma regra de
 // tela aqui. Mesmo padrão de atendimentoApi.js (json_success/json_error,
@@ -11,15 +11,15 @@
 //   GET  /avaliacao-bion/<uuid_output>/status                   -> só o estado (polling, sem auditoria)
 //   GET  /avaliacao-bion/<uuid_output>                          -> conteúdo (output_front); leitura AUDITADA
 //
-// Premissa: bp_bion está registrado sob o mesmo prefixo de URL_BASE_API (como /atendimentos).
-// Se não estiver, o único ponto a ajustar é BASE.
+// Prefixo (main.py): bp_bion é registrado em /v1/api/bion, ou seja, URL_BASE_API + "/bion".
+// Ex.: POST /v1/api/bion/atendimento/<uuid>/avaliacao-bion. Único ponto a ajustar: BASE.
 
 import { URL_BASE_API } from "../../../../../sharedConfig/urlConfig.js";
 import { ApiError } from "../atendimentoApi.js";
 
 export { ApiError };
 
-const BASE = URL_BASE_API;
+const BASE = `${URL_BASE_API}/bion`;
 const enc = encodeURIComponent;
 
 async function requisitar(path, { method = "GET", signal } = {}) {
