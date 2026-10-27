@@ -3,8 +3,17 @@
 // Aba de conduta de enfermagem (só em atendimento de TRIAGEM -- o
 // orquestrador esconde a aba nos demais tipos). Insert-only: após
 // salvar, recarrega a lista (GET por atendimento existe).
+//
+// PROTOCOLO (opcional): select com os protocolos LIBERADOS pela empresa para
+// este atendimento, favoritos em destaque (GET .../protocolos-disponiveis, o
+// mesmo da aba de coleta; a lógica do select é atendimentoProtocoloSelect.js).
+// Não pré-seleciona padrão: a conduta só aponta para um protocolo se o
+// profissional escolher. O valor enviado continua sendo o uuid do catálogo.
 
-import { registrarConduta, listarCondutasDoAtendimento, ApiError } from "./atendimentoApi.js";
+import {
+  registrarConduta, listarCondutasDoAtendimento, listarProtocolosDisponiveis, ApiError,
+} from "./atendimentoApi.js";
+import { escopoDoAtendimentoDe, preencherSelect } from "./atendimentoProtocoloSelect.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, podeEscrever, el, formatarDataHora,
 } from "./atendimentoHelpers.js";
@@ -13,6 +22,7 @@ import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
 let enviando = false;
+let protocolos = [];   // liberados + favoritos (re-lido a cada carregar)
 
 document.addEventListener("DOMContentLoaded", () => {
   $("aten-cond-salvar")?.addEventListener("click", salvar);
@@ -27,6 +37,8 @@ async function carregar() {
   $("aten-cond-form-wrap").hidden = !pode;
   $("aten-cond-leitura-hint").hidden = pode;
 
+  await carregarProtocolos(a);
+
   try {
     const resp = await listarCondutasDoAtendimento(a.uuid);
     renderLista(resp.data ?? []);
@@ -37,6 +49,33 @@ async function carregar() {
     }
     exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível carregar as condutas.", "erro");
   }
+}
+
+/** Lista os protocolos liberados no select. Falhou? A conduta continua valendo sem protocolo. */
+async function carregarProtocolos(a) {
+  const select = $("aten-cond-protocolo");
+  if (!select) return;
+  const escolhido = select.value || null; // não perde a escolha em andamento ao recarregar
+  try {
+    const resp = await listarProtocolosDisponiveis(a.uuid, estadoAtendimento.consulta.paciente_uuid);
+    protocolos = resp.data ?? [];
+  } catch (erro) {
+    console.warn("protocolos-disponiveis indisponível:", erro?.message);
+    protocolos = [];
+  }
+  preencherSelect(select, protocolos, {
+    selecionado: escolhido,
+    escopo: escopoDoAtendimentoDe(a),
+    placeholder: "Nenhum (conduta sem protocolo)",
+    textoVazio: "Nenhum protocolo liberado — a conduta vale sem protocolo",
+  });
+  // sem protocolos o select vem desabilitado: o valor vazio segue valendo no envio
+}
+
+/** Nome do protocolo a partir do uuid guardado na conduta (se ainda estiver liberado). */
+function nomeDoProtocolo(uuid) {
+  const p = protocolos.find((x) => x.uuid === uuid);
+  return p ? (p.nome_protocolo ?? p.sigla ?? null) : null;
 }
 
 function renderLista(condutas) {
@@ -53,7 +92,10 @@ function renderLista(condutas) {
     card.appendChild(el("p", "aten-cond-descricao", c.descricao_conduta ?? ""));
     const meta = [];
     if (c.data_hora ?? c.criado_em) meta.push(formatarDataHora(c.data_hora ?? c.criado_em));
-    if (c.uuid_protocolo_catalogo) meta.push("do catálogo de protocolos");
+    if (c.uuid_protocolo_catalogo) {
+      const nome = nomeDoProtocolo(c.uuid_protocolo_catalogo);
+      meta.push(nome ? `Protocolo: ${nome}` : "do catálogo de protocolos");
+    }
     if (meta.length) card.appendChild(el("p", "field-hint", meta.join(" — ")));
     container.appendChild(card);
   });
@@ -65,7 +107,7 @@ async function salvar() {
 
   const validacao = validarConduta({
     descricao: $("aten-cond-descricao").value,
-    uuidProtocolo: $("aten-cond-protocolo").value,
+    uuidProtocolo: $("aten-cond-protocolo")?.value ?? "", // campo opcional: tolera a página sem o select
   });
   if (!validacao.ok) {
     pintarErros(validacao.erros);
@@ -81,7 +123,8 @@ async function salvar() {
       validacao.dados,
     );
     $("aten-cond-descricao").value = "";
-    $("aten-cond-protocolo").value = "";
+    const selProtocolo = $("aten-cond-protocolo");
+    if (selProtocolo) selProtocolo.value = "";
     exibirMensagem("Conduta de enfermagem registrada.", "sucesso");
     await carregar(); // insert-only: recarrega a lista
   } catch (erro) {

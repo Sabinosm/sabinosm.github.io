@@ -41,6 +41,7 @@ import { normalizarCampo } from "./atendimentoProtocoloCampos.js";
 import { validarRespostas } from "./atendimentoProtocoloValidacao.js";
 import { montarSnapshotCampos } from "./atendimentoProtocoloInput.js";
 import { formatarResultado } from "./atendimentoProtocoloResultado.js";
+import { escopoDoAtendimentoDe, protocoloPadraoDe, preencherSelect } from "./atendimentoProtocoloSelect.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO,
   dadosPaciente, podeEscrever, el, formatarDataHora,
@@ -317,67 +318,12 @@ function criarListaCamposUsados(campos) {
 // (escopo em que é padrão, ou null), politica ("obrigatorio"/"opcional").
 // O back já ordena os favoritos primeiro.
 
-/** Escopo de uso do atendimento atual (mesmo mapa do back: triagem -> triagem, o resto -> consulta). */
-function escopoDoAtendimento() {
-  return estadoAtendimento.atendimento?.tipo_atendimento === "triagem" ? "triagem" : "consulta";
-}
-
-const servePara = (escopoDoProtocolo, escopo) => escopoDoProtocolo === escopo || escopoDoProtocolo === "ambos";
-
-/** Protocolo a pré-selecionar: o padrão PESSOAL do escopo; sem ele, o padrão da INSTITUIÇÃO. */
-function protocoloPadrao() {
-  const escopo = escopoDoAtendimento();
-  return protocolos.find((p) => p.default_pessoal && servePara(p.default_pessoal, escopo))
-    ?? protocolos.find((p) => p.padrao_institucional && servePara(p.padrao_institucional, escopo))
-    ?? null;
-}
-
-function rotuloProtocolo(p) {
-  const escopo = escopoDoAtendimento();
-  const nome = p.nome_protocolo ?? p.sigla ?? p.uuid;
-  const partes = [`${p.favorito ? "★ " : ""}${nome}`];
-  if (p.sigla && p.sigla !== nome) partes[0] += ` (${p.sigla})`;
-  if (p.default_pessoal && servePara(p.default_pessoal, escopo)) partes.push("meu padrão");
-  else if (p.padrao_institucional && servePara(p.padrao_institucional, escopo)) partes.push("padrão da instituição");
-  if (p.politica === "obrigatorio") partes.push("obrigatório");
-  return partes.join(" · ");
-}
-
-function opcaoProtocolo(p, selecionado) {
-  const opt = el("option", null, rotuloProtocolo(p));
-  opt.value = p.uuid;
-  if (p.uuid === selecionado) opt.selected = true;
-  return opt;
-}
-
-/** Preenche o <select> com os liberados; favoritos num grupo próprio, no topo.
- *  O placeholder tem value "" (sem isso o value seria o próprio texto, que é truthy). */
-function preencherSelectProtocolos(select, selecionado) {
-  select.innerHTML = "";
-  const placeholder = el("option", null,
-    protocolos.length ? "Selecione o protocolo" : "Nenhum protocolo liberado para este atendimento");
-  placeholder.value = "";
-  select.appendChild(placeholder);
-  select.disabled = protocolos.length === 0;
-
-  const favoritos = protocolos.filter((p) => p.favorito);
-  if (!favoritos.length) {
-    protocolos.forEach((p) => select.appendChild(opcaoProtocolo(p, selecionado)));
-    return;
-  }
-  const gFav = document.createElement("optgroup");
-  gFav.label = "★ Meus favoritos";
-  favoritos.forEach((p) => gFav.appendChild(opcaoProtocolo(p, selecionado)));
-  select.appendChild(gFav);
-
-  const outros = protocolos.filter((p) => !p.favorito);
-  if (outros.length) {
-    const gOutros = document.createElement("optgroup");
-    gOutros.label = "Outros protocolos liberados";
-    outros.forEach((p) => gOutros.appendChild(opcaoProtocolo(p, selecionado)));
-    select.appendChild(gOutros);
-  }
-}
+// Lógica do select (favoritos, rótulos, padrão) vive em atendimentoProtocoloSelect.js,
+// compartilhada com a aba de conduta. Aqui só ligamos ao estado desta aba.
+const escopoDoAtendimento = () => escopoDoAtendimentoDe(estadoAtendimento.atendimento);
+const protocoloPadrao = () => protocoloPadraoDe(protocolos, escopoDoAtendimento());
+const preencherSelectProtocolos = (select, selecionado) =>
+  preencherSelect(select, protocolos, { selecionado, escopo: escopoDoAtendimento() });
 
 /** Atalhos de um clique para os favoritos (só aparece se houver). */
 function criarAtalhosFavoritos() {

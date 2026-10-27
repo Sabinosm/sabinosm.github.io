@@ -163,22 +163,8 @@
 
             <div id="aten-co-lista"></div>
 
-            <!-- Executar protocolo sobre o input vigente do atendimento (aparece após 1 input registrado) -->
-            <div id="aten-co-exec" hidden>
-              <h3 class="cons-panel-titulo">Executar protocolo</h3>
-              <div id="aten-ex-form">
-                <p class="field-hint">Executa o protocolo sobre o input vigente deste atendimento.</p>
-                <div class="field-group">
-                  <label class="field-label" for="aten-ex-protocolo">Protocolo (uuid)</label>
-                  <input class="field-input" type="text" id="aten-ex-protocolo" placeholder="uuid">
-                  <p class="field-error" id="aten-ex-protocolo-error"></p>
-                </div>
-                <div class="cons-panel-acoes">
-                  <button type="button" class="btn-primary" id="aten-ex-executar">Executar protocolo</button>
-                </div>
-              </div>
-              <div id="aten-ex-resultados"></div>
-            </div>
+            <!-- A execução do protocolo fica dentro de cada card de coleta (atendimentoColeta.js):
+                 select de protocolos liberados/favoritos + botão "Executar protocolo" + resultado. -->
 
             <div id="aten-co-anteriores" hidden></div>
           </section>
@@ -196,6 +182,15 @@
                 <label class="field-label" for="aten-cond-descricao" data-i18n="atendimento.conduta.descricao">Descrição da conduta</label>
                 <textarea class="field-input" id="aten-cond-descricao" rows="3"></textarea>
                 <p class="field-error" id="aten-cond-descricao-error"></p>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="aten-cond-protocolo">
+                  <span data-i18n="atendimento.conduta.protocolo">Protocolo do catálogo</span>
+                  <span class="field-optional" data-i18n="campo.opcional">(opcional)</span>
+                </label>
+                <!-- select preenchido por atendimentoConduta.js (liberados pela empresa + favoritos) -->
+                <select class="field-input" id="aten-cond-protocolo"></select>
+                <p class="field-error" id="aten-cond-protocolo-error"></p>
               </div>
               <div class="cons-panel-acoes">
                 <button type="button" class="btn-primary" id="aten-cond-salvar" data-i18n="atendimento.conduta.salvar">Registrar conduta</button>
