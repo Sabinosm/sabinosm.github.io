@@ -1,0 +1,379 @@
+/* ============================================
+   B-íon — Camada de MÓDULO (tema moderno)
+   Carregue DEPOIS de todos os outros CSS (inclusive o da página).
+
+   Ideia: cor = lugar, não decoração.
+   Cada módulo ganha um matiz próprio. Tudo que já usa --accent
+   (botões, foco, hover, ícone ativo da sidebar) passa a usar o matiz
+   do módulo, sem mudar uma linha dos arquivos existentes.
+
+   Como ligar:
+     <body data-modulo="profissionais">
+   Valores: gestao | profissionais | consultas | pacientes |
+            exames | medicamentos | auditoria
+
+   Além de cor, cada módulo muda o FORMATO da lista (.consult-card):
+     profissionais → crachá    (tile quadrado arredondado)
+     pacientes     → avatar    (tile circular, linha mais arredondada)
+     consultas     → agenda    (evento com barra lateral cheia)
+     exames        → laudo     (linhas planas tracejadas, tile hexagonal)
+     medicamentos  → cápsula   (tile em cápsula bicolor)
+     auditoria     → linha do tempo (pontos ligados por um fio)
+
+   Cards soltos (bento) podem ter cor própria com data-mod="..."
+   ============================================ */
+
+
+/* ===== 1. Matizes: um por módulo, mesmo brilho e saturação ===== */
+
+:root {
+  /* escuro */
+  --mod-l: 0.72;          /* brilho do acento (texto/ícone/borda) */
+  --mod-c: 0.13;          /* saturação */
+  --mod-solid-l: 0.50;    /* brilho de fundos que levam texto branco */
+  --mod-solid-c: 0.15;
+
+  /* glifos (máscara): um por módulo, 24x24, traço 2 */
+  --g-gestao:       url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='7' height='9' rx='1'/><rect x='14' y='3' width='7' height='5' rx='1'/><rect x='14' y='12' width='7' height='9' rx='1'/><rect x='3' y='16' width='7' height='5' rx='1'/></svg>");
+  --g-profissionais: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg>");
+  --g-consultas:    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2'/><path d='M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4'/></svg>");
+  --g-pacientes:    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='8' r='5'/><path d='M20 21a8 8 0 0 0-16 0'/></svg>");
+  --g-exames:       url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M10 2v7.5a2 2 0 0 1-.2.9L4.7 20.5a1 1 0 0 0 .9 1.5h12.8a1 1 0 0 0 .9-1.5l-5.1-10.1a2 2 0 0 1-.2-.9V2'/><path d='M8.5 2h7M7 16h10'/></svg>");
+  --g-medicamentos: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z'/><path d='m8.5 8.5 7 7'/></svg>");
+  --g-auditoria:    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='2' width='8' height='4' rx='1'/><path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/><path d='m9 14 2 2 4-4'/></svg>");
+}
+
+/* a cor de marca do tema, guardada no elemento do tema, antes de o módulo
+   (que fica num elemento mais interno) sobrescrever --accent */
+:root,
+[data-theme] {
+  --brand: var(--accent);
+}
+
+/* temas claros: acento mais escuro para ler sobre branco */
+[data-theme="light"],
+[data-theme$="-light"] {
+  --mod-l: 0.52;
+  --mod-c: 0.15;
+  --mod-solid-l: 0.50;
+}
+
+/* matiz + glifo de cada módulo (na página inteira OU num card solto) */
+[data-modulo="gestao"],        [data-mod="gestao"]        { --hue: 285; --glyph: var(--g-gestao); }
+[data-modulo="profissionais"], [data-mod="profissionais"] { --hue: 245; --glyph: var(--g-profissionais); }
+[data-modulo="consultas"],     [data-mod="consultas"]     { --hue: 205; --glyph: var(--g-consultas); }
+[data-modulo="pacientes"],     [data-mod="pacientes"]     { --hue: 165; --glyph: var(--g-pacientes); }
+[data-modulo="exames"],        [data-mod="exames"]        { --hue: 315; --glyph: var(--g-exames); }
+[data-modulo="medicamentos"],  [data-mod="medicamentos"]  { --hue: 355; --glyph: var(--g-medicamentos); }
+/* auditoria é o módulo sóbrio: aço frio, quase sem saturação. Evita amarelo/âmbar,
+   que já significam atenção nos status. */
+[data-modulo="auditoria"],     [data-mod="auditoria"]     { --hue: 250; --mod-c: 0.045; --mod-solid-c: 0.06; --glyph: var(--g-auditoria); }
+
+/* família de tokens derivada do matiz — sobrescreve os do tema */
+[data-modulo],
+[data-mod] {
+  --accent:        oklch(var(--mod-l) var(--mod-c) var(--hue));
+  --accent-hover:  oklch(calc(var(--mod-l) - 0.06) var(--mod-c) var(--hue));
+  --accent-tint:   oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.14);
+  --accent-solid:  oklch(var(--mod-solid-l) var(--mod-solid-c) var(--hue));
+  --accent-solid-hover: oklch(calc(var(--mod-solid-l) - 0.05) var(--mod-solid-c) var(--hue));
+  --accent-ring:   oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.30);
+  --focus-ring:    oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.35);
+  --highlight-top: oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.14);
+  --cta-bg:  var(--accent-solid);
+  --cta-ink: var(--accent);
+}
+
+
+/* ===== 2. Fundo: brilho suave do módulo no topo da página ===== */
+
+[data-modulo] .app .main,
+[data-modulo].app .main {
+  background-image:
+    radial-gradient(70% 340px at 50% 0%,
+      oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.10), transparent 75%);
+  background-repeat: no-repeat;
+}
+
+
+/* ===== 3. Cabeçalho da página: tile com o glifo do módulo ===== */
+
+[data-modulo] .main-header h1 {
+  position: relative;
+  padding-left: 52px;
+  line-height: 36px;
+  min-height: 36px;
+}
+[data-modulo] .main-header h1::before,
+[data-modulo] .main-header h1::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 36px;
+  height: 36px;
+}
+[data-modulo] .main-header h1::before {
+  border-radius: 10px;
+  background: var(--accent-tint);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+[data-modulo] .main-header h1::after {
+  background: var(--accent);
+  -webkit-mask: var(--glyph) center / 20px 20px no-repeat;
+          mask: var(--glyph) center / 20px 20px no-repeat;
+}
+[data-modulo] .main-subtitle { padding-left: 52px; }
+
+
+/* ===== 4. Títulos de seção: tracinho + fio ===== */
+
+[data-modulo] .section-title {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+[data-modulo] .section-title::before {
+  content: "";
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+[data-modulo] .section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+
+/* ===== 5. Botões: fundo sólido do módulo (texto branco passa de 4.5:1) ===== */
+
+[data-modulo] .btn-primary,
+[data-modulo] .filter-count {
+  background: var(--accent-solid);
+  color: #fff;
+}
+[data-modulo] .btn-primary:hover {
+  background: var(--accent-solid-hover);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 6px 16px var(--accent-ring);
+}
+
+/* a marca do produto não muda de cor entre módulos */
+.sidebar .nav-avatar {
+  background: var(--brand);
+  box-shadow: 0 0 0 2px var(--sidebar-bg), 0 0 0 3.5px var(--brand);
+}
+.sidebar .sidebar-logo-mark { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--brand) 30%, transparent)); }
+
+
+/* ===== 6. LISTAS — base comum: tile com glifo à esquerda ===== */
+
+[data-modulo] .consult-card {
+  min-height: 62px;
+  padding-left: 68px;
+}
+[data-modulo] .consult-card::before,
+[data-modulo] .consult-card::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 38px;
+  height: 38px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+[data-modulo] .consult-card::before {
+  border-radius: 10px;
+  background: var(--accent-tint);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+[data-modulo] .consult-card::after {
+  background: var(--accent);
+  -webkit-mask: var(--glyph) center / 19px 19px no-repeat;
+          mask: var(--glyph) center / 19px 19px no-repeat;
+  transition: background 0.15s ease;
+}
+[data-modulo] .consult-card:hover::before {
+  background: var(--accent);
+}
+[data-modulo] .consult-card:hover::after {
+  background: var(--bg);
+}
+
+/* ação ("Gerenciar") passa para o fim da linha: nome primeiro, ação por último */
+[data-modulo] .consult-card > :where(button, a):not(.consult-status) {
+  order: 4;
+}
+
+
+/* ----- profissionais · CRACHÁ: tile quadrado, linhas em cartão ----- */
+[data-modulo="profissionais"] .consult-card::before { border-radius: 10px; }
+
+
+/* ----- pacientes · AVATAR: tile circular, cartão mais redondo ----- */
+[data-modulo="pacientes"] .consult-card {
+  border-radius: var(--radius-md);
+  min-height: 66px;
+}
+[data-modulo="pacientes"] .consult-card::before,
+[data-modulo="pacientes"] .consult-card::after { width: 42px; height: 42px; left: 13px; }
+[data-modulo="pacientes"] .consult-card::before { border-radius: 50%; }
+[data-modulo="pacientes"] .consult-card::after  { -webkit-mask-size: 21px; mask-size: 21px; }
+[data-modulo="pacientes"] .consult-patient { font-size: calc(16px * var(--font-scale, 1)); }
+
+
+/* ----- consultas · AGENDA: evento com barra lateral cheia ----- */
+[data-modulo="consultas"] .consult-card {
+  border-left: 4px solid var(--accent);
+  border-radius: 4px var(--radius-sm) var(--radius-sm) 4px;
+  background:
+    linear-gradient(90deg, var(--accent-tint), transparent 45%),
+    var(--bg-elevated);
+}
+[data-modulo="consultas"] .consult-card::before { border-radius: 6px; }
+[data-modulo="consultas"] .consult-meta {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+
+/* ----- exames · LAUDO: linhas planas tracejadas, tile hexagonal ----- */
+[data-modulo="exames"] .card-list { gap: 0; border-top: 1px solid var(--border); }
+[data-modulo="exames"] .consult-card {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-modulo="exames"] .consult-card:hover {
+  transform: none;
+  background: var(--accent-tint);
+}
+[data-modulo="exames"] .consult-card::before {
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--accent-tint);
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+[data-modulo="exames"] .consult-meta {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+
+/* ----- medicamentos · CÁPSULA: tile bicolor inclinado ----- */
+[data-modulo="medicamentos"] .consult-card { padding-left: 78px; }
+[data-modulo="medicamentos"] .consult-card::before {
+  left: 14px;
+  width: 46px;
+  height: 22px;
+  border-radius: 999px;
+  transform: translateY(-50%) rotate(-35deg);
+  background: linear-gradient(90deg, var(--accent) 50%, var(--accent-tint) 50%);
+}
+[data-modulo="medicamentos"] .consult-card::after { display: none; }
+[data-modulo="medicamentos"] .consult-card:hover::before {
+  background: linear-gradient(90deg, var(--accent) 50%, var(--accent-tint) 50%);
+  transform: translateY(-50%) rotate(-5deg);
+}
+
+
+/* ----- auditoria · LINHA DO TEMPO: pontos ligados por um fio ----- */
+[data-modulo="auditoria"] .card-list { position: relative; gap: 0; }
+[data-modulo="auditoria"] .card-list::before {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: var(--border);
+}
+[data-modulo="auditoria"] .consult-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  min-height: 56px;
+  padding-left: 52px;
+}
+[data-modulo="auditoria"] .consult-card:hover {
+  transform: none;
+  background: var(--accent-tint);
+}
+[data-modulo="auditoria"] .consult-card::before {
+  left: 16px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+[data-modulo="auditoria"] .consult-card::after { display: none; }
+[data-modulo="auditoria"] .consult-card:hover::before { background: var(--accent); }
+[data-modulo="auditoria"] .consult-meta {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+
+/* celular: nome em linha própria; status e ação embaixo */
+@media (max-width: 760px) {
+  [data-modulo] .consult-card { flex-wrap: wrap; row-gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+  [data-modulo] .consult-main { flex: 1 1 100%; }
+  [data-modulo] .consult-status { order: 2; margin-left: 0; }
+  [data-modulo] .consult-card > :where(button, a):not(.consult-status) { order: 3; margin-left: auto; }
+}
+
+
+/* ===== 7. BENTO: cada card carrega a cor do módulo que ele representa ===== */
+
+.metric-card[data-mod] .metric-icon,
+.metric-card--alert .metric-icon {
+  box-sizing: content-box;
+  width: 20px;
+  height: 20px;
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--accent);
+  background: var(--accent-tint);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+.metric-card--hero[data-mod] .metric-icon {
+  width: 24px;
+  height: 24px;
+  padding: 10px;
+  border-radius: 12px;
+  opacity: 1;
+}
+.metric-card[data-mod]:hover .metric-icon { transform: none; }
+.metric-card--wide[data-mod] .metric-icon { margin-bottom: 0; }
+
+/* alerta continua semântico (âmbar), nunca cor de módulo */
+.metric-card--alert {
+  --status-fg: var(--palette-status-amber);
+  --status-bg: var(--palette-status-amber-bg);
+}
+.metric-card--alert .metric-icon {
+  color: var(--status-fg, var(--palette-status-amber));
+  background: var(--status-bg, var(--palette-status-amber-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-fg, var(--palette-status-amber)) 30%, transparent);
+}
+
+
+/* ===== 8. SIDEBAR (opcional): ícone de cada módulo com um toque da sua cor =====
+   Precisa de data-mod="..." em cada .nav-item (o sidebarLoader.js pode
+   colocar). O item ativo já usa --accent; aqui só o estado de repouso. */
+
+.sidebar .nav-item[data-mod]:not(.nav-item--active):not(:hover) .nav-icon {
+  color: color-mix(in oklch, var(--accent) 48%, var(--sidebar-text));
+}

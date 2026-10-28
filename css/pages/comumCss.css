@@ -8,5 +8,5 @@ Arquivo que importa todos os comuns entre os arquivos
 @import url("user/sidebar/sidebar.css");
 @import url("user/preferencias/preferencias.css");
 @import url("user/stepup.css");
-
+@import url("user/shared/modulos.css");
 
