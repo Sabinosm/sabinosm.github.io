@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Prescrição</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<!-- atendimento.css traz os tokens --aten-* e o layout .aten-coluna; prescricao.css só acrescenta o que é da prescrição -->
+<link rel="stylesheet" href="../../../../css/pages/user/shared/atendimento.css">
+<link rel="stylesheet" href="../../../../css/pages/user/shared/prescricao.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- data-requer: capacidade de userCachePermissoes.js (só médico prescreve) -->
+<body data-requer="avaliarMedicamente">
+<canvas id="c" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+   <!-- mesma coluna do atendimento: o sidebarTrilho centraliza os filhos do .main -->
+   <div class="aten-coluna">
+
+    <a class="cons-voltar" id="presc-voltar" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Atendimento</span>
+    </a>
+
+    <!-- Erro ao carregar -->
+    <div id="presc-erro" hidden></div>
+
+    <div id="presc-conteudo" hidden>
+
+      <header class="main-header">
+        <div>
+          <p class="main-subtitle">Prescrição</p>
+          <h1 id="presc-nome"></h1>
+          <p class="main-subtitle" id="presc-subtitulo"></p>
+        </div>
+        <div class="cons-det-chips">
+          <span id="presc-chip-status"></span>
+        </div>
+      </header>
+
+      <!-- Modo somente leitura (não dono / atendimento fora de andamento) -->
+      <div class="cons-banner-encerrada" id="presc-banner-leitura" hidden>
+        <strong>Somente leitura.</strong>
+        <span id="presc-banner-leitura-texto"></span>
+      </div>
+
+      <!-- Cada bloco abaixo é desenhado por um módulo de prescricao/ (ver prescricao.js) -->
+      <div id="presc-banner"></div>      <!-- origem do rascunho: IA ou médico -->
+      <div id="presc-ia"></div>          <!-- opção 1: gerar com a IA -->
+      <div id="presc-diag"></div>        <!-- opção 2: manual / diagnóstico -->
+      <div id="presc-itens"></div>       <!-- medicamentos e exames + busca -->
+      <div id="presc-alertas"></div>     <!-- interações medicamentosas -->
+      <div id="presc-fim"></div>         <!-- confirmar / descartar / finalizar -->
+      <div id="presc-historico"></div>   <!-- confirmadas e descartadas anteriores -->
+
+    </div>
+
+   </div>
+  </main>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js -->
+
+<script src="../../../../js/shared/particles.js"></script>
+<script type="module" src="../../../../js/pages/user/shared/prescricao/prescricao.js"></script>
+</body>
+</html>
