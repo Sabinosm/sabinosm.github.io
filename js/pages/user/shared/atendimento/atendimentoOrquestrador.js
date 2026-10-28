@@ -25,6 +25,7 @@ import {
   criarChipStatus, criarEstadoVazio, formatarDataHora, nomePaciente,
 } from "../../clinico/consulta/consultaHelpers.js";
 import { tipoComAvaliacaoBion } from "./avaliacaoBion/avaliacaoBionHelpers.js";
+import { urlPrescricao } from "../prescricao/prescricaoHelpers.js";
 import { ROTAS } from "../../../../sharedConfig/loaders/rotas.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
@@ -169,6 +170,10 @@ function aplicarEstado() {
   estadoAtendimento.atendimento = a;
   estadoAtendimento.somenteLeitura = !a || a.status !== "em-andamento" || !souDono();
 
+  // atalho de prescrição: sem atendimento em andamento (ou consulta encerrada) ele não existe
+  const linkPrescricao = $("aten-link-prescricao");
+  if (linkPrescricao && !(a && aberta)) linkPrescricao.hidden = true;
+
   if (a && aberta) {
     $("aten-secao-abertura").hidden = true;
     $("aten-secao-atendimento").hidden = false;
@@ -184,6 +189,11 @@ function aplicarEstado() {
     const temBion = tipoComAvaliacaoBion(a);
     if (abaBion) abaBion.hidden = !temBion;
     if (!temBion && abaAtiva() === "bion") ativarAba("binario");
+    // atalho para a página de prescrição (mesma regra de acesso da aba de IA: médico dono)
+    if (linkPrescricao) {
+      linkPrescricao.hidden = !(temBion && souDono());
+      linkPrescricao.href = urlPrescricao(c.uuid, a.uuid);
+    }
     // Os painéis das abas são controlados só por ativarAba(); re-sincroniza a cada render.
     ativarAba(abaAtiva());
   } else if (aberta) {
