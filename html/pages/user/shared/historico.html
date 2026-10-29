@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Histórico</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<!-- consulta.css traz toolbar, filtros, .consult-card, paginação e estado vazio; historico.css só acrescenta o que é do histórico -->
+<link rel="stylesheet" href="../../../../css/pages/user/clinico/consulta.css">
+<link rel="stylesheet" href="../../../../css/pages/user/shared/historico.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- data-requer: capacidade de userCachePermissoes.js (médico ou enfermeiro) -->
+<body data-requer="atenderClinicamente">
+<canvas id="c" aria-hidden="true"></canvas>
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <header class="main-header">
+      <div>
+        <h1>Histórico</h1>
+        <p class="main-subtitle">Consultas que você iniciou ou em que atendeu, com os atendimentos de cada uma</p>
+      </div>
+    </header>
+
+    <section class="section">
+
+      <div class="toolbar">
+        <div class="toolbar-row">
+          <div class="search-field">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" stroke-linecap="round"/>
+              <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+            </svg>
+            <input type="text" class="search-input" id="hist-busca" placeholder="Buscar paciente (entre as consultas carregadas)" autocomplete="off">
+          </div>
+          <button class="btn-filter" id="hist-btn-toggle-filtros" type="button" aria-expanded="false">
+            <svg class="btn-filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Filtros</span>
+          </button>
+        </div>
+
+        <!-- Filtros enviados ao back (GET /consultas/historico); a busca por nome é só no cliente -->
+        <div class="filter-panel" id="hist-filter-panel">
+          <div class="filter-field">
+            <label for="hist-filtro-abertas">Situação</label>
+            <select id="hist-filtro-abertas">
+              <option value="">Todas</option>
+              <option value="true">Somente abertas</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="hist-filtro-status">Status</label>
+            <select id="hist-filtro-status">
+              <option value="">Todos</option>
+              <option value="aguardando-triagem">Aguardando triagem</option>
+              <option value="em-triagem">Em triagem</option>
+              <option value="aguardando-medico">Aguardando médico</option>
+              <option value="em-atendimento">Em atendimento</option>
+              <option value="em-observacao">Em observação</option>
+              <option value="encerrada">Encerrada</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="hist-filtro-desfecho">Desfecho</label>
+            <select id="hist-filtro-desfecho">
+              <option value="">Todos</option>
+              <option value="alta">Alta</option>
+              <option value="internacao">Internação</option>
+              <option value="transferencia">Transferência</option>
+              <option value="obito">Óbito</option>
+              <option value="evasao">Evasão</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="hist-filtro-inicio">De</label>
+            <input type="date" id="hist-filtro-inicio">
+          </div>
+          <div class="filter-field">
+            <label for="hist-filtro-fim">Até</label>
+            <input type="date" id="hist-filtro-fim">
+          </div>
+          <div class="filter-panel-actions">
+            <button class="btn-ghost" id="hist-btn-limpar-filtros" type="button">Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preenchido por historicoLista.js / historicoCard.js -->
+      <div class="card-list" id="hist-lista" aria-live="polite"></div>
+      <div class="hist-mais" id="hist-mais"></div>
+
+    </section>
+
+  </main>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js -->
+
+<script src="../../../../js/shared/particles.js"></script>
+<script type="module" src="../../../../js/pages/user/shared/historico/historico.js"></script>
+</body>
+</html>

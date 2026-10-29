@@ -1,0 +1,28 @@
+/* historico.css -- página de Histórico (historico.html)
+   Carregado DEPOIS de consulta.css: reaproveita .consult-card, .card-list, .toolbar e .filter-panel.
+   Só classes .hist-*. Sem depender de tokens de outra página: usa cores neutras com fallback. */
+
+.hist-card { flex-wrap: wrap; row-gap: 10px; }
+.hist-card > .hist-acoes--card,
+.hist-card > .hist-painel { flex: 1 1 100%; }
+
+.hist-acoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hist-acoes--card { padding-top: 4px; border-top: 1px solid var(--hist-borda, rgba(128, 128, 128, .25)); }
+.hist-acoes button:disabled { opacity: .5; cursor: not-allowed; }
+
+.hist-meta { margin: 4px 0 0; font-size: .85em; opacity: .75; line-height: 1.45; overflow-wrap: anywhere; }
+.hist-erro { color: var(--aten-perigo, #e5484d); opacity: 1; }
+.hist-mais { display: flex; justify-content: center; margin-top: 14px; }
+
+/* ---- linha do tempo ---- */
+.hist-timeline { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--hist-borda, rgba(128, 128, 128, .3)); }
+.hist-atend { position: relative; margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--hist-borda, rgba(128, 128, 128, .25)); border-radius: 10px; background: var(--hist-fundo, rgba(128, 128, 128, .07)); }
+.hist-atend::before { content: ""; position: absolute; left: -22px; top: 16px; width: 10px; height: 10px; border-radius: 50%; background: var(--hist-ponto, currentColor); opacity: .6; }
+.hist-atend[data-status="em-andamento"]::before { opacity: 1; }
+.hist-atend[data-status="cancelado"] { opacity: .75; }
+.hist-atend-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.hist-badge { display: inline-block; padding: 2px 10px; border: 1px solid var(--hist-borda, rgba(128, 128, 128, .4)); border-radius: 999px; font-size: .78em; }
+.hist-badge--em-andamento { border-color: var(--aten-auto, #3e8bff); }
+.hist-badge--finalizado { border-color: var(--aten-ok, #30a46c); }
+.hist-badge--cancelado { border-color: var(--aten-perigo, #e5484d); }

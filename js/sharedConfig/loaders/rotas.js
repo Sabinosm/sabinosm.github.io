@@ -55,9 +55,12 @@ export const ROTAS = Object.freeze({
   // -- Consultas HTML ---
   consulta: pagina('user/clinico/consultas.html'),
   consultaDetalhe: pagina('user/clinico/consultaDetalhe.html'),
+  historico: pagina('user/shared/historico.html'),
 
   // -- Atendimento --
   atendimento: pagina('user/shared/atendimento.html'),
+  prescricao: pagina('user/shared/prescricao.html'),
+  atendimentoDetalhe: pagina('user/shared/atendimentoDetalhe.html'),   // liga o botão "Detalhes" do histórico
 
   // -- Consentimento --
   assinar: pagina('user/clinico/assinar.html'),
