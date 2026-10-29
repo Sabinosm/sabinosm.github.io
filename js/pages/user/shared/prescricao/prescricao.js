@@ -10,6 +10,7 @@
 //   prescricaoItens.js       -> medicamentos e exames, com busca embutida
 //   prescricaoAlertas.js     -> interações medicamentosas + cobertura
 //   prescricaoFim.js         -> confirmar/descartar, finalizar atendimento, atalho para encerrar consulta
+//   prescricaoDocumentos.js  -> baixar em PDF a prescrição e o atendimento (shared/downloadPdf.js)
 //
 // Dois caminhos, UM mesmo objeto: no modo manual o front cria o rascunho (POST); no modo IA o back
 // já gravou o rascunho (origem 'bion_ia') e o front só o lê (GET da lista). Dali em diante é o
@@ -36,6 +37,7 @@ import { renderDiagnostico } from "./prescricaoDiagnostico.js";
 import { renderItens } from "./prescricaoItens.js";
 import { renderAlertas } from "./prescricaoAlertas.js";
 import { renderFim } from "./prescricaoFim.js";
+import { renderDocumentos } from "./prescricaoDocumentos.js";
 import { renderIA, retomarIA, cancelarIA } from "./prescricaoIA.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
@@ -172,7 +174,7 @@ function desenharCabecalho() {
 }
 
 function limparBlocos() {
-  ["presc-banner", "presc-ia", "presc-diag", "presc-itens", "presc-alertas", "presc-fim", "presc-historico"]
+  ["presc-banner", "presc-ia", "presc-diag", "presc-itens", "presc-alertas", "presc-fim", "presc-docs", "presc-historico"]
     .forEach((id) => $(id).replaceChildren());
 }
 
@@ -195,6 +197,7 @@ function renderTudo() {
   });
   renderItens($("presc-itens"), atual, ctx);
   desenharAlertasEFim();
+  renderDocumentos($("presc-docs"), atual);
   desenharHistorico();
 }
 
