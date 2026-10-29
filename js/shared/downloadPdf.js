@@ -17,7 +17,7 @@
 import { URL_BASE_API } from "../sharedConfig/urlConfig.js";
 import { exibirMensagem } from "./feedback.js";
 
-const URL_BASE_API_DOWNLOADS = URL_BASE_API + "downloads"
+const URL_BASE_API_DOWNLOADS = URL_BASE_API + "/downloads"
 const enc = encodeURIComponent;
 
 export class ErroDownload extends Error {
