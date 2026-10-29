@@ -3,7 +3,7 @@
 // Utilitários puros da aba "Avaliação IA": estados, labels de erro, formatação.
 // Sem fetch e sem DOM além do que vem de atendimentoHelpers (el, gate de escrita).
 
-import { estadoAtendimento, podeEscrever } from "../atendimentoHelpers.js";
+import { estadoAtendimento, podeEscrever } from "../atendimento/atendimentoHelpers.js";
 
 /** Tipos de atendimento em que a aba existe (o back também exige: avaliacao-medica ou reavaliacao). */
 export const TIPOS_COM_AVALIACAO_BION = ["avaliacao-medica", "reavaliacao"];

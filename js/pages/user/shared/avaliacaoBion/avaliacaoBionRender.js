@@ -4,7 +4,7 @@
 // por textContent (via el()), nunca por innerHTML: a saída da IA é dado não
 // confiável. Sem fetch e sem estado: recebe o objeto e devolve um nó.
 
-import { el, formatarDataHora } from "../atendimentoHelpers.js";
+import { el, formatarDataHora } from "../atendimento/atendimentoHelpers.js";
 import {
   percentual, rotulo, CERTEZA_LABELS, TIPO_PRESCRICAO_LABELS, STATUS_CONDUTA_LABELS,
 } from "./avaliacaoBionHelpers.js";

@@ -22,8 +22,8 @@ import { renderResultado } from "./avaliacaoBionRender.js";
 import {
   ESTADO, STATUS_BACK, podeAvaliar, tipoComAvaliacaoBion, textoErro,
 } from "./avaliacaoBionHelpers.js";
-import { estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, souDono, el } from "../atendimentoHelpers.js";
-import { exibirMensagem } from "../../../../../shared/feedback.js";
+import { estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, souDono, el } from "../atendimento/atendimentoHelpers.js";
+import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
 

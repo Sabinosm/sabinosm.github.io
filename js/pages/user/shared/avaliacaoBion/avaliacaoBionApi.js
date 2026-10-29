@@ -14,8 +14,8 @@
 // Prefixo (main.py): bp_bion é registrado em /v1/api/bion, ou seja, URL_BASE_API + "/bion".
 // Ex.: POST /v1/api/bion/atendimento/<uuid>/avaliacao-bion. Único ponto a ajustar: BASE.
 
-import { URL_BASE_API } from "../../../../../sharedConfig/urlConfig.js";
-import { ApiError } from "../atendimentoApi.js";
+import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
+import { ApiError } from "../atendimento/atendimentoApi.js";
 
 export { ApiError };
 
