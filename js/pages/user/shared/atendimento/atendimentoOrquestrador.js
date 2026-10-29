@@ -24,7 +24,7 @@ import {
 import {
   criarChipStatus, criarEstadoVazio, formatarDataHora, nomePaciente,
 } from "../../clinico/consulta/consultaHelpers.js";
-import { tipoComAvaliacaoBion } from "./avaliacaoBion/avaliacaoBionHelpers.js";
+import { tipoComAvaliacaoBion } from "../avaliacaoBion/avaliacaoBionHelpers.js";
 import { urlPrescricao } from "../prescricao/prescricaoHelpers.js";
 import { ROTAS } from "../../../../sharedConfig/loaders/rotas.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";

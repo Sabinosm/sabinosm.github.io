@@ -9,7 +9,7 @@
 //   GET /atendimentos/consulta/<uuid>   linha do tempo em ordem cronológica, cada item com `profissional`
 
 import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
-import { ApiError } from "../consulta/consultaApi.js";
+import { ApiError } from "../../clinico/consulta/consultaApi.js";
 
 export { ApiError };
 

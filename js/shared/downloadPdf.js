@@ -17,6 +17,7 @@
 import { URL_BASE_API } from "../sharedConfig/urlConfig.js";
 import { exibirMensagem } from "./feedback.js";
 
+URL_BASE_API_DOWNLOADS = URL_BASE_API + "downloads"
 const enc = encodeURIComponent;
 
 export class ErroDownload extends Error {
@@ -45,7 +46,7 @@ export function nomeDoCabecalho(valor) {
 export async function baixarPdf(caminho, nomePadrao) {
   let resposta;
   try {
-    resposta = await fetch(`${URL_BASE_API}${caminho}`, { credentials: "include", cache: "no-store" });
+    resposta = await fetch(`${URL_BASE_API_DOWNLOADS}${caminho}`, { credentials: "include", cache: "no-store" });
   } catch {
     throw new ErroDownload("Não foi possível conectar ao servidor. Verifique sua internet.", 0);
   }

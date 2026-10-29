@@ -23,7 +23,7 @@ import "./atendimentoBinario.js";
 import "./atendimentoSinais.js";
 import "./atendimentoColeta.js";
 import "./atendimentoConduta.js";
-import "./avaliacaoBion/avaliacaoBion.js";
+import "../avaliacaoBion/avaliacaoBion.js";
 import { iniciar } from "./atendimentoOrquestrador.js";
 import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 
