@@ -13,7 +13,7 @@
 import {
   registrarConduta, listarCondutasDoAtendimento, listarProtocolosDisponiveis, ApiError,
 } from "./atendimentoApi.js";
-import { escopoDoAtendimentoDe, preencherSelect } from "./atendimentoProtocoloSelect.js";
+import { escopoDoAtendimentoDe, preencherSelect } from "./atendimentoProtocolo/atendimentoProtocoloSelect.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, podeEscrever, el, formatarDataHora,
 } from "./atendimentoHelpers.js";

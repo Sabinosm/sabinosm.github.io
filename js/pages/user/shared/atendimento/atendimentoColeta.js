@@ -37,11 +37,11 @@ import {
   registrarColeta, registrarInputProtocolo, executarProtocolo,
   listarProtocolosDisponiveis, estruturaProtocolo, ApiError,
 } from "./atendimentoApi.js";
-import { normalizarCampo } from "./atendimentoProtocoloCampos.js";
-import { validarRespostas } from "./atendimentoProtocoloValidacao.js";
-import { montarSnapshotCampos } from "./atendimentoProtocoloInput.js";
-import { formatarResultado } from "./atendimentoProtocoloResultado.js";
-import { escopoDoAtendimentoDe, protocoloPadraoDe, preencherSelect } from "./atendimentoProtocoloSelect.js";
+import { normalizarCampo } from "./atendimentoProtocolo/atendimentoProtocoloCampos.js";
+import { validarRespostas } from "./atendimentoProtocolo/atendimentoProtocoloValidacao.js";
+import { montarSnapshotCampos } from "./atendimentoProtocolo/atendimentoProtocoloInput.js";
+import { formatarResultado } from "./atendimentoProtocolo/atendimentoProtocoloResultado.js";
+import { escopoDoAtendimentoDe, protocoloPadraoDe, preencherSelect } from "./atendimentoProtocolo/atendimentoProtocoloSelect.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO,
   dadosPaciente, podeEscrever, el, formatarDataHora,
