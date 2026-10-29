@@ -77,7 +77,7 @@
       <section id="aten-secao-atendimento" hidden>
 
         <div class="segmented" id="aten-abas">
-          <button type="button" class="segmented-item segmented-item--active" data-aba="binario" data-i18n="atendimento.aba.binario">Binário</button>
+          <button type="button" class="segmented-item segmented-item--active" data-aba="binario" data-i18n="atendimento.aba.binario">Dados clínicos</button>
           <button type="button" class="segmented-item" data-aba="sinais" data-i18n="atendimento.aba.sinais">Sinais vitais</button>
           <button type="button" class="segmented-item" data-aba="coleta" data-i18n="atendimento.aba.coleta">Coleta clínica</button>
           <button type="button" class="segmented-item" data-aba="conduta" data-i18n="atendimento.aba.conduta">Conduta de enfermagem</button>
@@ -89,15 +89,15 @@
         <div class="aten-aba" id="aten-aba-binario">
           <section class="cons-panel">
             <h2 class="cons-panel-titulo">
-              <span data-i18n="atendimento.binario.titulo">Binário</span>
+              <span data-i18n="atendimento.binario.titulo">Dados clínicos</span>
               <span id="aten-bin-resumo" class="aten-bin-resumo"></span>
             </h2>
             <p class="field-hint" data-i18n="atendimento.binario.hint">
-              Confira as 4 seções. Sinais vitais não dependem do binário; coleta clínica e input de protocolo só liberam com as 4 conferidas.
+              Confira as 4 seções. Sinais vitais não dependem dos dados clínicos; coleta clínica e protocolo só liberam com as 4 conferidas.
             </p>
             <p class="field-hint" id="aten-bin-completo-hint" hidden
                data-i18n="atendimento.binario.completo" style="color:#4ade80">
-              Binário completo — coleta clínica e input de protocolo liberados.
+              Dados clínicos completos — coleta clínica e protocolo liberados.
             </p>
             <div class="cons-panel-acoes">
               <button type="button" class="btn-primary" id="aten-bin-conferir-tudo" data-i18n="atendimento.binario.conferir_tudo">Conferir todas as seções</button>
@@ -144,7 +144,7 @@
             <h2 class="cons-panel-titulo" data-i18n="atendimento.coleta.titulo">Coleta clínica</h2>
             <p class="field-hint" id="aten-co-gate" hidden
                data-i18n="atendimento.coleta.gate">
-              Conclua as 4 seções do binário para registrar coleta clínica e input de protocolo.
+              Conclua as 4 seções dos dados clínicos para registrar coleta clínica e protocolo.
             </p>
             <p class="field-hint" id="aten-co-leitura-hint" hidden
                data-i18n="atendimento.coleta.leitura">Somente o profissional que abriu o atendimento registra coletas.</p>
@@ -230,7 +230,7 @@
         <section class="cons-panel" id="aten-acoes" hidden>
           <h2 class="cons-panel-titulo">Encerrar este atendimento</h2>
           <p class="field-hint" id="aten-fin-hint" hidden>
-            Para finalizar, conclua as 4 seções do binário. Cancelar não exige binário.
+            Para finalizar, conclua as 4 seções dos dados clínicos. Cancelar não exige dados clínicos.
           </p>
           <div class="field-group">
             <label class="field-label" for="aten-fin-observacoes">
