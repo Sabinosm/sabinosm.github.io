@@ -1,0 +1,52 @@
+/* atendimentoDetalhe.css -- página "Detalhes do atendimento" (atendimentoDetalhe.html)
+   Carregado DEPOIS de consulta.css/consultaDetalhe.css (que trazem .cons-panel, .cons-voltar, .main-header).
+   Só classes .det-*; cores neutras com fallback (nenhum token de outra página é exigido). */
+
+.det-secao { margin-top: 14px; }
+.det-acoes { margin-top: 14px; }
+.det-subtitulo { margin: 14px 0 4px; font-size: .9em; font-weight: 600; opacity: .85; }
+.det-texto { margin: 6px 0 0; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.det-lista { margin: 6px 0 0; padding-left: 18px; line-height: 1.5; }
+.det-erro { color: var(--aten-perigo, #e5484d); opacity: 1; }
+
+/* ---- avisos de estado ---- */
+.det-banner { margin-top: 14px; padding: 10px 14px; border: 1px solid var(--det-borda, rgba(128, 128, 128, .35)); border-left-width: 4px; border-radius: 10px; line-height: 1.45; }
+.det-banner--parcial { border-left-color: var(--aten-auto, #3e8bff); }
+.det-banner--cancelado { border-left-color: var(--aten-perigo, #e5484d); }
+
+.det-badge { display: inline-block; padding: 2px 12px; border: 1px solid var(--det-borda, rgba(128, 128, 128, .4)); border-radius: 999px; font-size: .85em; }
+.det-badge--em-andamento { border-color: var(--aten-auto, #3e8bff); }
+.det-badge--finalizado { border-color: var(--aten-ok, #30a46c); }
+.det-badge--cancelado { border-color: var(--aten-perigo, #e5484d); }
+
+/* ---- ficha (dl) ---- */
+.det-ficha { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 20px; margin: 0; }
+.det-ficha-item { min-width: 0; }
+.det-ficha dt { font-size: .8em; opacity: .7; }
+.det-ficha dd { margin: 2px 0 0; overflow-wrap: anywhere; }
+
+/* ---- tabelas: rolagem horizontal própria ---- */
+.det-tabela-wrap { overflow-x: auto; margin-top: 8px; max-width: 100%; }
+.det-tabela { width: 100%; border-collapse: collapse; font-size: .9em; }
+.det-tabela th, .det-tabela td { padding: 6px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--det-borda, rgba(128, 128, 128, .25)); overflow-wrap: anywhere; }
+.det-tabela th { font-weight: 600; white-space: nowrap; }
+.det-multilinha td { white-space: pre-line; }
+.det-linha-alerta td { font-weight: 600; background: var(--det-alerta-fundo, rgba(229, 72, 77, .08)); }
+
+/* ---- sinais vitais ---- */
+.det-vitais { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
+.det-vital { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--det-borda, rgba(128, 128, 128, .3)); border-radius: 10px; }
+.det-vital--fora { border-color: var(--aten-perigo, #e5484d); }
+.det-vital-rotulo { font-size: .8em; opacity: .75; }
+.det-vital-valor { font-size: 1.15em; }
+.det-vital-aviso { font-size: .78em; color: var(--aten-perigo, #e5484d); }
+.det-recolhivel { margin-top: 12px; }
+.det-recolhivel > summary { cursor: pointer; font-weight: 600; }
+
+/* ---- IA / prescrição ---- */
+.det-item { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--det-borda, rgba(128, 128, 128, .25)); border-radius: 10px; background: var(--det-fundo, rgba(128, 128, 128, .06)); }
+.det-item[data-status="descartado"] { opacity: .75; }
+.det-item-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.det-item-titulo { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.det-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.det-chip { display: inline-block; padding: 2px 10px; border: 1px solid var(--det-borda, rgba(128, 128, 128, .4)); border-radius: 999px; font-size: .78em; }

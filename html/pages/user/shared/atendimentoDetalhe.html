@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-íon — Detalhes do atendimento</title>
+<script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
+<link rel="stylesheet" href="../../../../css/pages/comumCss.css">
+<!-- mesmos CSS da página de detalhe da consulta (.cons-panel, .cons-voltar, .main-header...) + o que é do detalhe do atendimento -->
+<link rel="stylesheet" href="../../../../css/pages/user/clinico/consulta.css">
+<link rel="stylesheet" href="../../../../css/pages/user/clinico/consultaDetalhe.css">
+<link rel="stylesheet" href="../../../../css/pages/user/shared/atendimentoDetalhe.css">
+<link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
+</head>
+<!-- data-requer: capacidade de userCachePermissoes.js (médico ou enfermeiro) -->
+<body data-requer="atenderClinicamente">
+<canvas id="c" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div id="sidebar-slot"></div>
+
+  <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+  <main class="main">
+
+    <a class="cons-voltar" id="det-voltar" href="./historico.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+        <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Histórico</span>
+    </a>
+
+    <!-- Erro ao carregar (atendimento inexistente, outra empresa, falha de rede) -->
+    <div id="det-erro" hidden></div>
+
+    <div id="det-conteudo" hidden>
+
+      <header class="main-header">
+        <div>
+          <p class="main-subtitle" id="det-titulo"></p>
+          <h1 id="det-nome"></h1>
+          <p class="main-subtitle" id="det-subtitulo"></p>
+        </div>
+        <div class="cons-det-chips">
+          <span id="det-status"></span>
+          <a class="btn-ghost cons-btn-link" id="det-consulta" href="#" hidden>Abrir consulta</a>
+        </div>
+      </header>
+
+      <!-- Tudo abaixo é desenhado por atendimentoDetalheRender.js a partir de GET /atendimentos/<uuid>/detalhe -->
+      <div id="det-corpo"></div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal de Configurações injetado dinamicamente por settingsLoader.js -->
+
+<script src="../../../../js/shared/particles.js"></script>
+<script type="module" src="../../../../js/pages/user/shared/atendimento/atendimentoDetalhe/atendimentoDetalhe.js"></script>
+</body>
+</html>
