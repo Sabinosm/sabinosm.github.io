@@ -1,5 +1,3 @@
-@import url("./homePage.css");
-
 /* ===== Resumo executivo (categoria E) — cards maiores, destacados ===== */
 .metrics--destaque {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
