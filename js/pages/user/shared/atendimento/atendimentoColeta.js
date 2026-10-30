@@ -17,8 +17,9 @@
 //      de input-protocolo (o validator atual segue recebendo jsonTexto);
 //   4. com input registrado, o card ganha "Executar protocolo"
 //      (POST .../protocolos/<uuid>/executar, sobre o input vigente —
-//      409 se o mesmo protocolo já rodou neste input; novo input
-//      permite nova execução). Resultado fica no sessionStorage.
+//      se o mesmo protocolo já rodou neste input o back devolve a execução
+//      existente (200), então "executar de novo" recupera o resultado; novo
+//      input permite nova execução). Resultado fica no sessionStorage.
 //
 // LIMITAÇÃO DE BACK (conhecida): não existe GET de coletas/input/execuções
 // de um atendimento. A lista do atendimento atual fica em sessionStorage
@@ -37,7 +38,6 @@ import {
   registrarColeta, registrarInputProtocolo, executarProtocolo,
   listarProtocolosDisponiveis, estruturaProtocolo, ApiError,
 } from "./atendimentoApi.js";
-import { buscarDetalheAtendimento } from "./atendimentoDetalhe/atendimentoDetalheApi.js";
 import { normalizarCampo } from "./atendimentoProtocolo/atendimentoProtocoloCampos.js";
 import { validarRespostas } from "./atendimentoProtocolo/atendimentoProtocoloValidacao.js";
 import { montarSnapshotCampos } from "./atendimentoProtocolo/atendimentoProtocoloInput.js";
@@ -422,7 +422,8 @@ function criarAreaExecucao(coleta, idx) {
       "Protocolo já executado para este input — registre um novo input para executar novamente."));
     const ver = el("button", "btn-ghost aten-exec-ver", "Ver resultado");
     ver.type = "button";
-    ver.addEventListener("click", () => carregarResultadoDoDetalhe(idx));
+    // O back é idempotente: executar de novo devolve a execução já existente deste protocolo.
+    ver.addEventListener("click", () => btn.click());
     area.appendChild(ver);
   }
   return area;
@@ -516,59 +517,16 @@ async function executar(card) {
       },
     };
     gravarColetas(lista);
-    exibirMensagem("Protocolo executado.", "sucesso");
+    exibirMensagem(resp.message ?? "Protocolo executado.", "sucesso");
     renderColetas();
   } catch (erro) {
-    // 409 = mesmo protocolo já executado neste input; o recarregamento
-    // do input (novo registro) é o caminho de nova execução.
+    // Repetir o protocolo no mesmo input NÃO é erro (o back devolve a execução existente);
+    // qualquer erro aqui é real (gate, validação, configuração): mostra a mensagem.
     const msg = erro instanceof ApiError ? erro.message : "Não foi possível executar o protocolo.";
-    if (erro instanceof ApiError && erro.status === 409) {
-      // já executado neste input (ex.: o resultado local se perdeu num refresh): busca no back
-      enviando = false;
-      if (await carregarResultadoDoDetalhe(idx)) return;
-    }
     if (errEl) errEl.textContent = msg;
     exibirMensagem(msg, "erro");
   } finally {
     enviando = false;
-  }
-}
-
-/** Recupera a última execução do atendimento em GET .../detalhe (fonte do back)
- *  e a guarda na coleta. Leitura auditada: só roda por pedido/409, não a cada render. */
-async function carregarResultadoDoDetalhe(idx) {
-  try {
-    const d = await buscarDetalheAtendimento(estadoAtendimento.atendimento.uuid);
-    const ex = (d?.protocolo?.execucoes ?? []).slice(-1)[0];
-    if (!ex) return false;
-    const lista = lerColetas();
-    if (!lista[idx]) return false;
-    lista[idx] = {
-      ...lista[idx],
-      executado: true,
-      resultado: {
-        nome_protocolo: ex.nome ?? null,
-        // mesmo formato que formatarResultado já entende
-        dados: {
-          status: ex.status ?? null,
-          resultado_calculado_json: {
-            classificacao: ex.classificacao ?? null,
-            trilha_explicativa: (ex.trilha ?? []).map((t) => ({
-              ordem: t.ordem, rotulo: t.rotulo,
-              valor_observado: t.valor_observado, peso_ou_resultado: t.resultado,
-            })),
-          },
-          dados_ausentes_json: ex.dados_ausentes ?? [],
-        },
-        ausentes: ex.dados_ausentes ?? null,
-      },
-    };
-    gravarColetas(lista);
-    renderColetas();
-    return true;
-  } catch (e) {
-    console.warn("detalhe do atendimento indisponível:", e?.message);
-    return false;
   }
 }
 

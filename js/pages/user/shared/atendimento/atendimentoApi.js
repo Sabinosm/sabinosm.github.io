@@ -182,6 +182,7 @@ export const listarProtocolosDisponiveis = (uuidAt, uuidPac) =>
 export const estruturaProtocolo = (uuidAt, uuidPac, uuidProt) =>
   get(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/protocolos/${enc(uuidProt)}/estrutura`);
 
-/** POST .../protocolos/<uuid>/executar — sobre o input vigente (409 se repetido no mesmo input). */
+/** POST .../protocolos/<uuid>/executar — sobre o input vigente. 201 = execução nova; 200 = o protocolo
+ *  já havia sido executado neste input e `data` é a execução existente (idempotente). */
 export const executarProtocolo = (uuidAt, uuidPac, uuidProt) =>
   post(`/${enc(uuidAt)}/pacientes/${enc(uuidPac)}/protocolos/${enc(uuidProt)}/executar`);
