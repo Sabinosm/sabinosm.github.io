@@ -1,0 +1,46 @@
+/* ============================================
+   Listas (.consult-card): tile com ícone + base comum
+   O formato de cada módulo fica no arquivo da página (pasta paginas/)
+   ============================================ */
+
+[data-modulo] .consult-card {
+  min-height: 62px;
+  padding-left: 68px;
+}
+[data-modulo] .consult-card::before,
+[data-modulo] .consult-card::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  width: 38px;
+  height: 38px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+[data-modulo] .consult-card::before {
+  border-radius: var(--tile-r, 10px);
+  clip-path: var(--tile-clip, none);
+  background: var(--accent-tint);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+[data-modulo] .consult-card::after {
+  background: var(--accent);
+  -webkit-mask: var(--glyph) center / 19px 19px no-repeat;
+          mask: var(--glyph) center / 19px 19px no-repeat;
+  transition: background 0.15s ease;
+}
+[data-modulo] .consult-card:hover::before { background: var(--accent); }
+[data-modulo] .consult-card:hover::after  { background: var(--bg); }
+
+/* ação ("Gerenciar") vai para o fim da linha: nome primeiro, ação por último */
+[data-modulo] .consult-card > :where(button, a):not(.consult-status) { order: 4; }
+
+/* meta em fonte mono nas listas "de registro" (horários, protocolos, logs) */
+[data-modulo="consultas"] .consult-meta,
+[data-modulo="exames"] .consult-meta,
+[data-modulo="auditoria"] .consult-meta {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.02em;
+}

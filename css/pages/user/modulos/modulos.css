@@ -1,0 +1,82 @@
+/* ============================================
+   B-íon — Camada de MÓDULO (tema moderno) · v2
+   Carregue DEPOIS de todos os outros CSS da página (último <link>).
+
+   Ideia: cor = lugar, não decoração.
+   Cada área do app ganha um matiz, um ícone, um padrão de fundo e um
+   formato de lista próprios. Tudo que já usa --accent (botões, foco,
+   hover, item ativo da sidebar) passa a usar o matiz do módulo sem
+   mudar uma linha dos CSS existentes.
+
+   Como ligar (um atributo por página):
+     <body data-modulo="pacientes">
+
+   Módulos (matiz · o que muda):
+     gestao        índigo      bento
+     pacientes     menta       avatares circulares, anéis no fundo
+     consultas     ciano       agenda: barra lateral, linhas de hora
+     atendimento   azul-céu    malha de monitor
+     exames        violeta     laudo: tracejado, hexágono, milimetrado
+     medicamentos  rosa        cápsula, listras inclinadas
+     profissionais azul        crachá, pontilhado
+     empresa       ardósia     ficha institucional, planta baixa
+     catalogos     areia       livro: lombada nos cartões
+     estatisticas  turquesa    barras; cada aba com a cor da sua área
+     auditoria     aço         linha do tempo, colunas de log
+
+   Páginas de detalhe usam o módulo da página-mãe (ficha do paciente =
+   pacientes; detalhe da consulta = consultas; prescrição = medicamentos).
+   Um bloco solto pode ter cor própria com data-mod="..." (ex.: card do
+   bento, lista de histórico dentro da ficha).
+
+
+   AGREGADOR: este arquivo NÃO contém regras, só importa as partes.
+   (mesmo padrão do preferencias.css)
+
+   Estrutura:
+     modulos/tokens.css ........ brilho/saturação dos acentos, cor de marca
+     modulos/acento.css ........ deriva --accent & cia. do matiz do módulo
+     modulos/fundo.css ......... brilho + padrão de fundo
+     modulos/cabecalho.css ..... tile do título e títulos de seção
+     modulos/botoes.css ........ botões sólidos
+     modulos/listas.css ........ base das listas (.consult-card)
+     modulos/paineis.css ....... painéis e gráficos
+     modulos/paginas/ ........ UM ARQUIVO POR PÁGINA: matiz, ícone, fundo e formato
+     modulos/sidebar.css ....... sidebar
+     modulos/modais.css ........ modais na cor da marca
+     modulos/responsivo.css .... celular (por último)
+
+   Para criar um módulo novo:
+     1) copie modulos/paginas/historico.css para paginas/meu-modulo.css e ajuste
+        o nome, o matiz (--hue), o ícone (--g-...) e o formato
+     2) adicione o @import abaixo, na seção "Páginas"
+     3) no HTML: <body data-modulo="meu-modulo">
+   ============================================ */
+
+/* --- base compartilhada --- */
+@import url("modulos/tokens.css");
+@import url("modulos/acento.css");
+@import url("modulos/fundo.css");
+@import url("modulos/cabecalho.css");
+@import url("modulos/botoes.css");
+@import url("modulos/listas.css");
+@import url("modulos/paineis.css");
+
+/* --- páginas (um arquivo por módulo) --- */
+@import url("modulos/paginas/gestao.css");
+@import url("modulos/paginas/pacientes.css");
+@import url("modulos/paginas/consultas.css");
+@import url("modulos/paginas/atendimento.css");
+@import url("modulos/paginas/exames.css");
+@import url("modulos/paginas/medicamentos.css");
+@import url("modulos/paginas/profissionais.css");
+@import url("modulos/paginas/empresa.css");
+@import url("modulos/paginas/catalogos.css");
+@import url("modulos/paginas/estatisticas.css");
+@import url("modulos/paginas/auditoria.css");
+@import url("modulos/paginas/historico.css");
+
+/* --- sidebar, modais e celular (por último) --- */
+@import url("modulos/sidebar.css");
+@import url("modulos/modais.css");
+@import url("modulos/responsivo.css");

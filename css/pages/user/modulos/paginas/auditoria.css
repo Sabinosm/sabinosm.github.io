@@ -1,0 +1,46 @@
+/* ============================================
+   Auditoria.
+   ============================================ */
+
+:root {
+--g-auditoria: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='8' y='2' width='8' height='4' rx='1'/><path d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/><path d='m9 14 2 2 4-4'/></svg>");
+}
+
+/* auditoria: aço (quase sem cor). Sóbrio: linha do tempo, colunas de log. */
+[data-modulo="auditoria"], [data-mod="auditoria"], .nav-item[data-nav="auditoria"] {
+  --hue: 250;
+  --mod-c: 0.045; --mod-solid-c: 0.06;
+  --glyph: var(--g-auditoria);
+  --tile-r: 4px;
+  --pat: repeating-linear-gradient(90deg, var(--accent-faint) 0 1px, transparent 1px 40px);
+}
+
+/* ----- auditoria · LINHA DO TEMPO: pontos ligados por um fio ----- */
+[data-modulo="auditoria"] .card-list { position: relative; gap: 0; }
+[data-modulo="auditoria"] .card-list::before {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: var(--border);
+}
+[data-modulo="auditoria"] .consult-card {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  min-height: 56px;
+  padding-left: 52px;
+}
+[data-modulo="auditoria"] .consult-card:hover { transform: none; background: var(--accent-tint); }
+[data-modulo="auditoria"] .consult-card::before {
+  left: 16px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--bg);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+[data-modulo="auditoria"] .consult-card::after { display: none; }
+[data-modulo="auditoria"] .consult-card:hover::before { background: var(--accent); }

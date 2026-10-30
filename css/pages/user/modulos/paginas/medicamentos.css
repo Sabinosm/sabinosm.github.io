@@ -1,0 +1,31 @@
+/* ============================================
+   Medicamentos: lista, detalhe e prescrição.
+   ============================================ */
+
+:root {
+--g-medicamentos: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z'/><path d='m8.5 8.5 7 7'/></svg>");
+}
+
+/* medicamentos: rosa. Cartela: listras inclinadas, tile em cápsula. */
+[data-modulo="medicamentos"], [data-mod="medicamentos"], .nav-item[data-nav="medicamentos"] {
+  --hue: 350;
+  --mod-c: var(--mod-c-base); --mod-solid-c: var(--mod-solid-c-base);
+  --glyph: var(--g-medicamentos);
+  --pat: repeating-linear-gradient(-35deg, var(--accent-faint) 0 2px, transparent 2px 20px);
+}
+
+/* ----- medicamentos · CÁPSULA: tile bicolor inclinado ----- */
+[data-modulo="medicamentos"] .consult-card { padding-left: 78px; }
+[data-modulo="medicamentos"] .consult-card::before {
+  left: 14px;
+  width: 46px;
+  height: 22px;
+  border-radius: 999px;
+  transform: translateY(-50%) rotate(-35deg);
+  background: linear-gradient(90deg, var(--accent) 50%, var(--accent-tint) 50%);
+}
+[data-modulo="medicamentos"] .consult-card::after { display: none; }
+[data-modulo="medicamentos"] .consult-card:hover::before {
+  background: linear-gradient(90deg, var(--accent) 50%, var(--accent-tint) 50%);
+  transform: translateY(-50%) rotate(-5deg);
+}

@@ -9,10 +9,11 @@
 <!-- consulta.css traz toolbar, filtros, .consult-card, paginação e estado vazio; historico.css só acrescenta o que é do histórico -->
 <link rel="stylesheet" href="../../../../css/pages/user/clinico/consulta.css">
 <link rel="stylesheet" href="../../../../css/pages/user/shared/historico.css">
+<link rel="stylesheet" href="../../../../css/pages/user/modulos.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
 </head>
 <!-- data-requer: capacidade de userCachePermissoes.js (médico ou enfermeiro) -->
-<body data-requer="atenderClinicamente">
+<body data-modulo="historico" data-requer="atenderClinicamente">
 <canvas id="c" aria-hidden="true"></canvas>
 <div class="app">
 

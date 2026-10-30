@@ -1,0 +1,16 @@
+/* ============================================
+   Celular (carregar por último)
+   ============================================ */
+
+@media (max-width: 760px) {
+  /* nome em linha própria; status e ação embaixo */
+  [data-modulo] .consult-card { flex-wrap: wrap; row-gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+  [data-modulo] .consult-main { flex: 1 1 100%; }
+  [data-modulo] .consult-status { order: 2; margin-left: 0; }
+  [data-modulo] .consult-card > :where(button, a):not(.consult-status) { order: 3; margin-left: auto; }
+  [data-modulo] .app .main::before { height: 240px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-tab::before { transition: none; }
+}

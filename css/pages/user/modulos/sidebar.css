@@ -1,0 +1,8 @@
+/* ============================================
+   Sidebar
+   Os ícones em repouso ficam todos da mesma cor (a do tema), de propósito:
+   a cor do módulo aparece só no item ativo.
+
+   Para deixar até o item ativo na cor do tema, descomente:
+   .sidebar .nav-item[data-nav] { --accent: var(--brand); }
+   ============================================ */

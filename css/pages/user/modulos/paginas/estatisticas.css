@@ -1,0 +1,48 @@
+/* ============================================
+   Estatísticas.
+   ============================================ */
+
+:root {
+--g-estatisticas: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 3v18h18'/><path d='M18 17V9'/><path d='M13 17V5'/><path d='M8 17v-3'/></svg>");
+}
+
+/* estatisticas: turquesa. Dados: barras subindo do rodapé do fundo. */
+[data-modulo="estatisticas"], [data-mod="estatisticas"], .nav-item[data-nav="estatisticas"] {
+  --hue: 180;
+  --mod-c: var(--mod-c-base); --mod-solid-c: var(--mod-solid-c-base);
+  --glyph: var(--g-estatisticas);
+  --tile-r: 8px;
+  --pat: repeating-linear-gradient(90deg, var(--accent-faint) 0 4px, transparent 4px 16px);
+  --pat-mask: linear-gradient(to top, #000, transparent);
+}
+
+/* Estatísticas: cada aba (e o painel dela) leva a cor da área que mede */
+.stat-tab[data-categoria="atendimentos"],  #painel-atendimentos  { --hue: 205; }
+.stat-tab[data-categoria="ia"],            #painel-ia            { --hue: 285; }
+.stat-tab[data-categoria="epidemiologico"],#painel-epidemiologico{ --hue: 180; }
+.stat-tab[data-categoria="medicamentos"],  #painel-medicamentos  { --hue: 350; }
+.stat-tab[data-categoria="pacientes"],     #painel-pacientes     { --hue: 150; }
+
+/* ----- estatísticas · cada aba e cada card com a cor da sua área ----- */
+.stat-tab::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+.stat-tab:hover::before,
+.stat-tab--active::before { opacity: 1; }
+/* a barra de abas é filho direto do .main: sem isto ela não respeita a largura da coluna (1040px) e, no celular, rola a página inteira */
+[data-modulo="estatisticas"] .stat-tabs { width: 100%; max-width: 1040px; }
+[data-modulo="estatisticas"] .stat-panel .metric-card,
+[data-modulo="estatisticas"] .metrics--destaque .metric-card {
+  box-shadow: inset 0 2px 0 var(--accent), inset 0 1px 0 var(--highlight-top);
+}
+[data-modulo="estatisticas"] .chart-card {
+  box-shadow: inset 0 2px 0 var(--accent);
+}

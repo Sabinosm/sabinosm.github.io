@@ -1,0 +1,76 @@
+/* ============================================
+   Cabeçalho da página (tile com o ícone do módulo) e títulos de seção/bloco/painel
+   ============================================ */
+
+[data-modulo] .main-header h1 {
+  position: relative;
+  padding-left: 52px;
+  line-height: 36px;
+  min-height: 36px;
+}
+[data-modulo] .main-header h1::before,
+[data-modulo] .main-header h1::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 36px;
+  height: 36px;
+}
+[data-modulo] .main-header h1::before {
+  border-radius: var(--tile-r, 10px);
+  clip-path: var(--tile-clip, none);
+  background: var(--accent-tint);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+[data-modulo] .main-header h1::after {
+  background: var(--accent);
+  -webkit-mask: var(--glyph) center / 20px 20px no-repeat;
+          mask: var(--glyph) center / 20px 20px no-repeat;
+}
+[data-modulo] .main-subtitle { padding-left: 52px; }
+
+
+[data-modulo] .section-title {
+  width: 100%;
+  max-width: 1040px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+[data-modulo] .section-title::before {
+  content: "";
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+[data-modulo] .section-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ficha do paciente (.block-title já tem o fio à direita) */
+[data-modulo] .block-title::before {
+  content: "";
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/* painéis de consulta/atendimento/prescrição */
+[data-modulo] .cons-panel-titulo::before,
+[data-modulo] .chart-card-titulo::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  margin-right: 10px;
+  border-radius: 2px;
+  vertical-align: -2px;
+  background: var(--accent);
+}

@@ -1,0 +1,41 @@
+/* ============================================
+   Botões: fundo sólido do módulo (texto branco passa de 4.5:1)
+   ============================================ */
+
+[data-modulo] :is(
+  .btn-primary,
+  .filter-count,
+  .page-btn--active,
+  .page-btn--active:hover,
+  .segmented-item--active,
+  .segmented-item--active:hover,
+  .aten-ip-favoritos .aten-ip-fav--ativo,
+  .aten-ip-favoritos .aten-ip-fav--ativo:hover
+) {
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  color: #fff;
+}
+[data-modulo] .btn-primary:hover {
+  background: var(--accent-solid-hover);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #fff 18%, transparent),
+    0 6px 16px var(--accent-ring);
+}
+[data-modulo] .btn-secondary:hover {
+  background: var(--accent-solid);
+  border-color: var(--accent-solid);
+  color: #fff;
+}
+[data-modulo] .patient-avatar {
+  background: linear-gradient(145deg, var(--accent-solid), var(--accent-solid-hover));
+}
+
+/* a marca do produto não muda de cor entre módulos */
+.sidebar .nav-avatar {
+  background: var(--brand);
+  box-shadow: 0 0 0 2px var(--sidebar-bg), 0 0 0 3.5px var(--brand);
+}
+.sidebar .sidebar-logo-mark {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--brand) 30%, transparent));
+}

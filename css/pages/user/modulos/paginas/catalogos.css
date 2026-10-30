@@ -1,0 +1,33 @@
+/* ============================================
+   Catálogo de protocolos: lista e detalhe.
+   ============================================ */
+
+:root {
+--g-catalogos: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/><path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/></svg>");
+}
+
+/* catalogos: areia (pouca saturação). Livro: lombada nos cartões, páginas no fundo. */
+[data-modulo="catalogos"], [data-mod="catalogos"], .nav-item[data-nav="catalogos"] {
+  --hue: 70;
+  --mod-c: 0.07; --mod-solid-c: 0.10;
+  --glyph: var(--g-catalogos);
+  --tile-r: 4px;
+  --pat: repeating-linear-gradient(90deg, var(--accent-faint) 0 1px, transparent 1px 5px, var(--accent-faint) 5px 6px, transparent 6px 120px);
+}
+
+/* ----- catálogos · LIVRO: lombada à esquerda, sigla em mono ----- */
+[data-modulo="catalogos"] .catalog-card {
+  border-left: 6px solid var(--accent);
+  border-radius: 3px var(--radius-md) var(--radius-md) 3px;
+  padding-left: 18px;
+  background: linear-gradient(90deg, var(--accent-tint), transparent 30%), var(--bg-elevated);
+  box-shadow:
+    inset 8px 0 8px -8px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 var(--highlight-top);
+}
+[data-modulo="catalogos"] .catalog-badge--sigla {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--accent);
+  background: var(--accent-tint);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}

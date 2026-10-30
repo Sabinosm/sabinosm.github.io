@@ -1,0 +1,30 @@
+/* ============================================
+   Exames: lista e detalhe.
+   ============================================ */
+
+:root {
+--g-exames: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M10 2v7.5a2 2 0 0 1-.2.9L4.7 20.5a1 1 0 0 0 .9 1.5h12.8a1 1 0 0 0 .9-1.5l-5.1-10.1a2 2 0 0 1-.2-.9V2'/><path d='M8.5 2h7M7 16h10'/></svg>");
+}
+
+/* exames: violeta. Laudo: papel milimetrado, tile hexagonal. */
+[data-modulo="exames"], [data-mod="exames"], .nav-item[data-nav="exames"] {
+  --hue: 315;
+  --mod-c: var(--mod-c-base); --mod-solid-c: var(--mod-solid-c-base);
+  --glyph: var(--g-exames);
+  --tile-r: 0;
+  --tile-clip: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  --pat: linear-gradient(var(--accent-faint) 1px, transparent 1px), linear-gradient(90deg, var(--accent-faint) 1px, transparent 1px);
+  --pat-size: 20px 20px;
+}
+
+/* ----- exames · LAUDO: linhas planas tracejadas, tile hexagonal ----- */
+[data-modulo="exames"] .card-list { gap: 0; border-top: 1px solid var(--border); }
+[data-modulo="exames"] .consult-card {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--text) 18%, transparent);
+  border-radius: 0;
+  box-shadow: none;
+}
+[data-modulo="exames"] .consult-card:hover { transform: none; background: var(--accent-tint); }
+[data-modulo="exames"] .consult-card::before { box-shadow: none; }

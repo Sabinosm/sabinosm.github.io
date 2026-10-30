@@ -1,0 +1,42 @@
+/* ============================================
+   Pacientes: lista, ficha (pacientesDetalhe) e cadastro (pacientesCriacao).
+   ============================================ */
+
+:root {
+--g-pacientes: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='8' r='5'/><path d='M20 21a8 8 0 0 0-16 0'/></svg>");
+}
+
+/* pacientes: menta. Avatares circulares, anéis concêntricos no fundo. */
+[data-modulo="pacientes"], [data-mod="pacientes"], .nav-item[data-nav="pacientes"] {
+  --hue: 150;
+  --mod-c: var(--mod-c-base); --mod-solid-c: var(--mod-solid-c-base);
+  --glyph: var(--g-pacientes);
+  --tile-r: 50%;
+  --glow-pos: 18% 0%;
+  --pat: repeating-radial-gradient(circle at 0 0, var(--accent-faint) 0 1px, transparent 1px 28px);
+}
+
+/* ----- pacientes · AVATAR: tile circular, cartão mais redondo ----- */
+[data-modulo="pacientes"] .consult-card { border-radius: var(--radius-md); min-height: 66px; }
+[data-modulo="pacientes"] .consult-card::before,
+[data-modulo="pacientes"] .consult-card::after { width: 42px; height: 42px; left: 13px; }
+[data-modulo="pacientes"] .consult-card::after { -webkit-mask-size: 21px; mask-size: 21px; }
+[data-modulo="pacientes"] .consult-patient { font-size: calc(16px * var(--font-scale, 1)); }
+
+/* ----- ficha do paciente: histórico de consultas com a cor das consultas ----- */
+/* (no HTML: <div class="card-list" id="lista-historico-consultas" data-mod="consultas">) */
+
+/* ----- cadastro de paciente: seções numeradas (é uma sequência de verdade) ----- */
+[data-pagina="criacao"] .main { counter-reset: secao; }
+[data-pagina="criacao"] .creation-section-title { counter-increment: secao; }
+[data-pagina="criacao"] .creation-section-title::before {
+  content: counter(secao, decimal-leading-zero);
+  display: inline-block;
+  margin-right: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: var(--accent-tint);
+}

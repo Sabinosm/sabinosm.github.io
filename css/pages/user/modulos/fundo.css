@@ -1,0 +1,24 @@
+/* ============================================
+   Fundo: brilho do módulo + padrão que some em direção ao conteúdo
+   ============================================ */
+
+[data-modulo] .app .main {
+  position: relative;
+  z-index: 0;
+  background-image:
+    radial-gradient(70% 340px at var(--glow-pos, 50% 0%),
+      oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.10), transparent 75%);
+  background-repeat: no-repeat;
+}
+[data-modulo] .app .main::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 0 auto 0;
+  height: 360px;
+  pointer-events: none;
+  background-image: var(--pat, none);
+  background-size: var(--pat-size, auto);
+  -webkit-mask-image: var(--pat-mask, linear-gradient(to bottom, #000, transparent));
+          mask-image: var(--pat-mask, linear-gradient(to bottom, #000, transparent));
+}

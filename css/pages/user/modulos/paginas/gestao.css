@@ -1,0 +1,46 @@
+/* ============================================
+   Gerenciamento / início (bento). Vale para homeGestao, homeClinica e homeGestaoClinica.
+   ============================================ */
+
+:root {
+--g-gestao: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='3' width='7' height='9' rx='1'/><rect x='14' y='3' width='7' height='5' rx='1'/><rect x='14' y='12' width='7' height='9' rx='1'/><rect x='3' y='16' width='7' height='5' rx='1'/></svg>");
+}
+
+/* gestao: índigo. Início/Gerenciamento (bento). */
+[data-modulo="gestao"], [data-mod="gestao"], .nav-item[data-nav="gerenciamento"] {
+  --hue: 285;
+  --mod-c: var(--mod-c-base); --mod-solid-c: var(--mod-solid-c-base);
+  --glyph: var(--g-gestao);
+}
+
+.metric-card[data-mod] .metric-icon,
+.metric-card--alert .metric-icon {
+  box-sizing: content-box;
+  width: 20px;
+  height: 20px;
+  padding: 8px;
+  border-radius: 10px;
+  color: var(--accent);
+  background: var(--accent-tint);
+  box-shadow: inset 0 0 0 1px var(--accent-ring);
+}
+.metric-card--hero[data-mod] .metric-icon {
+  width: 24px;
+  height: 24px;
+  padding: 10px;
+  border-radius: 12px;
+  opacity: 1;
+}
+.metric-card[data-mod]:hover .metric-icon { transform: none; }
+.metric-card--wide[data-mod] .metric-icon { margin-bottom: 0; }
+
+/* alerta continua semântico (âmbar), nunca cor de módulo */
+.metric-card--alert {
+  --status-fg: var(--palette-status-amber);
+  --status-bg: var(--palette-status-amber-bg);
+}
+.metric-card--alert .metric-icon {
+  color: var(--status-fg);
+  background: var(--status-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-fg) 30%, transparent);
+}

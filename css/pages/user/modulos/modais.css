@@ -1,0 +1,19 @@
+/* ============================================
+   Modais (configurações, senha, 2FA, confirmação): ficam na cor da marca
+   ============================================ */
+
+.settings-overlay,
+.totp-modal-overlay,
+.senha-modal-overlay,
+.stepup-overlay {
+  --accent:        var(--brand);
+  --accent-hover:  color-mix(in srgb, var(--brand) 82%, #000);
+  --accent-solid:  var(--accent-hover);
+  --accent-solid-hover: color-mix(in srgb, var(--brand) 70%, #000);
+  --accent-tint:   color-mix(in srgb, var(--brand) 14%, transparent);
+  --accent-ring:   color-mix(in srgb, var(--brand) 30%, transparent);
+  --focus-ring:    color-mix(in srgb, var(--brand) 35%, transparent);
+  --highlight-top: color-mix(in srgb, var(--brand) 12%, transparent);
+  --cta-bg:        var(--accent-hover);
+  --cta-ink:       color-mix(in srgb, var(--brand) 68%, var(--text-strong));
+}

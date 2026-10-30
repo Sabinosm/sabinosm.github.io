@@ -1,0 +1,23 @@
+/* ============================================
+   Família do acento, derivada do matiz de cada módulo
+   Sobrescreve --accent, --accent-hover, --accent-tint, --focus-ring etc.
+   para tudo que está dentro de [data-modulo] ou [data-mod]
+   ============================================ */
+
+[data-modulo],
+[data-mod],
+.nav-item[data-nav],
+.stat-tab,
+.stat-panel {
+  --accent:        oklch(var(--mod-l) var(--mod-c) var(--hue));
+  --accent-hover:  oklch(calc(var(--mod-l) - 0.06) var(--mod-c) var(--hue));
+  --accent-tint:   oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.14);
+  --accent-faint:  oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.075);
+  --accent-ring:   oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.30);
+  --accent-solid:  oklch(var(--mod-solid-l) var(--mod-solid-c) var(--hue));
+  --accent-solid-hover: oklch(calc(var(--mod-solid-l) - 0.05) var(--mod-solid-c) var(--hue));
+  --focus-ring:    oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.35);
+  --highlight-top: oklch(var(--mod-l) var(--mod-c) var(--hue) / 0.14);
+  --cta-bg:  var(--accent-solid);
+  --cta-ink: var(--accent);
+}

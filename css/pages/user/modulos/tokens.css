@@ -1,0 +1,28 @@
+/* ============================================
+   Tokens: brilho/saturação dos acentos e a cor de marca do tema
+   (os ícones de cada módulo ficam no arquivo da própria página)
+   ============================================ */
+
+:root {
+  /* escuro */
+  --mod-l: 0.72;          /* brilho do acento (texto, ícone, borda) */
+  --mod-c-base: 0.13;     /* saturação padrão dos módulos "vivos" */
+  --mod-solid-l: 0.50;    /* brilho de fundos que levam texto branco */
+  --mod-solid-c-base: 0.15;
+
+}
+
+/* a cor de marca do tema, guardada no elemento do tema (html), antes de o
+   módulo (body) sobrescrever --accent */
+:root,
+[data-theme] {
+  --brand: var(--accent);
+}
+
+/* temas claros: acento mais escuro para ler sobre branco */
+[data-theme="light"],
+[data-theme$="-light"] {
+  --mod-l: 0.52;
+  --mod-c-base: 0.15;
+  --mod-solid-l: 0.50;
+}

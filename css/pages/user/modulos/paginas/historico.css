@@ -1,0 +1,49 @@
+/* ============================================
+   Histórico: consultas com a linha do tempo dos atendimentos (historico.html).
+   ============================================ */
+
+:root {
+--g-historico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8'/><path d='M3 3v5h5'/><path d='M12 7v5l4 2'/></svg>");
+}
+
+/* historico: lavanda. Página de registro: arcos de relógio no fundo, linha do tempo por dentro. */
+[data-modulo="historico"], [data-mod="historico"], .nav-item[data-nav="historico"] {
+  --hue: 300;
+  --mod-c: 0.10; --mod-solid-c: 0.12;
+  --glyph: var(--g-historico);
+  --tile-r: 10px;
+  --pat: repeating-radial-gradient(circle at 100% 0, var(--accent-faint) 0 1px, transparent 1px 24px);
+}
+
+/* ----- historico · CARTÃO: o ícone fica no topo (o cartão cresce com a linha do tempo) ----- */
+[data-modulo="historico"] .hist-card { padding-top: 18px; padding-bottom: 18px; align-items: flex-start; }
+[data-modulo="historico"] .hist-card::before,
+[data-modulo="historico"] .hist-card::after { top: 18px; transform: none; }
+[data-modulo="historico"] .hist-card .consult-meta,
+[data-modulo="historico"] .hist-meta { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.02em; }
+
+/* ----- historico · LINHA DO TEMPO: fio e pontos na cor do módulo ----- */
+[data-modulo="historico"] .hist-timeline { border-left-color: var(--accent-ring); }
+[data-modulo="historico"] .hist-atend {
+  background: var(--accent-faint);
+  border-color: var(--accent-ring);
+  border-left: 3px solid var(--accent);
+}
+[data-modulo="historico"] .hist-atend::before {
+  background: var(--bg);
+  box-shadow: 0 0 0 2px var(--accent);
+  opacity: 1;
+}
+[data-modulo="historico"] .hist-atend[data-status="em-andamento"]::before { background: var(--accent); }
+
+/* selos: preenchimento leve na cor do status (a borda já vem do CSS da página) */
+[data-modulo="historico"] .hist-badge { background: var(--accent-faint); }
+[data-modulo="historico"] .hist-badge--em-andamento { background: color-mix(in srgb, var(--aten-auto, #3e8bff) 14%, transparent); }
+[data-modulo="historico"] .hist-badge--finalizado   { background: color-mix(in srgb, var(--aten-ok, #30a46c) 14%, transparent); }
+[data-modulo="historico"] .hist-badge--cancelado    { background: color-mix(in srgb, var(--aten-perigo, #e5484d) 14%, transparent); }
+
+/* "Carregar mais" e ações dentro do cartão */
+[data-modulo="historico"] .hist-acoes--card { border-top-color: var(--accent-ring); }
+
+/* o cartão tem linhas próprias (ações em linha cheia): mantém a ordem do HTML */
+[data-modulo="historico"] .hist-card > :where(button, a):not(.consult-status) { order: 0; }
