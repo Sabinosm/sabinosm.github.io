@@ -9,12 +9,16 @@
 // - sítio de medição só aparece para os tipos que o têm (schema.py);
 // - "últimos registrados" vem de /binario/novo-atendimento (dados do
 //   paciente) quando existir -- leitura pura, sem rota própria.
+// - "registrados neste atendimento" vem do GET .../detalhe (persiste no
+//   refresh). É leitura auditada: busca 1x por atendimento e de novo só após
+//   registrar sinais; se falhar, cai no sessionStorage com o que foi enviado.
 
 import { registrarSinaisVitais, ApiError } from "./atendimentoApi.js";
+import { buscarDetalheAtendimento } from "./atendimentoDetalhe/atendimentoDetalheApi.js";
 import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO,
   UNIDADE_POR_TIPO, TIPO_PARAMETRO_LABELS, SITIOS_POR_TIPO, SITIO_LABELS,
-  dadosPaciente, podeEscrever, el,
+  dadosPaciente, podeEscrever, el, formatarDataHora,
 } from "./atendimentoHelpers.js";
 import { validarSinaisVitais } from "../../../../sharedConfig/validacoes/atendimentoValidation.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
@@ -33,6 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
 async function carregar() {
   if (!estadoAtendimento.atendimento) return;
   renderAnteriores();
+  renderRegistrados();      // imediato (cache/fallback)
+  atualizarRegistrados();   // busca no detalhe só se ainda não buscou
 
   const corpo = $("aten-sv-linhas");
   corpo.innerHTML = "";
@@ -61,6 +67,83 @@ function renderAnteriores() {
     const tipo = TIPO_PARAMETRO_LABELS[s.tipo_parametro] ?? s.tipo_parametro;
     ul.appendChild(el("li", null, `${tipo}: ${s.valor_numerico} ${s.unidade ?? ""}`.trim()));
   });
+  caixa.appendChild(ul);
+}
+
+
+// ============================================
+// Sinais registrados NESTE atendimento
+// ============================================
+// Fonte principal: GET .../detalhe (persiste no refresh; leitura auditada).
+// Fallback (detalhe indisponível/sem permissão): o que este navegador enviou
+// com sucesso, guardado no sessionStorage por atendimento.
+const chave = () => `aten:sinais:${estadoAtendimento.atendimento.uuid}`;
+
+function lerRegistrados() {
+  try {
+    return JSON.parse(sessionStorage.getItem(chave()) ?? "[]");
+  } catch { return []; }
+}
+
+function gravarRegistrados(lista) {
+  try {
+    sessionStorage.setItem(chave(), JSON.stringify(lista));
+  } catch (e) { console.warn("aten: falha ao gravar sinais no sessionStorage", e); }
+}
+
+let sinaisDetalhe = null;   // sinais vindos do /detalhe
+let uuidDetalhe = null;     // atendimento a que o cache se refere
+let buscando = null;        // promessa em voo (carregar dispara várias vezes na abertura)
+
+async function atualizarRegistrados(forcar = false) {
+  const uuid = estadoAtendimento.atendimento?.uuid;
+  if (!uuid) return;
+  if (buscando) await buscando;   // não sobrepor uma busca em voo
+  if (!forcar && uuidDetalhe === uuid && sinaisDetalhe) return;
+  buscando = (async () => {
+    try {
+      const d = await buscarDetalheAtendimento(uuid);
+      sinaisDetalhe = d?.sinais ?? [];
+      uuidDetalhe = uuid;
+    } catch (e) {
+      console.warn("aten: detalhe indisponível, usando registro local dos sinais:", e?.message);
+    } finally {
+      buscando = null;
+    }
+    renderRegistrados();
+  })();
+  return buscando;
+}
+
+function itensRegistrados() {
+  const uuid = estadoAtendimento.atendimento?.uuid;
+  if (sinaisDetalhe && uuidDetalhe === uuid) {
+    return sinaisDetalhe.map((v) => ({
+      texto: [`${v.rotulo}: ${v.valor} ${v.unidade ?? ""}`.trim(), v.sitio, v.quando_texto,
+              v.fora ? "fora do limite esperado" : null].filter(Boolean).join(" · "),
+    }));
+  }
+  // fallback: o que este navegador enviou (sessionStorage), mais recente primeiro
+  return [...lerRegistrados()].reverse().map((s) => {
+    const tipo = TIPO_PARAMETRO_LABELS[s.tipo_parametro] ?? s.tipo_parametro;
+    const partes = [`${tipo}: ${s.valor_numerico} ${s.unidade ?? ""}`.trim()];
+    if (s.sitio_medicao) partes.push(SITIO_LABELS[s.sitio_medicao] ?? s.sitio_medicao);
+    if (s.flag_escala_dpoc) partes.push("DPOC");
+    if (s.quando) partes.push(formatarDataHora(s.quando));
+    return { texto: partes.join(" · ") };
+  });
+}
+
+function renderRegistrados() {
+  const caixa = $("aten-sv-registrados");
+  if (!caixa || !estadoAtendimento.atendimento) return;
+  const lista = itensRegistrados();
+  caixa.innerHTML = "";
+  if (lista.length === 0) { caixa.hidden = true; return; }
+  caixa.hidden = false;
+  caixa.appendChild(el("h3", "cons-panel-titulo", `Registrados neste atendimento (${lista.length})`));
+  const ul = el("ul", "aten-lista-ref");
+  lista.forEach((i) => ul.appendChild(el("li", null, i.texto)));
   caixa.appendChild(ul);
 }
 
@@ -176,7 +259,13 @@ async function salvar() {
       estadoAtendimento.consulta.paciente_uuid,
       validacao.dados,
     );
-    exibirMensagem("Sinais vitais registrados.", "sucesso");
+    const agora = new Date().toISOString();
+    gravarRegistrados([
+      ...lerRegistrados(),
+      ...validacao.dados.sinais.map((x) => ({ ...x, quando: agora })),
+    ]);
+    await atualizarRegistrados(true);   // puxa do detalhe o que acabou de entrar
+    exibirMensagem(`Sinais vitais registrados (${validacao.dados.sinais.length}).`, "sucesso");
     document.dispatchEvent(new CustomEvent(EVENTO_ATENDIMENTO_ALTERADA));
   } catch (erro) {
     exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível registrar os sinais.", "erro");

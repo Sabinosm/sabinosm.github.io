@@ -135,6 +135,7 @@
               <button type="button" class="btn-ghost" id="aten-sv-add" data-i18n="atendimento.sinais.adicionar">+ Adicionar sinal</button>
               <button type="button" class="btn-primary" id="aten-sv-salvar" data-i18n="atendimento.sinais.salvar">Registrar sinais</button>
             </div>
+            <div id="aten-sv-registrados" hidden></div>
           </section>
         </div>
 
@@ -150,6 +151,20 @@
                data-i18n="atendimento.coleta.leitura">Somente o profissional que abriu o atendimento registra coletas.</p>
 
             <div id="aten-co-form-wrap" hidden>
+              <div class="field-group">
+                <label class="field-label" for="aten-co-queixa">
+                  <span>Queixa principal</span>
+                </label>
+                <textarea class="field-input" id="aten-co-queixa" rows="3" maxlength="2000"></textarea>
+                <p class="field-error" id="aten-co-queixa-error"></p>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="aten-co-avpu">
+                  <span>AVPU</span>
+                  <span class="field-optional" data-i18n="campo.opcional">(opcional)</span>
+                </label>
+                <input class="field-input" id="aten-co-avpu" maxlength="20" placeholder="ex.: A">
+              </div>
               <div class="field-group">
                 <label class="field-label" for="aten-co-desde">
                   <span data-i18n="atendimento.coleta.desde">Desde quando os sintomas (horas)</span>

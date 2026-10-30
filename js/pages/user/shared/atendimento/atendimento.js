@@ -14,6 +14,7 @@
 //   atendimentoSinais.js       -> aba sinais vitais (lote)
 //   atendimentoColeta.js       -> aba coleta clínica + input de protocolo
 //   atendimentoConduta.js      -> aba conduta de enfermagem (só triagem)
+//   atendimentoAcoes.js        -> finalizar / cancelar o atendimento (só o dono)
 //   avaliacaoBion/             -> aba Avaliação IA (avaliação médica/reavaliação): Api, polling, render
 //   atendimentoApi.js          -> camada de fetch (espelha os blueprints)
 //   atendimentoHelpers.js      -> estado compartilhado, labels, parser do binário

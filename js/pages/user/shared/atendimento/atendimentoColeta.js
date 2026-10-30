@@ -37,6 +37,7 @@ import {
   registrarColeta, registrarInputProtocolo, executarProtocolo,
   listarProtocolosDisponiveis, estruturaProtocolo, ApiError,
 } from "./atendimentoApi.js";
+import { buscarDetalheAtendimento } from "./atendimentoDetalhe/atendimentoDetalheApi.js";
 import { normalizarCampo } from "./atendimentoProtocolo/atendimentoProtocoloCampos.js";
 import { validarRespostas } from "./atendimentoProtocolo/atendimentoProtocoloValidacao.js";
 import { montarSnapshotCampos } from "./atendimentoProtocolo/atendimentoProtocoloInput.js";
@@ -269,6 +270,10 @@ function criarCardColeta(coleta, idx) {
     `Coleta ${idx + 1}${coleta.desde_quando_sintomas != null ? ` — sintomas há ${coleta.desde_quando_sintomas}h` : ""}`);
   card.appendChild(titulo);
 
+  // queixa/AVPU registradas na coleta: sempre visíveis no card
+  if (coleta.queixa) card.appendChild(el("p", null, `Queixa principal: ${coleta.queixa}`));
+  if (coleta.avpu) card.appendChild(el("p", null, `AVPU: ${coleta.avpu}`));
+
   if (coleta.input_registrado) {
     card.appendChild(el("p", "field-hint", "Input de protocolo registrado para esta coleta."));
     if (coleta.campos_usados?.length) card.appendChild(criarListaCamposUsados(coleta.campos_usados));
@@ -282,8 +287,8 @@ function criarCardColeta(coleta, idx) {
   const campos = el("div", "aten-ip-campos");
   campos.id = `aten-ip-campos-${idx}`;
   form.appendChild(campos);
-  form.appendChild(campoTextarea(`aten-ip-queixa-${idx}`, "Queixa principal", 3));
-  form.appendChild(campoInput(`aten-ip-avpu-${idx}`, "AVPU", "ex.: A"));
+  form.appendChild(campoTextarea(`aten-ip-queixa-${idx}`, "Queixa principal", 3, coleta.queixa));
+  form.appendChild(campoInput(`aten-ip-avpu-${idx}`, "AVPU", "ex.: A", coleta.avpu));
 
   const erro = el("p", "field-error");
   erro.id = `aten-ip-erro-${idx}`;
@@ -415,6 +420,10 @@ function criarAreaExecucao(coleta, idx) {
   if (coleta.executado) {
     area.appendChild(el("p", "field-hint",
       "Protocolo já executado para este input — registre um novo input para executar novamente."));
+    const ver = el("button", "btn-ghost aten-exec-ver", "Ver resultado");
+    ver.type = "button";
+    ver.addEventListener("click", () => carregarResultadoDoDetalhe(idx));
+    area.appendChild(ver);
   }
   return area;
 }
@@ -513,6 +522,11 @@ async function executar(card) {
     // 409 = mesmo protocolo já executado neste input; o recarregamento
     // do input (novo registro) é o caminho de nova execução.
     const msg = erro instanceof ApiError ? erro.message : "Não foi possível executar o protocolo.";
+    if (erro instanceof ApiError && erro.status === 409) {
+      // já executado neste input (ex.: o resultado local se perdeu num refresh): busca no back
+      enviando = false;
+      if (await carregarResultadoDoDetalhe(idx)) return;
+    }
     if (errEl) errEl.textContent = msg;
     exibirMensagem(msg, "erro");
   } finally {
@@ -520,10 +534,48 @@ async function executar(card) {
   }
 }
 
+/** Recupera a última execução do atendimento em GET .../detalhe (fonte do back)
+ *  e a guarda na coleta. Leitura auditada: só roda por pedido/409, não a cada render. */
+async function carregarResultadoDoDetalhe(idx) {
+  try {
+    const d = await buscarDetalheAtendimento(estadoAtendimento.atendimento.uuid);
+    const ex = (d?.protocolo?.execucoes ?? []).slice(-1)[0];
+    if (!ex) return false;
+    const lista = lerColetas();
+    if (!lista[idx]) return false;
+    lista[idx] = {
+      ...lista[idx],
+      executado: true,
+      resultado: {
+        nome_protocolo: ex.nome ?? null,
+        // mesmo formato que formatarResultado já entende
+        dados: {
+          status: ex.status ?? null,
+          resultado_calculado_json: {
+            classificacao: ex.classificacao ?? null,
+            trilha_explicativa: (ex.trilha ?? []).map((t) => ({
+              ordem: t.ordem, rotulo: t.rotulo,
+              valor_observado: t.valor_observado, peso_ou_resultado: t.resultado,
+            })),
+          },
+          dados_ausentes_json: ex.dados_ausentes ?? [],
+        },
+        ausentes: ex.dados_ausentes ?? null,
+      },
+    };
+    gravarColetas(lista);
+    renderColetas();
+    return true;
+  } catch (e) {
+    console.warn("detalhe do atendimento indisponível:", e?.message);
+    return false;
+  }
+}
+
 // ============================================
 // Campos auxiliares
 // ============================================
-function campoTextarea(id, labelTexto, rows) {
+function campoTextarea(id, labelTexto, rows, valor) {
   const grupo = el("div", "field-group");
   const label = el("label", "field-label", labelTexto);
   label.htmlFor = id;
@@ -532,6 +584,7 @@ function campoTextarea(id, labelTexto, rows) {
   t.className = "field-input";
   t.id = id;
   t.rows = rows;
+  if (valor) t.value = valor;
   grupo.appendChild(t);
   const erro = el("p", "field-error");
   erro.id = `${id}-error`;
@@ -539,7 +592,7 @@ function campoTextarea(id, labelTexto, rows) {
   return grupo;
 }
 
-function campoInput(id, labelTexto, placeholder) {
+function campoInput(id, labelTexto, placeholder, valor) {
   const grupo = el("div", "field-group");
   const label = el("label", "field-label", labelTexto);
   label.htmlFor = id;
@@ -548,6 +601,7 @@ function campoInput(id, labelTexto, placeholder) {
   i.className = "field-input";
   i.id = id;
   i.placeholder = placeholder;
+  if (valor) i.value = valor;
   grupo.appendChild(i);
   const erro = el("p", "field-error");
   erro.id = `${id}-error`;
@@ -561,33 +615,72 @@ function campoInput(id, labelTexto, placeholder) {
 async function criarColeta() {
   if (enviando) return;
   $("aten-co-desde-error").textContent = "";
+  const errQueixa = $("aten-co-queixa-error");
+  if (errQueixa) errQueixa.textContent = "";
 
-  const validacao = validarColeta({ desdeTexto: $("aten-co-desde").value });
+  // 1º a queixa (e AVPU); "desde quando" é opcional e vem depois
+  const queixaTxt = $("aten-co-queixa")?.value ?? "";
+  const avpuTxt = $("aten-co-avpu")?.value ?? "";
+  const desdeTxt = $("aten-co-desde").value;
+
+  const validacao = validarColeta({ desdeTexto: desdeTxt });
   if (!validacao.ok) {
     $("aten-co-desde-error").textContent = validacao.erros._geral ?? "Valor inválido.";
     return;
   }
 
+  // queixa/AVPU: mesmos limites do input de protocolo (sem input_json)
+  const qa = validarInputProtocolo({ queixa: queixaTxt, avpu: avpuTxt, jsonTexto: "" });
+  const temQueixaOuAvpu = Boolean(qa.dados?.queixa_principal || qa.dados?.valor_avpu);
+  if (!qa.ok && (queixaTxt.trim() || avpuTxt.trim())) {
+    if (errQueixa) errQueixa.textContent = qa.erros.queixa_principal ?? qa.erros.valor_avpu ?? "Verifique a queixa.";
+    return;
+  }
+  if (!temQueixaOuAvpu && validacao.dados.desde_quando_sintomas === undefined) {
+    if (errQueixa) errQueixa.textContent = "Informe a queixa principal (ou ao menos um dos campos).";
+    return;
+  }
+
   enviando = true;
   $("aten-co-criar").disabled = true;
+  const uuidAt = estadoAtendimento.atendimento.uuid;
+  const uuidPac = estadoAtendimento.consulta.paciente_uuid;
   try {
-    const resp = await registrarColeta(
-      estadoAtendimento.atendimento.uuid,
-      estadoAtendimento.consulta.paciente_uuid,
-      validacao.dados,
-    );
-    const lista = lerColetas();
-    lista.push({
+    const resp = await registrarColeta(uuidAt, uuidPac, validacao.dados);
+    const nova = {
       uuid: resp.data?.uuid ?? null,
       desde_quando_sintomas: validacao.dados.desde_quando_sintomas ?? null,
+      queixa: qa.dados?.queixa_principal ?? null,
+      avpu: qa.dados?.valor_avpu ?? null,
+      queixa_registrada: false,
       input_registrado: false,
       protocolo_uuid: null,
       executado: false,
       resultado: null,
-    });
+    };
+
+    // Persiste a queixa já agora (o back aceita input só com queixa/AVPU);
+    // os campos do protocolo entram depois, num novo input da mesma coleta.
+    let avisoQueixa = null;
+    if (temQueixaOuAvpu && nova.uuid) {
+      try {
+        await registrarInputProtocolo(uuidAt, uuidPac, nova.uuid, qa.dados);
+        nova.queixa_registrada = true;
+      } catch (e) {
+        avisoQueixa = e instanceof ApiError ? e.message : "não foi possível gravar a queixa agora.";
+      }
+    }
+
+    const lista = lerColetas();
+    lista.push(nova);
     gravarColetas(lista);
-    $("aten-co-desde").value = "";
-    exibirMensagem("Coleta clínica registrada.", "sucesso");
+    ["aten-co-queixa", "aten-co-avpu", "aten-co-desde"].forEach((id) => { const c = $(id); if (c) c.value = ""; });
+    exibirMensagem(
+      avisoQueixa
+        ? `Coleta registrada, mas a queixa não foi gravada: ${avisoQueixa} Ela segue no card — envie junto do protocolo.`
+        : "Coleta clínica registrada.",
+      avisoQueixa ? "erro" : "sucesso",
+    );
     renderColetas();
     atualizarGate();
   } catch (erro) {
@@ -649,6 +742,9 @@ async function salvarInput(card) {
     );
     lista[idx] = {
       ...coleta,
+      queixa: validacao.dados.queixa_principal ?? null,   // antes não era guardada: a queixa sumia do card
+      avpu: validacao.dados.valor_avpu ?? null,
+      queixa_registrada: Boolean(validacao.dados.queixa_principal || validacao.dados.valor_avpu),
       input_registrado: true,
       protocolo_uuid: uuidProt,
       input_json: respostas.validados,                          // o que foi enviado ao back
