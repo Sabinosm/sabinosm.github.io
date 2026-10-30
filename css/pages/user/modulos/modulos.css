@@ -54,29 +54,29 @@
    ============================================ */
 
 /* --- base compartilhada --- */
-@import url("modulos/tokens.css");
-@import url("modulos/acento.css");
-@import url("modulos/fundo.css");
-@import url("modulos/cabecalho.css");
-@import url("modulos/botoes.css");
-@import url("modulos/listas.css");
-@import url("modulos/paineis.css");
+@import url("tokens.css");
+@import url("acento.css");
+@import url("fundo.css");
+@import url("cabecalho.css");
+@import url("botoes.css");
+@import url("listas.css");
+@import url("paineis.css");
 
 /* --- páginas (um arquivo por módulo) --- */
-@import url("modulos/paginas/gestao.css");
-@import url("modulos/paginas/pacientes.css");
-@import url("modulos/paginas/consultas.css");
-@import url("modulos/paginas/atendimento.css");
-@import url("modulos/paginas/exames.css");
-@import url("modulos/paginas/medicamentos.css");
-@import url("modulos/paginas/profissionais.css");
-@import url("modulos/paginas/empresa.css");
-@import url("modulos/paginas/catalogos.css");
-@import url("modulos/paginas/estatisticas.css");
-@import url("modulos/paginas/auditoria.css");
-@import url("modulos/paginas/historico.css");
+@import url("paginas/gestao.css");
+@import url("paginas/pacientes.css");
+@import url("paginas/consultas.css");
+@import url("paginas/atendimento.css");
+@import url("paginas/exames.css");
+@import url("paginas/medicamentos.css");
+@import url("paginas/profissionais.css");
+@import url("paginas/empresa.css");
+@import url("paginas/catalogos.css");
+@import url("paginas/estatisticas.css");
+@import url("paginas/auditoria.css");
+@import url("paginas/historico.css");
 
 /* --- sidebar, modais e celular (por último) --- */
-@import url("modulos/sidebar.css");
-@import url("modulos/modais.css");
-@import url("modulos/responsivo.css");
+@import url("sidebar.css");
+@import url("modais.css");
+@import url("responsivo.css");
