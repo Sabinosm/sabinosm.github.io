@@ -16,9 +16,9 @@
 }
 
 /* ----- historico · CARTÃO: o ícone fica no topo (o cartão cresce com a linha do tempo) ----- */
-[data-modulo="historico"] .hist-card { padding-top: 18px; padding-bottom: 18px; align-items: flex-start; }
+[data-modulo="historico"] .hist-card { align-items: flex-start; }
 [data-modulo="historico"] .hist-card::before,
-[data-modulo="historico"] .hist-card::after { top: 18px; transform: none; }
+[data-modulo="historico"] .hist-card::after { top: 12px; transform: none; }
 [data-modulo="historico"] .hist-card .consult-meta,
 [data-modulo="historico"] .hist-meta { font-family: 'Share Tech Mono', monospace; letter-spacing: 0.02em; }
 
