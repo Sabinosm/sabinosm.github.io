@@ -13,6 +13,30 @@ import { ativarTogglesSenha } from "../../sharedConfig/passwordManagement/passwo
 
 ativarTogglesSenha('#senha, #confirmar_senha');
 
+// ============================================
+// Validação básica do formulário de login.
+//
+// Só checa presença dos campos, para não gastar uma requisição à toa.
+// De propósito NÃO aplica regra de força de senha (validarSenha): no login
+// isso bloquearia contas antigas e revelaria a política de senha. A
+// verdade continua sendo o backend.
+// ============================================
+
+const MSG_CAMPOS_OBRIGATORIOS = "Informe o login e a senha.";
+
+/**
+ * Retorna { ok, mensagem }. Todos os campos do form precisam estar
+ * preenchidos; a senha não é alterada (espaços contam como caractere),
+ * só se rejeita senha vazia ou feita apenas de espaços.
+ */
+function validarLogin(dados) {
+  const valores = Object.values(dados);
+  const algumVazio = valores.length === 0 || valores.some((v) => !String(v ?? "").trim());
+  return algumVazio
+    ? { ok: false, mensagem: MSG_CAMPOS_OBRIGATORIOS }
+    : { ok: true, mensagem: "" };
+}
+
 document.getElementById("login-form").addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -20,8 +44,14 @@ document.getElementById("login-form").addEventListener("submit", async (event) =
   const formData = new FormData(form);
   const dadosObjeto = Object.fromEntries(formData.entries());
 
+  const validacao = validarLogin(dadosObjeto);
+  if (!validacao.ok) {
+    exibirMensagem(validacao.mensagem, "erro");
+    return;
+  }
+
   try {
-    const resultado = await enviarLogin(dadosObjeto);
+    await enviarLogin(dadosObjeto);
 
     window.location.href = '../../../html/pages/auth/afterLogin.html';
 
