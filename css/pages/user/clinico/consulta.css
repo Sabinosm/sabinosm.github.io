@@ -232,6 +232,7 @@
   background: var(--status-bg);
   white-space: nowrap;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status-fg) 22%, transparent);
+  margin-top: 1%;
 }
 
 .cons-consent--pendente {

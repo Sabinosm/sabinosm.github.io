@@ -462,10 +462,11 @@ body {
 .consult-meta {
   font-size: calc(13px * var(--font-scale, 1));
   color: var(--text-muted);
-  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-top: 1%;
+
 }
 
 /* ===== RESPONSIVO ===== */
