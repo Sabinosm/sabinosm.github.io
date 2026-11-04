@@ -17,10 +17,10 @@
 
 import {
   iniciarAvaliacao, ultimaAvaliacao, lerAvaliacao,
-} from "../../../../../.md/correcoes/js/pages/user/shared/avaliacaoBion/avaliacaoBionApi.js";
-import { aguardarConclusao, PollingTimeout } from "../../../../../.md/correcoes/js/pages/user/shared/avaliacaoBion/avaliacaoBionPolling.js";
-import { renderResultado } from "../../../../../.md/correcoes/js/pages/user/shared/avaliacaoBion/avaliacaoBionRender.js";
-import { STATUS_BACK, podeAvaliar, textoErro } from "../../../../../.md/correcoes/js/pages/user/shared/avaliacaoBion/avaliacaoBionHelpers.js";
+} from "../avaliacaoBion/avaliacaoBionApi.js";
+import { aguardarConclusao, PollingTimeout } from "../avaliacaoBion/avaliacaoBionPolling.js";
+import { renderResultado } from "../avaliacaoBion/avaliacaoBionRender.js";
+import { STATUS_BACK, podeAvaliar, textoErro } from "../avaliacaoBion/avaliacaoBionHelpers.js";
 import { el, mensagemDeErro } from "./prescricaoHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
