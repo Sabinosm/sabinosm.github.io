@@ -43,7 +43,7 @@ import { renderFim } from "./prescricaoFim.js";
 import { renderDocumentos } from "./prescricaoDocumentos.js";
 import { renderIA, retomarIA, cancelarIA, iaOcupada, iaIniciada } from "./prescricaoIa.js";
 import { renderModo } from "./prescricaoModo.js";
-import { tipoComAvaliacaoBion } from "../../../../../.md/correcoes/js/pages/user/shared/avaliacaoBion/avaliacaoBionHelpers.js";
+import { tipoComAvaliacaoBion } from "../avaliacaoBion/avaliacaoBionHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
@@ -82,6 +82,12 @@ async function carregarPagina() {
     const atendimento = (rAtendimentos.data ?? []).find((a) => a.uuid === uuidAtendimento);
     if (!atendimento) {
       mostrarErro("Atendimento não encontrado", "Este atendimento não pertence à consulta informada.");
+      return;
+    }
+
+    // Prescrição só existe em avaliação médica / reavaliação (triagem e demais tipos não prescrevem).
+    if (!tipoComAvaliacaoBion(atendimento)) {
+      mostrarErro("Prescrição não disponível", "Este tipo de atendimento não tem prescrição.");
       return;
     }
 
