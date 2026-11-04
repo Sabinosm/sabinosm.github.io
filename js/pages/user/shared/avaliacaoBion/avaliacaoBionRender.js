@@ -6,7 +6,7 @@
 
 import { el, formatarDataHora } from "../atendimento/atendimentoHelpers.js";
 import {
-  percentual, rotulo, CERTEZA_LABELS, TIPO_PRESCRICAO_LABELS, STATUS_CONDUTA_LABELS,
+  percentual, rotulo, textoMotivo, CERTEZA_LABELS, TIPO_PRESCRICAO_LABELS, STATUS_CONDUTA_LABELS,
 } from "./avaliacaoBionHelpers.js";
 
 const painel = (titulo) => {
@@ -90,6 +90,19 @@ function blocoConduta(c) {
 
 function blocoSemConduta(dados) {
   const p = painel("Conduta proposta");
+  const d = dados.diagnostico_proposto;
+  if (d && !dados.conduta_substituida) {
+    // A IA indicou diagnóstico/encaminhamento, mas nenhum medicamento ou exame: não há rascunho.
+    p.appendChild(el("p", "field-hint",
+      "A IA indicou o diagnóstico abaixo, mas não sugeriu medicamentos nem exames. Nenhum rascunho foi criado."));
+    const item = el("div", "aten-bion-item");
+    item.appendChild(el("p", "aten-bion-item-titulo", [d.cid10, d.descricao].filter(Boolean).join(" — ")));
+    const meta = linhaMeta([d.certeza ? `Certeza: ${rotulo(CERTEZA_LABELS, d.certeza)}` : null,
+      d.tipo_prescricao ? `Conduta: ${rotulo(TIPO_PRESCRICAO_LABELS, d.tipo_prescricao).toLowerCase()}` : null]);
+    if (meta) item.appendChild(meta);
+    p.appendChild(item);
+    return p;
+  }
   // O back não distingue "substituído por avaliação mais nova" de "rascunho excluído à mão":
   // o texto não afirma nenhum dos dois.
   p.appendChild(el("p", "field-hint", dados.conduta_substituida
@@ -102,7 +115,7 @@ function blocoQualidade(dados) {
   const q = dados.qualidade ?? {};
   const p = painel("Qualidade da avaliação");
   const grade = el("div", "aten-bion-metricas");
-  [["Completude dos dados", q.completude], ["Confiança da IA", q.confianca]].forEach(([nome, v]) => {
+  [["Completude dos dados", q.completude], ["Confiança nos dados", q.confianca]].forEach(([nome, v]) => {
     const m = el("div", "aten-bion-metrica");
     m.appendChild(el("span", "aten-bion-metrica-valor", percentual(v)));
     m.appendChild(el("span", "field-hint", nome));
@@ -111,7 +124,7 @@ function blocoQualidade(dados) {
   p.appendChild(grade);
   if (q.motivos?.length) {
     p.appendChild(el("h4", "aten-bion-subtitulo", "Motivos da confiança"));
-    p.appendChild(lista(q.motivos));
+    p.appendChild(lista(q.motivos.map(textoMotivo)));
   }
   if (dados.lacunas?.length) {
     p.appendChild(el("h4", "aten-bion-subtitulo", "Dados que faltaram no envio"));

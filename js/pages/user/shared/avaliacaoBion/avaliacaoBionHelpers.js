@@ -41,11 +41,18 @@ export const ERRO_CODIGO_LABELS = {
 export const textoErro = (codigo) =>
   ERRO_CODIGO_LABELS[codigo] ?? "A avaliação não pôde ser concluída. Tente novamente.";
 
-/** Índices do back vão de 0 a 1 (escala confirmada); mostrados em %. null/NaN -> "—". */
+/** Índices do back (completude e confiança) já vêm em 0–100 (ex.: 71.96); mostrados como %. null/NaN -> "—". */
 export function percentual(valor) {
   const n = Number(valor);
   if (valor == null || !Number.isFinite(n)) return "—";
-  return `${Math.round(Math.min(Math.max(n, 0), 1) * 100)}%`;
+  return `${Math.round(Math.min(Math.max(n, 0), 100))}%`;
+}
+
+/** Texto de um motivo de confiança: aceita string ou objeto {descricao | bloco, codigo}. */
+export function textoMotivo(m) {
+  if (m == null) return "";
+  if (typeof m === "string") return m;
+  return m.descricao ?? [m.bloco, m.codigo].filter(Boolean).join(": ");
 }
 
 /** Rótulo legível de um valor de enum do back; sem mapa, mostra o valor como veio. */
@@ -57,5 +64,6 @@ export function rotulo(mapa, valor) {
 export const CERTEZA_LABELS = { suspeito: "Suspeito", provavel: "Provável", confirmado: "Confirmado" };
 export const TIPO_PRESCRICAO_LABELS = {
   farmacologica: "Farmacológica", nao_farmacologica: "Não farmacológica", "nao-farmacologica": "Não farmacológica",
+  internacao: "Internação",
 };
 export const STATUS_CONDUTA_LABELS = { rascunho: "Rascunho", confirmado: "Confirmada", confirmada: "Confirmada" };
