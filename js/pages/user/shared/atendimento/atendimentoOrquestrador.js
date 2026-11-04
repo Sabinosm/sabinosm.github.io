@@ -11,6 +11,9 @@
 // EVENTO_ATENDIMENTO_ALTERADA. As abas (binário, sinais, coleta, conduta)
 // escutam o mesmo evento e se re-renderizam sozinhas.
 //
+// Abas: binario ("Dados clínicos"), sinais, coleta, conduta (só triagem) e finalizar (só quem
+// pode escrever). A avaliação por IA não é mais uma aba: foi para a página de prescrição.
+//
 // Dependência de back: Atendimento.to_dict() precisa trazer `realizado_por`
 // (uuid do profissional dono) para o gate "só o dono escreve". Sem ele,
 // somenteLeitura fica true para todos (falha fechada -- o back continua
@@ -184,14 +187,19 @@ function aplicarEstado() {
     const ehTriagem = a.tipo_atendimento === "triagem";
     if (abaConduta) abaConduta.hidden = !ehTriagem;
     if (!ehTriagem && abaAtiva() === "conduta") ativarAba("binario");
-    // avaliação por IA só existe em avaliação médica / reavaliação
-    const abaBion = document.querySelector('#aten-abas [data-aba="bion"]');
-    const temBion = tipoComAvaliacaoBion(a);
-    if (abaBion) abaBion.hidden = !temBion;
-    if (!temBion && abaAtiva() === "bion") ativarAba("binario");
-    // atalho para a página de prescrição (mesma regra de acesso da aba de IA: médico dono)
+    // aba Finalizar: só para quem escreve (dono, em andamento)
+    const abaFinalizar = document.querySelector('#aten-abas [data-aba="finalizar"]');
+    const podeFinalizar = !estadoAtendimento.somenteLeitura;
+    if (abaFinalizar) abaFinalizar.hidden = !podeFinalizar;
+    if (!podeFinalizar && abaAtiva() === "finalizar") ativarAba("binario");
+
+    // avaliação médica / reavaliação: a finalização acontece na prescrição (IA ou manual);
+    // o botão de finalizar dá lugar ao atalho (médico dono). O cancelar continua na aba.
+    const viaPrescricao = tipoComAvaliacaoBion(a) && souDono();
+    const blocoPrescricao = $("aten-fin-prescricao");
+    if (blocoPrescricao) blocoPrescricao.hidden = !viaPrescricao;
     if (linkPrescricao) {
-      linkPrescricao.hidden = !(temBion && souDono());
+      linkPrescricao.hidden = !viaPrescricao;
       linkPrescricao.href = urlPrescricao(c.uuid, a.uuid);
     }
     // Os painéis das abas são controlados só por ativarAba(); re-sincroniza a cada render.
@@ -245,7 +253,7 @@ function ativarAba(nome) {
   document.querySelectorAll("#aten-abas .segmented-item").forEach((btn) => {
     btn.classList.toggle("segmented-item--active", btn.dataset.aba === nome);
   });
-  ["binario", "sinais", "coleta", "conduta", "bion"].forEach((aba) => {
+  ["binario", "sinais", "coleta", "conduta", "finalizar"].forEach((aba) => {
     const painel = $(`aten-aba-${aba}`);
     if (painel) painel.hidden = aba !== nome;
   });

@@ -263,7 +263,7 @@ function renderColetas() {
 }
 
 function criarCardColeta(coleta, idx) {
-  const card = el("section", "cons-panel aten-co-item");
+  const card = el("section", "aten-co-item");
   card.dataset.idx = String(idx);
 
   const titulo = el("h3", "cons-panel-titulo",
@@ -282,6 +282,8 @@ function criarCardColeta(coleta, idx) {
   }
 
   // --- formulário de input (protocolo -> campos dinâmicos -> queixa/avpu)
+  // Layout (atendimento.css): .aten-ip-form é uma grade; .aten-ip-campos (campos do protocolo) é
+  // outra grade, então os inputs ocupam a horizontal; .aten-campo--cheio ocupa a linha toda.
   const form = el("div", "aten-ip-form");
   form.appendChild(campoSelectProtocolo(coleta, idx));
   const campos = el("div", "aten-ip-campos");
@@ -290,13 +292,15 @@ function criarCardColeta(coleta, idx) {
   form.appendChild(campoTextarea(`aten-ip-queixa-${idx}`, "Queixa principal", 3, coleta.queixa));
   form.appendChild(campoInput(`aten-ip-avpu-${idx}`, "AVPU", "ex.: A", coleta.avpu));
 
-  const erro = el("p", "field-error");
+  const erro = el("p", "field-error aten-campo--cheio");
   erro.id = `aten-ip-erro-${idx}`;
   form.appendChild(erro);
 
+  const acoes = el("div", "cons-panel-acoes aten-campo--cheio");
   const salvar = el("button", "btn-primary aten-ip-salvar", "Registrar input de protocolo");
   salvar.type = "button";
-  form.appendChild(salvar);
+  acoes.appendChild(salvar);
+  form.appendChild(acoes);
 
   card.appendChild(form);
   return card;
@@ -363,7 +367,7 @@ function escolherFavorito(card, uuid) {
 }
 
 function campoSelectProtocolo(coleta, idx) {
-  const grupo = el("div", "field-group");
+  const grupo = el("div", "field-group aten-campo--cheio");
   const label = el("label", "field-label", "Protocolo");
   label.htmlFor = `aten-ip-protocolo-${idx}`;
   grupo.appendChild(label);
@@ -534,7 +538,7 @@ async function executar(card) {
 // Campos auxiliares
 // ============================================
 function campoTextarea(id, labelTexto, rows, valor) {
-  const grupo = el("div", "field-group");
+  const grupo = el("div", "field-group aten-campo--cheio");
   const label = el("label", "field-label", labelTexto);
   label.htmlFor = id;
   grupo.appendChild(label);

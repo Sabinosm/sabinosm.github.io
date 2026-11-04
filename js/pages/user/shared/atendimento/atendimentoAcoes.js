@@ -1,6 +1,12 @@
 // atendimentoAcoes.js
 //
-// Fim do ciclo do atendimento em andamento: FINALIZAR e CANCELAR.
+// Aba "Finalizar" do atendimento em andamento: FINALIZAR e CANCELAR.
+//
+//   triagem                          -> finalizar + cancelar nesta aba
+//   avaliação médica / reavaliação   -> a finalização é feita na página de PRESCRIÇÃO (confirmar ou
+//                                       descartar a prescrição e finalizar); nesta aba o botão
+//                                       "Finalizar" some (o atalho para a prescrição é do orquestrador)
+//                                       e sobra o CANCELAR.
 //
 //   finalizar -> POST /<uuid>/finalizar  {observacoes?}
 //                só o dono (403); exige binário COMPLETO (409). O front
@@ -18,6 +24,7 @@ import {
   estadoAtendimento, EVENTO_ATENDIMENTO_ALTERADA, EVENTO_BINARIO_CARREGADO, podeEscrever,
   MOTIVO_CANCELAMENTO_LABELS,
 } from "./atendimentoHelpers.js";
+import { tipoComAvaliacaoBion } from "../avaliacaoBion/avaliacaoBionHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
@@ -49,7 +56,7 @@ function popularMotivos() {
   });
 }
 
-/** Mostra a barra só para o dono com atendimento em andamento; gate do binário no finalizar. */
+/** Mostra o painel só para o dono com atendimento em andamento; gate dos dados clínicos no finalizar. */
 function atualizar() {
   const painel = $("aten-acoes");
   if (!painel) return;
@@ -58,8 +65,15 @@ function atualizar() {
   painel.hidden = !pode;
   if (!pode) return;
 
+  // avaliação médica / reavaliação finaliza na prescrição: aqui só cancela
+  const viaPrescricao = tipoComAvaliacaoBion(estadoAtendimento.atendimento);
+  const titulo = $("aten-fin-titulo");
+  if (titulo) titulo.textContent = viaPrescricao ? "Cancelar este atendimento" : "Encerrar este atendimento";
+  document.querySelectorAll('#aten-acoes [data-fin-so="finalizar"]').forEach((e) => { e.hidden = viaPrescricao; });
+
   const completo = estadoAtendimento.binarioCompleto;
-  $("aten-fin-hint").hidden = completo;
+  $("aten-fin-hint").hidden = viaPrescricao || completo;
+  $("aten-fin-finalizar").hidden = viaPrescricao;
   $("aten-fin-finalizar").disabled = enviando || !completo;
   $("aten-fin-cancelar").disabled = enviando;
 }

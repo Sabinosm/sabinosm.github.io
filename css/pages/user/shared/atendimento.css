@@ -93,7 +93,7 @@
 
 /* ---- painel (cada aba é um painel) ---- */
 .aten-coluna .cons-panel {
-  margin-bottom: 20px;
+  margin-bottom: 20px;  
   padding: 20px 22px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -620,4 +620,109 @@
   color: var(--palette-white, #fff);
   background: var(--accent);
   border-color: var(--accent);
+}
+
+
+/* ==========================================================================
+   GRADES DE FORMULÁRIO (aba Coleta clínica e aba Finalizar)
+   - .aten-form-grade / .aten-fin-grade / .aten-ip-form: grade de colunas de ~240px;
+     campos soltos ocupam uma coluna, .aten-campo--cheio ocupa a linha toda.
+   - .aten-ip-campos: os campos do PROTOCOLO (gerados pelo JS) se espalham na horizontal.
+   auto-fill (e não auto-fit) nas grades de formulário: um campo sozinho não estica
+   para a linha inteira.
+   ========================================================================== */
+.aten-form-grade,
+.aten-fin-grade,
+.aten-ip-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px 20px;
+  margin-top: 14px;
+}
+.aten-form-grade > .field-group,
+.aten-fin-grade > .field-group,
+.aten-ip-form > .field-group,
+.aten-ip-campos > .field-group {
+  margin: 0;
+  min-width: 0;
+}
+.aten-campo--cheio { grid-column: 1 / -1; }
+
+/* rótulo + "(opcional)" na mesma linha, com respiro até o campo */
+.aten-form-grade .field-label,
+.aten-fin-grade .field-label,
+.aten-ip-form .field-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  margin-bottom: 6px;
+}
+.aten-form-grade .field-input,
+.aten-fin-grade .field-input,
+.aten-ip-form .field-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* os botões de ação ficam encostados na grade, sem a margem em % do .cons-panel-acoes */
+.aten-form-grade > .cons-panel-acoes,
+.aten-ip-form > .cons-panel-acoes {
+  margin: 2px 0 0;
+}
+.aten-fin-grade + .field-error { margin-top: 10px; }
+
+/* ---- campos do protocolo: horizontal (2, 3 ou 4 por linha conforme a largura) ---- */
+.aten-ip-campos {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px 18px;
+  align-items: start;
+}
+.aten-ip-campos:empty { display: none; }
+.aten-ip-campos > .field-hint,
+.aten-ip-campos > .field-error { grid-column: 1 / -1; margin: 0; }
+.aten-ip-campos .field-label { display: block; margin-bottom: 6px; }
+.aten-ip-campos .field-input { width: 100%; box-sizing: border-box; }
+
+/* ---- lista de coletas ---- */
+#aten-co-lista {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+#aten-co-lista > .field-hint { margin: 0; }
+.aten-co-item { margin-top: 0; padding: 18px 20px; }
+.aten-co-item > .cons-panel-titulo { margin-bottom: 8px; }
+.aten-co-item > p { margin: 4px 0; line-height: 1.5; }
+
+.aten-ip-form {
+  margin-top: 14px;
+  padding-top: 16px;
+  border-top: 1px solid var(--aten-borda);
+}
+
+/* ---- input já registrado + execução do protocolo ---- */
+.aten-ip-usados { margin-top: 12px; }
+.aten-ip-usados .cons-panel-titulo { font-size: calc(14px * var(--font-scale, 1)); }
+.aten-exec-area {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--aten-borda);
+}
+.aten-exec-area > .field-group { margin: 0; max-width: 520px; }
+.aten-exec-area > .field-group .field-input { width: 100%; box-sizing: border-box; }
+.aten-exec-area > .field-hint,
+.aten-exec-area > .field-error { margin: 0; }
+.aten-exec-area > button { justify-self: start; }
+
+@media (max-width: 760px) {
+  .aten-form-grade,
+  .aten-fin-grade,
+  .aten-ip-form { grid-template-columns: 1fr; }
+  .aten-ip-campos { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .aten-co-item { padding: 14px 14px; }
 }

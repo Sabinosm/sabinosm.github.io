@@ -17,8 +17,8 @@ import {
   el, rotulo, ORIGEM_LABELS, URGENCIA_LABELS, LIMITES, textoOuNull, mensagemDeErro,
   nomeMedicamento, nomeExame,
 } from "./prescricaoHelpers.js";
-import { listarMedicamentos } from "../../clinico/medicamentos/medicamentosApi.js";
-import { listarExames } from "../../clinico/exames/examesApi.js";
+import { listarMedicamentos } from "../medicamentos/medicamentosApi.js";
+import { listarExames } from "../exames/examesApi.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const MIN_BUSCA = 2;

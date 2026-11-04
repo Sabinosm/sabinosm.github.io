@@ -5,7 +5,10 @@
 //
 //   prescricaoApi.js         -> fetch (espelha os blueprints em /v1/api/prescricoes)
 //   prescricaoHelpers.js     -> estado, rótulos dos enums, validação, links
-//   prescricaoIA.js          -> "Gerar com a IA" (reaproveita a pasta atendimento/avaliacaoBion/)
+//   prescricaoModo.js        -> escolha IA x manual (avaliação médica / reavaliação), com troca a qualquer momento
+//   prescricaoIa.js          -> "Prescrever com IA": pede, acompanha e MOSTRA a avaliação (explicação, perguntas,
+//                               qualidade). Reaproveita a pasta avaliacaoBion/; a antiga aba "Avaliação IA" do
+//                               atendimento não existe mais
 //   prescricaoDiagnostico.js -> CID-10, certeza e tipo (criar manual / corrigir / resumo)
 //   prescricaoItens.js       -> medicamentos e exames, com busca embutida
 //   prescricaoAlertas.js     -> interações medicamentosas + cobertura
@@ -27,7 +30,7 @@ import {
 } from "../../clinico/consulta/consultaHelpers.js";
 import { listarAtendimentosDaConsulta } from "../atendimento/atendimentoApi.js";
 import { TIPOS_ATENDIMENTO_LABELS, souDono } from "../atendimento/atendimentoHelpers.js";
-import { listarDoAtendimento, buscarAlertas } from "./prescricaoApi.js";
+import { listarDoAtendimento, buscarAlertas, descartarPrescricao } from "./prescricaoApi.js";
 import {
   el, estadoAtendimento, estadoPrescricao, podeEscrever, podeEditar, uuidConsultaDaUrl, uuidAtendimentoDaUrl,
   escolherAtual, historicoDe, iaPodeGerar, mensagemDeErro, rotulo,
@@ -38,12 +41,19 @@ import { renderItens } from "./prescricaoItens.js";
 import { renderAlertas } from "./prescricaoAlertas.js";
 import { renderFim } from "./prescricaoFim.js";
 import { renderDocumentos } from "./prescricaoDocumentos.js";
-import { renderIA, retomarIA, cancelarIA } from "./prescricaoIA.js";
+import { renderIA, retomarIA, cancelarIA, iaOcupada, iaIniciada } from "./prescricaoIa.js";
+import { renderModo } from "./prescricaoModo.js";
+import { tipoComAvaliacaoBion } from "../../../../../.md/correcoes/js/pages/user/shared/avaliacaoBion/avaliacaoBionHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
 let seq = 0;             // descarta resposta atrasada (recarregou no meio)
 let primeiraCarga = true;
+let modo = null;             // "ia" | "manual" | null (ainda não escolheu). Só existe em avaliação médica/reavaliação
+
+/** Há escolha IA x manual: tipo com avaliação por IA, médico dono, atendimento em andamento. */
+const temModos = () => tipoComAvaliacaoBion(estadoAtendimento.atendimento) && podeEscrever();
+const modoDoRascunho = (r) => (r?.origem_sugestao === "bion_ia" ? "ia" : "manual");
 
 document.addEventListener("DOMContentLoaded", async () => {
   await iniciarPagina();
@@ -100,14 +110,23 @@ async function carregarResultados(minha = ++seq) {
   estadoPrescricao.resultados = resp.data ?? [];
   estadoPrescricao.atual = escolherAtual(estadoPrescricao.resultados);
   estadoPrescricao.verificacao = null;
+
+  // Já existe rascunho e o médico ainda não escolheu (reabriu a página): o modo vem da origem do rascunho.
+  // Fixado uma vez: editar um rascunho da IA muda a origem para "medico", mas o modo não pula sozinho.
+  const atual = estadoPrescricao.atual;
+  if (modo === null && temModos() && atual?.status === "rascunho") modo = modoDoRascunho(atual);
   renderTudo();
 
-  const atual = estadoPrescricao.atual;
   if (atual?.status === "rascunho" && atual.medicamentos?.length) await carregarAlertas(minha, atual.uuid);
 
-  if (primeiraCarga) {                // avaliação pedida na aba do atendimento e ainda em curso
+  if (primeiraCarga) {
     primeiraCarga = false;
-    if (podeEscrever() && iaPodeGerar(estadoPrescricao.atual)) retomarIA();
+    if (temModos() && atual?.status !== "confirmado") {
+      // modo IA: volta ao estado da avaliação (em andamento / pronta / falhou);
+      // senão só retoma se houver avaliação em curso (e então abre o modo IA).
+      if (modo === "ia") retomarIA();
+      else retomarIA({ soSeProcessando: true });
+    }
   }
 }
 
@@ -174,8 +193,24 @@ function desenharCabecalho() {
 }
 
 function limparBlocos() {
-  ["presc-banner", "presc-ia", "presc-diag", "presc-itens", "presc-alertas", "presc-fim", "presc-docs", "presc-historico"]
+  ["presc-modo", "presc-banner", "presc-ia", "presc-diag", "presc-itens", "presc-alertas", "presc-fim", "presc-docs", "presc-historico"]
     .forEach((id) => $(id).replaceChildren());
+}
+
+/**
+ * O editor (diagnóstico + medicamentos/exames) aparece:
+ *  - sem escolha de modo (triagem, não-dono...): sempre, como antes;
+ *  - prescrição confirmada: sempre (resumo);
+ *  - modo manual: sempre (sem rascunho mostra o formulário de criação);
+ *  - modo IA: só quando já existe rascunho (o da IA, para revisar); antes disso só o painel da IA;
+ *  - nada escolhido ainda: só os cartões de escolha.
+ */
+function editorVisivel() {
+  if (!temModos()) return true;
+  const atual = estadoPrescricao.atual;
+  if (atual?.status === "confirmado") return true;
+  if (modo === "manual") return true;
+  return modo === "ia" && Boolean(atual);
 }
 
 function renderTudo() {
@@ -186,19 +221,56 @@ function renderTudo() {
     aoEditado,
   };
 
+  desenharModo();
   desenharBanner();
   desenharIA();
 
-  renderDiagnostico($("presc-diag"), atual, {
-    uuidAtendimento: estadoAtendimento.atendimento.uuid,
-    editavel: atual ? podeEditar(atual) : podeEscrever(),
-    recarregar,
-    aoEditado,
-  });
-  renderItens($("presc-itens"), atual, ctx);
+  if (editorVisivel()) {
+    renderDiagnostico($("presc-diag"), atual, {
+      uuidAtendimento: estadoAtendimento.atendimento.uuid,
+      editavel: atual ? podeEditar(atual) : podeEscrever(),
+      recarregar,
+      aoEditado,
+    });
+    renderItens($("presc-itens"), atual, ctx);
+  } else {
+    $("presc-diag").replaceChildren();
+    $("presc-itens").replaceChildren();
+  }
   desenharAlertasEFim();
   renderDocumentos($("presc-docs"), atual);
   desenharHistorico();
+}
+
+// ---------------------------------------------------------------- modo IA x manual
+function desenharModo() {
+  const alvo = $("presc-modo");
+  const confirmada = estadoPrescricao.atual?.status === "confirmado";
+  if (!temModos() || confirmada) { alvo.replaceChildren(); return; }
+  renderModo(alvo, { modo, bloqueado: iaOcupada(), aoEscolher: escolherModo });
+}
+
+function escolherModo(novo) {
+  if (novo === modo || (novo === "manual" && iaOcupada())) return;
+  modo = novo;
+  renderTudo();
+  // primeira vez no modo IA: pergunta ao back em que pé está a avaliação (e mostra a última, se houver)
+  if (novo === "ia" && !iaIniciada()) retomarIA();
+}
+
+/** Troca manual -> IA com rascunho do médico em aberto: o back recusa (409), então descarta antes. */
+async function descartarParaUsarIA() {
+  const atual = estadoPrescricao.atual;
+  if (atual?.status !== "rascunho") return;
+  if (!window.confirm("Descartar o rascunho atual para gerar uma nova prescrição com a IA? "
+    + "O descarte fica registrado e não pode ser desfeito.")) return;
+  try {
+    await descartarPrescricao(atual.uuid, null);
+    exibirMensagem("Rascunho descartado.", "sucesso");
+    await recarregar();
+  } catch (erro) {
+    exibirMensagem(mensagemDeErro(erro, "Não foi possível descartar o rascunho."), "erro");
+  }
 }
 
 function desenharAlertasEFim() {
@@ -219,14 +291,17 @@ function desenharIA() {
     aoConcluir: async () => {
       await recarregar();
       if (estadoPrescricao.atual?.status !== "rascunho") {   // a IA terminou, mas não propôs prescrição
-        exibirMensagem(
-          "A IA terminou sem propor prescrição. Veja a explicação e as perguntas na aba Avaliação IA do atendimento.",
-          "sucesso");
+        exibirMensagem("A IA terminou sem propor prescrição. Veja a explicação e as perguntas abaixo.", "sucesso");
       }
     },
-    visivel: podeEscrever() && atual?.status !== "confirmado" && iaPodeGerar(atual),
+    visivel: temModos() && modo === "ia" && atual?.status !== "confirmado",
+    bloqueado: !iaPodeGerar(atual),                    // rascunho do médico em aberto
     temRascunhoIA: atual?.status === "rascunho" && atual.origem_sugestao === "bion_ia",
-    urlAvaliacao: urlAtendimento(estadoAtendimento.consulta.uuid),
+    aoDescartarRascunho: descartarParaUsarIA,
+    aoMudarFase: desenharModo,                         // o alternador trava enquanto a IA trabalha
+    aoRetomarProcessando: () => {                      // reabriu a página com avaliação em curso
+      if (modo !== "ia") { modo = "ia"; renderTudo(); }
+    },
   });
 }
 

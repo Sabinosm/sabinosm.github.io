@@ -10,12 +10,14 @@
 //
 // Estrutura:
 //   atendimentoOrquestrador.js -> carrega consulta/atendimentos, abertura, estado compartilhado
-//   atendimentoBinario.js      -> aba binário (4 seções, máquina de estados)
+//   atendimentoBinario.js      -> aba "Dados clínicos" (4 seções, máquina de estados; "binário" é só o nome interno)
 //   atendimentoSinais.js       -> aba sinais vitais (lote)
 //   atendimentoColeta.js       -> aba coleta clínica + input de protocolo
 //   atendimentoConduta.js      -> aba conduta de enfermagem (só triagem)
-//   atendimentoAcoes.js        -> finalizar / cancelar o atendimento (só o dono)
-//   avaliacaoBion/             -> aba Avaliação IA (avaliação médica/reavaliação): Api, polling, render
+//   atendimentoAcoes.js        -> aba "Finalizar": finalizar / cancelar o atendimento (só o dono).
+//                                 Em avaliação médica/reavaliação a finalização é feita na página de prescrição.
+//   (a avaliação por IA saiu daqui: vive na página de prescrição -- prescricao/prescricaoIa.js,
+//    que reaproveita a pasta avaliacaoBion/: Api, polling, render)
 //   atendimentoApi.js          -> camada de fetch (espelha os blueprints)
 //   atendimentoHelpers.js      -> estado compartilhado, labels, parser do binário
 //   atendimentoValidation.js   -> espelho dos schemas do back
@@ -25,7 +27,6 @@ import "./atendimentoSinais.js";
 import "./atendimentoColeta.js";
 import "./atendimentoConduta.js";
 import "./atendimentoAcoes.js";
-import "../avaliacaoBion/avaliacaoBion.js";
 import { iniciar } from "./atendimentoOrquestrador.js";
 import { iniciarPagina } from "../../../../sharedConfig/loaders/initPagina.js";
 

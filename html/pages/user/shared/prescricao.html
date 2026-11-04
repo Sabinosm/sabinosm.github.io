@@ -6,7 +6,8 @@
 <title>B-íon — Prescrição</title>
 <script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/comumCss.css">
-<!-- atendimento.css traz os tokens --aten-* e o layout .aten-coluna; prescricao.css só acrescenta o que é da prescrição -->
+<!-- atendimento.css traz os tokens --aten-* e o layout .aten-coluna; prescricao.css só acrescenta o que é da prescrição
+     (inclui o alternador IA x manual e o visual do resultado da avaliação por IA) -->
 <link rel="stylesheet" href="../../../../css/pages/user/shared/atendimento.css">
 <link rel="stylesheet" href="../../../../css/pages/user/shared/prescricao.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
@@ -55,9 +56,10 @@
       </div>
 
       <!-- Cada bloco abaixo é desenhado por um módulo de prescricao/ (ver prescricao.js) -->
+      <div id="presc-modo"></div>        <!-- escolha IA x manual (avaliação médica / reavaliação); dá para trocar depois -->
       <div id="presc-banner"></div>      <!-- origem do rascunho: IA ou médico -->
-      <div id="presc-ia"></div>          <!-- opção 1: gerar com a IA -->
-      <div id="presc-diag"></div>        <!-- opção 2: manual / diagnóstico -->
+      <div id="presc-ia"></div>          <!-- modo IA: gerar + resultado da avaliação (explicação, perguntas, qualidade) -->
+      <div id="presc-diag"></div>        <!-- modo manual / diagnóstico do rascunho -->
       <div id="presc-itens"></div>       <!-- medicamentos e exames + busca -->
       <div id="presc-alertas"></div>     <!-- interações medicamentosas -->
       <div id="presc-fim"></div>         <!-- confirmar / descartar / finalizar -->

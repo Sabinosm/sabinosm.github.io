@@ -7,8 +7,6 @@
   --palette-gray-200: #d7dce2;
   --palette-gray-300: #96a1ae;
   --palette-gray-400: #7b8794;
-  --palette-accent-600: #6b6ff0;   
-  --palette-accent-700: #5a54d6;
   --palette-gray-900: #090b0f;                       /* sidebar preta */
   --palette-gray-850: #1a1e26;   /* fundo: aproximado do card */
   --palette-gray-800: #272d37;   /* CARD: cinza neutro */ 
@@ -47,7 +45,7 @@
   --bg-elevated: var(--palette-gray-800);
   --text: var(--palette-white);
   --text-strong: var(--palette-white-strong);
-  --text-muted: var(--palette-gray-600);
+  --text-muted: var(--palette-gray-300);
   --border: rgba(255,255,255,0.08);
   --accent: var(--palette-accent-600);
   --accent-hover: var(--palette-accent-700);

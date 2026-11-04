@@ -1,11 +1,11 @@
 // avaliacaoBionHelpers.js
 //
-// Utilitários puros da aba "Avaliação IA": estados, labels de erro, formatação.
+// Utilitários puros da avaliação por IA (usada pela página de prescrição): estados, labels de erro, formatação.
 // Sem fetch e sem DOM além do que vem de atendimentoHelpers (el, gate de escrita).
 
 import { estadoAtendimento, podeEscrever } from "../atendimento/atendimentoHelpers.js";
 
-/** Tipos de atendimento em que a aba existe (o back também exige: avaliacao-medica ou reavaliacao). */
+/** Tipos de atendimento com avaliação por IA / prescrição (o back também exige: avaliacao-medica ou reavaliacao). */
 export const TIPOS_COM_AVALIACAO_BION = ["avaliacao-medica", "reavaliacao"];
 
 export const tipoComAvaliacaoBion = (a = estadoAtendimento.atendimento) =>
@@ -14,7 +14,7 @@ export const tipoComAvaliacaoBion = (a = estadoAtendimento.atendimento) =>
 /** Pode pedir avaliação: tipo certo + em andamento + dono (podeEscrever já falha fechado sem dono). */
 export const podeAvaliar = () => tipoComAvaliacaoBion() && podeEscrever();
 
-/** Estados da aba (máquina de estados simples; só avaliacaoBion.js escreve). */
+/** Estados da avaliação (máquina de estados simples; hoje usados pelo prescricaoIa.js). */
 export const ESTADO = {
   CARREGANDO: "carregando",
   OCIOSO: "ocioso",          // nunca avaliou neste atendimento

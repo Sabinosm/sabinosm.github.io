@@ -199,7 +199,7 @@ async function carregar() {
     estadoAtendimento.binarioCompleto = norm.completo;
     render();
   } catch (erro) {
-    exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível carregar o binário.", "erro");
+    exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível carregar os dados clínicos.", "erro");
   } finally {
     document.dispatchEvent(new CustomEvent(EVENTO_BINARIO_CARREGADO));
   }
@@ -617,7 +617,7 @@ async function conferirTudo() {
   enviando = true;
   try {
     await conferirBinario(estadoAtendimento.atendimento.uuid, uuidPaciente(), agregado.dados);
-    exibirMensagem("Binário conferido (4 seções).", "sucesso");
+    exibirMensagem("Dados clínicos conferidos (4 seções).", "sucesso");
     document.dispatchEvent(new CustomEvent(EVENTO_ATENDIMENTO_ALTERADA));
   } catch (erro) {
     tratarErroEscrita(erro, null);
@@ -629,7 +629,7 @@ async function conferirTudo() {
 /** Erros de escrita chegam com mensagem pronta do back (ex.: 409 "remova o registro antes"). */
 function tratarErroEscrita(erro, idSecao) {
   if (idSecao) pintarErroSecao(idSecao, erro instanceof ApiError ? erro.message : "Não foi possível conferir.");
-  exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível conferir o binário.", "erro");
+  exibirMensagem(erro instanceof ApiError ? erro.message : "Não foi possível conferir os dados clínicos.", "erro");
 }
 
 function uuidPaciente() {

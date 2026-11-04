@@ -64,7 +64,7 @@ export function renderDiagnostico(alvo, resultado, { uuidAtendimento, editavel, 
 
   if (!resultado) {
     painel.appendChild(el("p", "field-hint",
-      "Prefere montar você mesmo? Informe o diagnóstico para criar o rascunho e depois adicione medicamentos e exames."));
+      "Informe o diagnóstico para criar o rascunho e depois adicione medicamentos e exames."));
   }
 
   const cid = el("input", "field-input");

@@ -45,8 +45,6 @@
         <div class="cons-det-chips">
           <span id="aten-chip-status"></span>
           <span id="aten-chip-tipo"></span>
-          <!-- só médico dono em avaliação médica/reavaliação: o orquestrador mostra e preenche o href -->
-          <a id="aten-link-prescricao" class="btn-primary cons-btn-link" data-requer="avaliarMedicamente" hidden>Prescrição</a>
         </div>
       </header>
 
@@ -81,11 +79,11 @@
           <button type="button" class="segmented-item" data-aba="sinais" data-i18n="atendimento.aba.sinais">Sinais vitais</button>
           <button type="button" class="segmented-item" data-aba="coleta" data-i18n="atendimento.aba.coleta">Coleta clínica</button>
           <button type="button" class="segmented-item" data-aba="conduta" data-i18n="atendimento.aba.conduta">Conduta de enfermagem</button>
-          <!-- só médico (initPagina remove para enfermeiro); o orquestrador esconde fora de avaliação médica/reavaliação -->
-          <button type="button" class="segmented-item" data-aba="bion" data-requer="avaliarMedicamente" hidden>Avaliação IA</button>
+          <!-- só quem pode escrever (dono, em andamento): o orquestrador mostra/esconde -->
+          <button type="button" class="segmented-item" data-aba="finalizar" hidden>Finalizar</button>
         </div>
 
-        <!-- ABA: BINÁRIO -->
+        <!-- ABA: DADOS CLÍNICOS (id/data-aba "binario" mantidos: o JS depende deles) -->
         <div class="aten-aba" id="aten-aba-binario">
           <section class="cons-panel">
             <h2 class="cons-panel-titulo">
@@ -150,8 +148,8 @@
             <p class="field-hint" id="aten-co-leitura-hint" hidden
                data-i18n="atendimento.coleta.leitura">Somente o profissional que abriu o atendimento registra coletas.</p>
 
-            <div id="aten-co-form-wrap" hidden>
-              <div class="field-group">
+            <div id="aten-co-form-wrap" class="aten-form-grade" hidden>
+              <div class="field-group aten-campo--cheio">
                 <label class="field-label" for="aten-co-queixa">
                   <span>Queixa principal</span>
                 </label>
@@ -173,7 +171,7 @@
                 <input class="field-input" type="number" id="aten-co-desde" min="0" max="32767" step="1">
                 <p class="field-error" id="aten-co-desde-error"></p>
               </div>
-              <div class="cons-panel-acoes">
+              <div class="cons-panel-acoes aten-campo--cheio">
                 <button type="button" class="btn-primary" id="aten-co-criar" data-i18n="atendimento.coleta.criar">Registrar coleta</button>
               </div>
             </div>
@@ -218,55 +216,56 @@
           </section>
         </div>
 
-        <!-- ABA: AVALIAÇÃO IA (só avaliação médica / reavaliação; avaliacaoBion/avaliacaoBion.js) -->
-        <div class="aten-aba" id="aten-aba-bion" hidden>
-          <section class="cons-panel">
-            <h2 class="cons-panel-titulo">Avaliação por IA (Bion)</h2>
-            <p class="field-hint" id="aten-bion-aviso">
-              A IA analisa os dados já registrados neste atendimento e gera um rascunho de conduta.
-              Nada é prescrito automaticamente: a decisão clínica é sua.
-            </p>
-            <p class="field-hint" id="aten-bion-leitura-hint" hidden>
-              Somente o profissional que abriu o atendimento pode solicitar a avaliação.
+        <!-- ===== ABA: FINALIZAR =====
+             Tela própria (espaço para crescer: resumo do atendimento, pendências etc.).
+             - triagem: finalizar + cancelar aqui mesmo;
+             - avaliação médica / reavaliação: a finalização acontece na página de PRESCRIÇÃO
+               (IA ou manual), então aqui o botão de finalizar dá lugar ao atalho "Ir para a prescrição";
+               o cancelamento continua disponível. -->
+        <div class="aten-aba" id="aten-aba-finalizar" hidden>
+
+          <section class="cons-panel" id="aten-fin-prescricao" hidden>
+            <h2 class="cons-panel-titulo">Prescrição</h2>
+            <p class="field-hint">
+              Nesta etapa você escolhe entre prescrever com a IA ou manualmente, confirma a prescrição
+              e finaliza o atendimento — tudo na página de prescrição.
             </p>
             <div class="cons-panel-acoes">
-              <button type="button" class="btn-primary" id="aten-bion-avaliar" hidden>Avaliar com IA</button>
-              <button type="button" class="btn-ghost" id="aten-bion-verificar" hidden>Verificar novamente</button>
+              <!-- o orquestrador mostra e preenche o href -->
+              <a id="aten-link-prescricao" class="btn-primary cons-btn-link" data-requer="avaliarMedicamente" hidden>Ir para a prescrição</a>
             </div>
-            <p class="field-hint" id="aten-bion-substitui-hint" hidden>
-              Uma nova avaliação substitui o rascunho de conduta da IA que ainda não foi confirmado.
-            </p>
-            <div id="aten-bion-status" role="status" aria-live="polite"></div>
-            <div id="aten-bion-resultado"></div>
           </section>
-        </div>
 
-        <!-- ===== FINALIZAR / CANCELAR (só o dono, atendimento em andamento) ===== -->
-        <section class="cons-panel" id="aten-acoes" hidden>
-          <h2 class="cons-panel-titulo">Encerrar este atendimento</h2>
-          <p class="field-hint" id="aten-fin-hint" hidden>
-            Para finalizar, conclua as 4 seções dos dados clínicos. Cancelar não exige dados clínicos.
-          </p>
-          <div class="field-group">
-            <label class="field-label" for="aten-fin-observacoes">
-              <span>Observações</span>
-              <span class="field-optional">(opcional)</span>
-            </label>
-            <textarea class="field-input" id="aten-fin-observacoes" rows="3"></textarea>
+          <!-- ===== FINALIZAR / CANCELAR (só o dono, atendimento em andamento) ===== -->
+          <section class="cons-panel" id="aten-acoes" hidden>
+            <h2 class="cons-panel-titulo" id="aten-fin-titulo">Encerrar este atendimento</h2>
+            <p class="field-hint" id="aten-fin-hint" hidden>
+              Para finalizar, conclua as 4 seções dos dados clínicos. Cancelar não exige dados clínicos.
+            </p>
+            <div class="aten-fin-grade">
+              <div class="field-group aten-campo--cheio" data-fin-so="finalizar">
+                <label class="field-label" for="aten-fin-observacoes">
+                  <span>Observações</span>
+                  <span class="field-optional">(opcional)</span>
+                </label>
+                <textarea class="field-input" id="aten-fin-observacoes" rows="3"></textarea>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="aten-fin-motivo">
+                  <span>Motivo do cancelamento</span>
+                  <span class="field-optional">(opcional, só vale ao cancelar)</span>
+                </label>
+                <select class="field-input" id="aten-fin-motivo"></select>
+              </div>
+            </div>
             <p class="field-error" id="aten-fin-erro"></p>
-          </div>
-          <div class="field-group">
-            <label class="field-label" for="aten-fin-motivo">
-              <span>Motivo do cancelamento</span>
-              <span class="field-optional">(opcional, só vale ao cancelar)</span>
-            </label>
-            <select class="field-input" id="aten-fin-motivo"></select>
-          </div>
-          <div class="cons-panel-acoes">
-            <button type="button" class="btn-ghost" id="aten-fin-cancelar">Cancelar atendimento</button>
-            <button type="button" class="btn-primary" id="aten-fin-finalizar">Finalizar atendimento</button>
-          </div>
-        </section>
+            <div class="cons-panel-acoes">
+              <button type="button" class="btn-ghost" id="aten-fin-cancelar">Cancelar atendimento</button>
+              <button type="button" class="btn-primary" id="aten-fin-finalizar">Finalizar atendimento</button>
+            </div>
+          </section>
+
+        </div>
 
       </section>
     </div>
