@@ -32,7 +32,7 @@
   background: var(--aten-surface);
   box-shadow: var(--aten-realce);
 }
-.presc-item-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.presc-item-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 2%; margin-top: 1%;}
 .presc-item-titulo {
   margin: 0;
   font-size: calc(14px * var(--font-scale, 1));
