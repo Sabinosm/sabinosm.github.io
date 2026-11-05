@@ -19,6 +19,7 @@
 // somenteLeitura fica true para todos (falha fechada -- o back continua
 // autorizando de verdade).
 
+import { mostrarResumo } from "./atendimentoResumo.js";
 import { buscarConsulta, situacaoConsentimento } from "../../clinico/consulta/consultaApi.js";
 import { ApiError, listarAtendimentosDaConsulta, abrirTriagem, abrirAvaliacaoMedica } from "./atendimentoApi.js";
 import {
@@ -250,6 +251,10 @@ function abaAtiva() {
 }
 
 function ativarAba(nome) {
+  // Resumo de conferência: busca ao ABRIR a aba (leitura auditada no back; não a cada alteração)
+  if (nome === "finalizar" && estadoAtendimento.atendimento?.uuid) {
+    mostrarResumo($("aten-resumo"), estadoAtendimento.atendimento.uuid);
+  }
   document.querySelectorAll("#aten-abas .segmented-item").forEach((btn) => {
     btn.classList.toggle("segmented-item--active", btn.dataset.aba === nome);
   });

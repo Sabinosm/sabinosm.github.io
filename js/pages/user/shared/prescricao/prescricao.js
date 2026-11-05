@@ -43,12 +43,14 @@ import { renderFim } from "./prescricaoFim.js";
 import { renderDocumentos } from "./prescricaoDocumentos.js";
 import { renderIA, retomarIA, cancelarIA, iaOcupada, iaIniciada } from "./prescricaoIa.js";
 import { renderModo } from "./prescricaoModo.js";
+import { mostrarResumo } from "../atendimento/atendimentoResumo.js";
 import { tipoComAvaliacaoBion } from "../avaliacaoBion/avaliacaoBionHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
 const $ = (id) => document.getElementById(id);
 let seq = 0;             // descarta resposta atrasada (recarregou no meio)
 let primeiraCarga = true;
+let chaveResumo = null;      // evita reler o resumo (leitura auditada) sem mudança que o afete
 let modo = null;             // "ia" | "manual" | null (ainda não escolheu). Só existe em avaliação médica/reavaliação
 
 /** Há escolha IA x manual: tipo com avaliação por IA, médico dono, atendimento em andamento. */
@@ -199,7 +201,8 @@ function desenharCabecalho() {
 }
 
 function limparBlocos() {
-  ["presc-modo", "presc-banner", "presc-ia", "presc-diag", "presc-itens", "presc-alertas", "presc-fim", "presc-docs", "presc-historico"]
+  chaveResumo = null;
+  ["presc-modo", "presc-resumo", "presc-banner", "presc-ia", "presc-diag", "presc-itens", "presc-alertas", "presc-fim", "presc-docs", "presc-historico"]
     .forEach((id) => $(id).replaceChildren());
 }
 
@@ -243,9 +246,19 @@ function renderTudo() {
     $("presc-diag").replaceChildren();
     $("presc-itens").replaceChildren();
   }
+  desenharResumo();
   desenharAlertasEFim();
   renderDocumentos($("presc-docs"), atual);
   desenharHistorico();
+}
+
+/** Resumo de conferência acima do Finalizar. Só a prescrição CONFIRMADA entra nele (e não muda
+ *  depois), então a chave é o uuid confirmado: relê quando o médico confirma, não a cada edição. */
+function desenharResumo() {
+  const confirmada = estadoPrescricao.atual?.status === "confirmado" ? estadoPrescricao.atual.uuid : "-";
+  if (chaveResumo === confirmada) return;
+  chaveResumo = confirmada;
+  mostrarResumo($("presc-resumo"), estadoAtendimento.atendimento.uuid);
 }
 
 // ---------------------------------------------------------------- modo IA x manual

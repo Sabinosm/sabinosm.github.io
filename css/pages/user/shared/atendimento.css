@@ -726,3 +726,31 @@
   .aten-ip-campos { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
   .aten-co-item { padding: 14px 14px; }
 }
+
+/* ==========================================================================
+   RESUMO DE CONFERÊNCIA (atendimentoResumoRender.js)
+   Usa também as classes .det-* de atendimentoDetalhe.css (carregue os dois).
+   ========================================================================== */
+.resumo-significado {
+  margin: 10px 0 0;
+  padding: 10px 14px;
+  line-height: 1.5;
+  border: 1px solid var(--aten-borda);
+  border-left: 4px solid var(--aten-auto);
+  border-radius: var(--radius-sm, 10px);
+  background: var(--aten-surface);
+}
+.resumo-significado--neutro { border-left-color: var(--aten-borda); }
+.resumo-alerta {
+  margin: 10px 0 0;
+  padding: 8px 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  border: 1px solid var(--aten-borda);
+  border-left: 4px solid var(--aten-pendente);
+  border-radius: var(--radius-sm, 10px);
+  background: var(--aten-surface);
+}
+.resumo-erro { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+.resumo-erro .field-hint { margin: 0; }
+#aten-resumo, #presc-resumo { margin-top: 14px; }

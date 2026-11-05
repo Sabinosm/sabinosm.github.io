@@ -7,6 +7,8 @@
 <script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/comumCss.css">
 <link rel="stylesheet" href="../../../../css/pages/user/shared/atendimento.css">
+<!-- .det-* usadas pelo resumo de conferência da aba Finalizar -->
+<link rel="stylesheet" href="../../../../css/pages/user/shared/atendimentoDetalhe.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
 
 </head>
@@ -223,6 +225,9 @@
                (IA ou manual), então aqui o botão de finalizar dá lugar ao atalho "Ir para a prescrição";
                o cancelamento continua disponível. -->
         <div class="aten-aba" id="aten-aba-finalizar" hidden>
+
+          <!-- resumo de conferência (prescrição confirmada primeiro, depois o atendimento): atendimentoResumo.js -->
+          <div id="aten-resumo"></div>
 
           <section class="cons-panel" id="aten-fin-prescricao" hidden>
             <h2 class="cons-panel-titulo">Prescrição</h2>

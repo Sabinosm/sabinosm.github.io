@@ -6,14 +6,13 @@
 <title>B-íon — Prescrição</title>
 <script src="../../../../js/sharedConfig/loaders/preferenciasLoader.js"></script>
 <link rel="stylesheet" href="../../../../css/pages/comumCss.css">
-<!-- atendimento.css traz os tokens --aten-* e o layout .aten-coluna; prescricao.css só acrescenta o que é da prescrição
-     (inclui o alternador IA x manual e o visual do resultado da avaliação por IA) -->
 <link rel="stylesheet" href="../../../../css/pages/user/shared/atendimento.css">
 <link rel="stylesheet" href="../../../../css/pages/user/shared/prescricao.css">
+<link rel="stylesheet" href="../../../../css/pages/user/shared/atendimentoDetalhe.css">
 <link rel="icon" type="image/svg+xml" href="../../../../assets/imgs/favicon.svg">
 </head>
 <!-- data-requer: capacidade de userCachePermissoes.js (só médico prescreve) -->
-<body data-requer="avaliarMedicamente">
+<body data-requer="avaliarMedicamente" data-modulo="atendimento">
 <canvas id="c" aria-hidden="true"></canvas>
 
 <div class="app">
@@ -62,6 +61,7 @@
       <div id="presc-diag"></div>        <!-- modo manual / diagnóstico do rascunho -->
       <div id="presc-itens"></div>       <!-- medicamentos e exames + busca -->
       <div id="presc-alertas"></div>     <!-- interações medicamentosas -->
+      <div id="presc-resumo"></div>      <!-- resumo de conferência: prescrição confirmada, depois o atendimento -->
       <div id="presc-fim"></div>         <!-- confirmar / descartar / finalizar -->
       <div id="presc-docs"></div>        <!-- baixar PDF da prescrição e do atendimento -->
       <div id="presc-historico"></div>   <!-- confirmadas e descartadas anteriores -->
@@ -78,4 +78,3 @@
 <script type="module" src="../../../../js/pages/user/shared/prescricao/prescricao.js"></script>
 </body>
 </html>
-
