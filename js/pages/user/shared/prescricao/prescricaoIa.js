@@ -20,6 +20,7 @@ import {
 } from "../avaliacaoBion/avaliacaoBionApi.js";
 import { aguardarConclusao, PollingTimeout } from "../avaliacaoBion/avaliacaoBionPolling.js";
 import { renderResultado } from "../avaliacaoBion/avaliacaoBionRender.js";
+import { criarBloqueio } from "../avaliacaoBion/avaliacaoBionBloqueio.js";
 import { STATUS_BACK, podeAvaliar, textoErro } from "../avaliacaoBion/avaliacaoBionHelpers.js";
 import { el, mensagemDeErro } from "./prescricaoHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
@@ -38,6 +39,10 @@ let geracao = 0;
 let controlador = null;
 let contexto = null;       // { alvo, uuidAtendimento, aoConcluir, visivel, bloqueado, temRascunhoIA,
                            //   aoDescartarRascunho, aoMudarFase, aoRetomarProcessando }
+
+// Espera de 30 s após "ia_indisponivel". Enquanto a IA trabalha, quem bloqueia o botão é `fase`.
+const bloqueio = criarBloqueio();
+bloqueio.aoMudar(() => { if (contexto?.alvo?.isConnected) renderIA({}); });
 
 const ocupadoAgora = () => [FASE.CARREGANDO, FASE.ENVIANDO, FASE.PROCESSANDO].includes(fase);
 
@@ -78,10 +83,12 @@ export function renderIA(opcoes) {
     descartar.addEventListener("click", () => aoDescartarRascunho?.());
     acoes.appendChild(descartar);
   } else {
-    const gerar = el("button", "btn-primary",
-      temRascunhoIA || teveResultado ? "Gerar novamente com a IA" : "Gerar rascunho com a IA");
+    const aguardando = bloqueio.bloqueado();
+    const gerar = el("button", "btn-primary", aguardando && !ocupado
+      ? "Aguarde para tentar novamente"
+      : (temRascunhoIA || teveResultado ? "Gerar novamente com a IA" : "Gerar rascunho com a IA"));
     gerar.type = "button";
-    gerar.disabled = ocupado || fase === FASE.DEMORANDO;
+    gerar.disabled = ocupado || fase === FASE.DEMORANDO || aguardando;
     gerar.addEventListener("click", gerarComIA);
     acoes.appendChild(gerar);
     if (fase === FASE.DEMORANDO) {
@@ -162,14 +169,18 @@ async function aplicarEstadoBack(info, minha, { notificar }) {
   if (info.status === STATUS_BACK.CONCLUIDO) return carregarResultado(info.uuid_output, minha, notificar);
   teveResultado = true;
   dados = null;
-  mensagemFalha = textoErro(info.erro_codigo);
+  mensagemFalha = textoErro(info.erro_codigo, info.mensagem);
   fase = FASE.FALHOU;
+  if (notificar) {                                   // desfecho novo (não o estado antigo lido ao abrir a página)
+    bloqueio.concluir(info);                         // "ia_indisponivel" segura o botão por 30 s
+    exibirMensagem(mensagemFalha, "erro", 6000);      // texto longo: o padrão de 2 s não dá para ler
+  }
   redesenhar();
 }
 
 // ---------------------------------------------------------------- gerar (POST)
 async function gerarComIA() {
-  if (ocupadoAgora() || !contexto?.uuidAtendimento) return;
+  if (ocupadoAgora() || bloqueio.bloqueado() || !contexto?.uuidAtendimento) return;
   const minha = ++geracao;
   controlador?.abort();
   fase = FASE.ENVIANDO;
@@ -187,7 +198,7 @@ async function gerarComIA() {
         const ultima = await ultimaAvaliacao(contexto.uuidAtendimento);
         if (minha !== geracao) return;
         if (ultima.data?.status === STATUS_BACK.PROCESSANDO) {
-          exibirMensagem("Já existe uma avaliação em andamento; acompanhando.", "sucesso");
+          exibirMensagem("Já existe uma avaliação em andamento; acompanhando.", "info");
           return esperar(ultima.data.uuid_output, minha);
         }
       } catch { /* cai na mensagem do back */ }
@@ -227,7 +238,11 @@ async function carregarResultado(uuidOutput, minha, notificar) {
     fase = FASE.OCIOSO;
     redesenhar();
     // O back acabou de gravar o rascunho: a página relê as prescrições (só quando a avaliação é nova).
-    if (notificar) await contexto?.aoConcluir?.();
+    if (notificar) {
+      exibirMensagem(dados?.conduta ? "Avaliação da IA concluída. Revise o rascunho antes de confirmar."
+        : "Avaliação da IA concluída.", "sucesso", 4000);
+      await contexto?.aoConcluir?.();
+    }
   } catch (erro) {
     if (minha !== geracao || erro?.name === "AbortError") return;
     fase = FASE.OCIOSO;

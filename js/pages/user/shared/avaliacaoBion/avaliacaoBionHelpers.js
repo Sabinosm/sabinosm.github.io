@@ -4,6 +4,9 @@
 // Sem fetch e sem DOM além do que vem de atendimentoHelpers (el, gate de escrita).
 
 import { estadoAtendimento, podeEscrever } from "../atendimento/atendimentoHelpers.js";
+import {
+  CERTEZA_LABELS, TIPO_PRESCRICAO_LABELS, STATUS_LABELS, URGENCIA_LABELS,
+} from "../prescricao/prescricaoHelpers.js";      // AJUSTE o caminho se a pasta for outra
 
 /** Tipos de atendimento com avaliação por IA / prescrição (o back também exige: avaliacao-medica ou reavaliacao). */
 export const TIPOS_COM_AVALIACAO_BION = ["avaliacao-medica", "reavaliacao"];
@@ -38,8 +41,9 @@ export const ERRO_CODIGO_LABELS = {
   interno: "Ocorreu um erro interno durante a avaliação. Tente novamente.",
 };
 
-export const textoErro = (codigo) =>
-  ERRO_CODIGO_LABELS[codigo] ?? "A avaliação não pôde ser concluída. Tente novamente.";
+/** O texto do front tem prioridade; `mensagemBack` (campo `mensagem` do status) só cobre um erro_codigo que o front ainda não conhece. */
+export const textoErro = (codigo, mensagemBack) =>
+  ERRO_CODIGO_LABELS[codigo] ?? mensagemBack ?? "A avaliação não pôde ser concluída. Tente novamente.";
 
 /** Índices do back (completude e confiança) já vêm em 0–100 (ex.: 71.96); mostrados como %. null/NaN -> "—". */
 export function percentual(valor) {
@@ -61,9 +65,10 @@ export function rotulo(mapa, valor) {
   return mapa[valor] ?? String(valor);
 }
 
-export const CERTEZA_LABELS = { suspeito: "Suspeito", provavel: "Provável", confirmado: "Confirmado" };
-export const TIPO_PRESCRICAO_LABELS = {
-  farmacologica: "Farmacológica", nao_farmacologica: "Não farmacológica", "nao-farmacologica": "Não farmacológica",
-  internacao: "Internação",
+// Enums do back: uma fonte só (prescricaoHelpers.js). Só se acrescentam as variantes que o output_front pode trazer.
+export { CERTEZA_LABELS, URGENCIA_LABELS };
+export const TIPO_PRESCRICAO_LABELS_BION = {
+  ...TIPO_PRESCRICAO_LABELS, nao_farmacologica: TIPO_PRESCRICAO_LABELS["nao-farmacologica"],
 };
-export const STATUS_CONDUTA_LABELS = { rascunho: "Rascunho", confirmado: "Confirmada", confirmada: "Confirmada" };
+export { TIPO_PRESCRICAO_LABELS_BION as TIPO_PRESCRICAO_LABELS };
+export const STATUS_CONDUTA_LABELS = { ...STATUS_LABELS, confirmada: STATUS_LABELS.confirmado };

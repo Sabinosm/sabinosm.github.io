@@ -59,7 +59,7 @@ export const iniciarAvaliacao = (uuidAtendimento) =>
 export const ultimaAvaliacao = (uuidAtendimento, opcoes) =>
   requisitar(`/atendimento/${enc(uuidAtendimento)}/avaliacao-bion/ultima`, opcoes);
 
-/** Só o estado: { uuid_output, status, erro_codigo, criado_em }. É a rota do polling. */
+/** Só o estado: { uuid_output, status, erro_codigo, mensagem, criado_em }. É a rota do polling. `mensagem` vem do back só quando falhou. */
 export const statusAvaliacao = (uuidOutput, opcoes) =>
   requisitar(`/avaliacao-bion/${enc(uuidOutput)}/status`, opcoes);
 

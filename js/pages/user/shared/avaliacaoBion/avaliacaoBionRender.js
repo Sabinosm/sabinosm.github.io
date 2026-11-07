@@ -6,7 +6,7 @@
 
 import { el, formatarDataHora } from "../atendimento/atendimentoHelpers.js";
 import {
-  percentual, rotulo, textoMotivo, CERTEZA_LABELS, TIPO_PRESCRICAO_LABELS, STATUS_CONDUTA_LABELS,
+  percentual, rotulo, textoMotivo, CERTEZA_LABELS, TIPO_PRESCRICAO_LABELS, STATUS_CONDUTA_LABELS, URGENCIA_LABELS,
 } from "./avaliacaoBionHelpers.js";
 
 const painel = (titulo) => {
@@ -56,7 +56,7 @@ function itemMedicamento(m) {
 function itemExame(e) {
   const item = el("div", "aten-bion-item");
   item.appendChild(el("p", "aten-bion-item-titulo", e.nome ?? "Exame"));
-  const meta = linhaMeta([e.tipo, e.urgencia ? `urgência: ${e.urgencia}` : null]);
+  const meta = linhaMeta([e.tipo, e.urgencia ? `urgência: ${rotulo(URGENCIA_LABELS, e.urgencia).toLowerCase()}` : null]);
   if (meta) item.appendChild(meta);
   if (e.justificativa) item.appendChild(el("p", "field-hint", `Justificativa: ${e.justificativa}`));
   return item;
