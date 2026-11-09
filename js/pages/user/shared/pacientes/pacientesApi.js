@@ -9,7 +9,7 @@
 //   PUT  /pacientes/pessoal/<uuid>                -> atualizarPacientePessoal(uuid, payload)
 //   PUT  /pacientes/clinico/<uuid>                -> atualizarPacienteClinico(uuid, payload)
 //   GET  /consultas/paciente/historico/<uuid>     -> listarHistoricoConsultas(uuidPaciente)
-//   POST /pacientes/pessoal/                      -> criarPacientePessoal(payload)
+//   POST /pacientes/pessoal                       -> criarPacientePessoal(payload)
 //   POST /pacientes/consentimento-digital/<uuid>/consentimentos[...]                    (fluxo de consulta)
 //   POST /pacientes/consentimento-digital/<uuid>/consentimentos/dispensar-emergencia    (fluxo de consulta)
 //
@@ -156,7 +156,7 @@ export function listarHistoricoConsultas(uuidPaciente) {
 // ============================================
 //
 // SIMPLIFICADO (decisão de produto): o cadastro cobre SÓ dados
-// pessoais (POST /pacientes/pessoal/). Consentimento LGPD e blocos
+// pessoais (POST /pacientes/pessoal). Consentimento LGPD e blocos
 // clínicos passaram a ser registrados durante a CONSULTA/atendimento
 // (ver pacienteClinicoApi.js).
 //
@@ -174,7 +174,7 @@ export function listarHistoricoConsultas(uuidPaciente) {
  *   identificador do paciente recém-criado.
  */
 export function criarPacientePessoal(payload) {
-  return requisitar('/pessoal/', {
+  return requisitar('/pessoal', {
     method: 'POST',
     body: JSON.stringify(payload),
   });

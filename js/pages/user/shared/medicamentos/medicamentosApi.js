@@ -3,7 +3,7 @@
 // Somente as chamadas da API de medicamentos (o fetch em si fica em
 // ../requisitar.js). Espelha as rotas do back:
 //
-//   GET  /medicamentos/                      -> listarMedicamentos(filtros)
+//   GET  /medicamentos                       -> listarMedicamentos(filtros)
 //   GET  /medicamentos/classes               -> listarClasses()
 //   GET  /medicamentos/<uuid>                -> buscarMedicamento(uuid)
 //   GET  /medicamentos/<uuid>/interacoes     -> listarInteracoes(uuid)        (médico)

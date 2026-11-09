@@ -15,8 +15,7 @@
 //   POST /atendimentos/<uuid_at>/pacientes/<uuid_pac>/binario            -> conferir as 4 seções
 //   POST /atendimentos/<uuid_at>/pacientes/<uuid_pac>/binario/<secao>    -> conferir 1 seção
 //        (reconferir é permitido enquanto o atendimento está em andamento: a última confirmação vence)
-//   DELETE /atendimentos/<uuid_at>/pacientes/<uuid_pac>/<alergias|doencas-cronicas|medicamentos-em-uso>/<uuid>
-//        -> exclusão lógica de um registro ativo (step-up no back; corpo {motivo_delete, observacoes_delete?})
+//   DELETE /atendimentos/<uuid_at>/pacientes/<uuid_pac>/<alergias|doencas-cronicas|medicamentos-em-uso>/<uuid>  -> exclusão lógica de um registro ativo (step-up no back; corpo {motivo_delete, observacoes_delete?})
 //   POST .../sinais-vitais                                   -> {"sinais": [...]}
 //   POST .../coleta-clinica                                  -> exige binário completo (409)
 //   POST .../coleta-clinica/<uuid_coleta>/input-protocolo    -> exige binário completo (409)

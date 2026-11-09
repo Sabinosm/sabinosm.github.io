@@ -3,7 +3,7 @@
 // Somente as chamadas da API de exames (o fetch fica em ../requisitar.js).
 // Espelha as rotas do back:
 //
-//   GET /exames/                   -> listarExames(filtros)       (login)
+//   GET /exames                    -> listarExames(filtros)       (login)
 //   GET /exames/filtros            -> listarFiltros()             (login)
 //   GET /exames/<uuid>             -> buscarExame(uuid)           (médico)
 //   GET /exames/<uuid>/conteudo    -> buscarConteudoApoio(uuid)   (médico)
