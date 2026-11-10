@@ -6,7 +6,8 @@
 //   3. atendimento finalizado: atalhos para a consulta e para ENCERRAR a consulta
 // Sem step-up aqui (decisão: não interromper o médico durante o atendimento). O ENCERRAR da
 // consulta continua na página da consulta (exige step-up e desfecho): este módulo só leva até lá.
-// Quem decide é o back: aqui só se mostra a mensagem do 409 (binário incompleto, IA processando,
+// Depois de finalizar, avisa quem montou a página (aposFinalizar) para ela decidir o que mais mostrar
+// (hoje: o modal de avaliação da IA). Quem decide é o back: aqui só se mostra a mensagem do 409 (binário incompleto, IA processando,
 // rascunho pendente, atendimento fora de andamento).
 
 import { confirmarPrescricao, descartarPrescricao } from "./prescricaoApi.js";
@@ -89,7 +90,7 @@ function painelRascunho(resultado, { verificacao, recarregar }) {
   return painel;
 }
 
-function painelFinalizar(resultado, { recarregarTudo }) {
+function painelFinalizar(resultado, { recarregarTudo, aposFinalizar }) {
   const a = estadoAtendimento.atendimento;
   const painel = el("section", "cons-panel presc-bloco");
   painel.appendChild(el("h2", "cons-panel-titulo", "Finalizar atendimento"));
@@ -117,6 +118,7 @@ function painelFinalizar(resultado, { recarregarTudo }) {
     await finalizarAtendimento(a.uuid, texto ? { observacoes: texto } : {});
     exibirMensagem("Atendimento finalizado.", "sucesso");
     await recarregarTudo();
+    aposFinalizar?.();                                  // sem await: não prende o botão enquanto o modal está aberto
   }, "Não foi possível finalizar o atendimento."));
   return painel;
 }
@@ -145,7 +147,8 @@ function painelPosFinalizacao() {
 /**
  * @param {HTMLElement} alvo
  * @param {object|null} resultado  em foco (rascunho, confirmado ou null)
- * @param {{verificacao:object|null, recarregar:()=>Promise<void>, recarregarTudo:()=>Promise<void>}} ctx
+ * @param {{verificacao:object|null, recarregar:()=>Promise<void>, recarregarTudo:()=>Promise<void>,
+ *          aposFinalizar?:()=>void}} ctx
  */
 export function renderFim(alvo, resultado, ctx) {
   alvo.replaceChildren();

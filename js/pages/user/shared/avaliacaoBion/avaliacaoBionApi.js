@@ -10,6 +10,8 @@
 //   GET  /atendimento/<uuid_atendimento>/avaliacao-bion/ultima -> estado da mais recente, ou data null
 //   GET  /avaliacao-bion/<uuid_output>/status                   -> só o estado (polling, sem auditoria)
 //   GET  /avaliacao-bion/<uuid_output>                          -> conteúdo (output_front); leitura AUDITADA
+//   PUT  /avaliacao-bion/<uuid_output>/avaliacao-nota           -> grava a nota (0,5 a 5) e/ou o motivo dados pelo médico
+//        403: não é o médico do atendimento · 409: avaliação ainda não concluída · 422: corpo inválido
 //
 // Prefixo (main.py): bp_bion é registrado em /v1/api/bion, ou seja, URL_BASE_API + "/bion".
 // Ex.: POST /v1/api/bion/atendimento/<uuid>/avaliacao-bion. Único ponto a ajustar: BASE.
@@ -22,10 +24,13 @@ export { ApiError };
 const BASE = `${URL_BASE_API}/bion`;
 const enc = encodeURIComponent;
 
-async function requisitar(path, { method = "GET", signal } = {}) {
-  // POST leva "{}" (mesmo formato dos demais POSTs); GET não leva corpo.
+async function requisitar(path, { method = "GET", signal, json } = {}) {
+  // Com `json`, vai esse JSON; POST sem corpo leva "{}" (mesmo formato dos demais POSTs); GET não leva corpo.
   const init = { method, credentials: "include", cache: "no-store", signal };
-  if (method === "POST") {
+  if (json !== undefined) {
+    init.headers = { "Content-Type": "application/json" };
+    init.body = JSON.stringify(json);
+  } else if (method === "POST") {
     init.headers = { "Content-Type": "application/json" };
     init.body = "{}";
   }
@@ -66,3 +71,9 @@ export const statusAvaliacao = (uuidOutput, opcoes) =>
 /** Conteúdo clínico (conduta, perguntas, explicação, qualidade). Gera 1 linha de auditoria: chame uma vez. */
 export const lerAvaliacao = (uuidOutput, opcoes) =>
   requisitar(`/avaliacao-bion/${enc(uuidOutput)}`, opcoes);
+/**
+ * Envia a avaliação do médico sobre a resposta da IA. `avaliacao` = { avaliacao_nota?, avaliacao_nota_descricao? }
+ * (ao menos um). Resposta: { data: { uuid_output, avaliacao_nota, avaliacao_nota_descricao } }.
+ */
+export const enviarAvaliacaoNota = (uuidOutput, avaliacao, opcoes) =>
+  requisitar(`/avaliacao-bion/${enc(uuidOutput)}/avaliacao-nota`, { ...opcoes, method: "PUT", json: avaliacao });

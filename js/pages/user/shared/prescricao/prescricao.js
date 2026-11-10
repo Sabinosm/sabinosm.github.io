@@ -41,7 +41,7 @@ import { renderItens } from "./prescricaoItens.js";
 import { renderAlertas } from "./prescricaoAlertas.js";
 import { renderFim } from "./prescricaoFim.js";
 import { renderDocumentos } from "./prescricaoDocumentos.js";
-import { renderIA, retomarIA, cancelarIA, iaOcupada, iaIniciada } from "./prescricaoIa.js";
+import { renderIA, retomarIA, cancelarIA, iaOcupada, iaIniciada, pedirAvaliacaoIA } from "./prescricaoIa.js";
 import { renderModo } from "./prescricaoModo.js";
 import { mostrarResumo } from "../atendimento/atendimentoResumo.js";
 import { tipoComAvaliacaoBion } from "../avaliacaoBion/avaliacaoBionHelpers.js";
@@ -299,6 +299,8 @@ function desenharAlertasEFim() {
     verificacao: estadoPrescricao.verificacao,
     recarregar,
     recarregarTudo: carregarPagina,
+    // Depois de finalizar o atendimento, pede a nota da IA (só se o médico usou o modo IA e ainda não avaliou).
+    aposFinalizar: () => { if (modo === "ia") pedirAvaliacaoIA({ soSeNaoAvaliada: true }); },
   });
 }
 

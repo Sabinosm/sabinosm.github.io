@@ -13,6 +13,9 @@
 // O resultado da avaliação (conduta proposta, perguntas, explicação, qualidade) aparece logo abaixo
 // do painel, com o mesmo render da antiga aba. Todo texto da IA entra no DOM por textContent.
 //
+// Abaixo do resultado fica o painel "Avaliar a IA": abre o modal de nota (meias estrelas + motivo).
+// Quem controla o fluxo da prescrição pode abri-lo no momento certo com pedirAvaliacaoIA().
+//
 // O estado vive no módulo (não no DOM) para sobreviver aos re-renders da página.
 
 import {
@@ -21,7 +24,10 @@ import {
 import { aguardarConclusao, PollingTimeout } from "../avaliacaoBion/avaliacaoBionPolling.js";
 import { renderResultado } from "../avaliacaoBion/avaliacaoBionRender.js";
 import { criarBloqueio } from "../avaliacaoBion/avaliacaoBionBloqueio.js";
-import { STATUS_BACK, podeAvaliar, textoErro } from "../avaliacaoBion/avaliacaoBionHelpers.js";
+import { abrirModalNota } from "../avaliacaoBion/avaliacaoBionNotaModal.js";
+import {
+  NOTA_DESCRICAO_LABELS, STATUS_BACK, notaTexto, podeAvaliar, textoErro,
+} from "../avaliacaoBion/avaliacaoBionHelpers.js";
 import { el, mensagemDeErro } from "./prescricaoHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
 
@@ -50,6 +56,42 @@ const ocupadoAgora = () => [FASE.CARREGANDO, FASE.ENVIANDO, FASE.PROCESSANDO].in
 export const iaOcupada = () => ocupadoAgora();
 /** A consulta ao estado da avaliação já foi feita (evita repetir a leitura auditada). */
 export const iaIniciada = () => iniciada;
+
+/**
+ * Abre o modal de avaliação da resposta da IA exibida. `soSeNaoAvaliada`: não abre se o médico já avaliou
+ * (use ao chamar automaticamente, ex.: depois de confirmar a prescrição). Devolve o que foi gravado ou null.
+ */
+export async function pedirAvaliacaoIA({ soSeNaoAvaliada = false } = {}) {
+  const uuid = dados?.uuid_output;
+  if (!uuid || (soSeNaoAvaliada && jaAvaliou(dados))) return null;
+  const resultado = await abrirModalNota({
+    uuidOutput: uuid, notaAtual: dados.avaliacao_nota ?? null, descricaoAtual: dados.avaliacao_nota_descricao ?? null,
+  });
+  if (resultado && dados?.uuid_output === uuid) {       // ignora se uma nova geração trocou o resultado
+    dados = { ...dados, ...resultado };
+    if (contexto?.alvo?.isConnected) renderIA({});
+  }
+  return resultado;
+}
+
+const jaAvaliou = (d) => d?.avaliacao_nota != null || Boolean(d?.avaliacao_nota_descricao);
+
+function painelAvaliacao() {
+  const painel = el("section", "cons-panel presc-bloco");
+  painel.appendChild(el("h2", "cons-panel-titulo", "Avaliar a IA"));
+  const partes = [];
+  if (dados.avaliacao_nota != null) partes.push(`${notaTexto(dados.avaliacao_nota)} de 5 estrelas`);
+  if (dados.avaliacao_nota_descricao) partes.push(NOTA_DESCRICAO_LABELS[dados.avaliacao_nota_descricao]
+    ?? dados.avaliacao_nota_descricao);
+  painel.appendChild(el("p", "field-hint", jaAvaliou(dados)
+    ? `Sua avaliação: ${partes.join(" · ")}.`
+    : "Conte como foi a resposta da IA. É opcional e não altera a prescrição."));
+  const botao = el("button", "btn-ghost", jaAvaliou(dados) ? "Alterar avaliação" : "Avaliar a IA");
+  botao.type = "button";
+  botao.addEventListener("click", () => pedirAvaliacaoIA());
+  painel.appendChild(botao);
+  return painel;
+}
 
 export function cancelarIA() {
   geracao += 1;
@@ -126,6 +168,7 @@ export function renderIA(opcoes) {
     const resultado = el("div", "presc-ia-resultado");
     resultado.appendChild(renderResultado(dados));
     alvo.appendChild(resultado);
+    if (dados.uuid_output) alvo.appendChild(painelAvaliacao());
   }
 }
 

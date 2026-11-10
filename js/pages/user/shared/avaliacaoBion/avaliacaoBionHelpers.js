@@ -72,3 +72,31 @@ export const TIPO_PRESCRICAO_LABELS_BION = {
 };
 export { TIPO_PRESCRICAO_LABELS_BION as TIPO_PRESCRICAO_LABELS };
 export const STATUS_CONDUTA_LABELS = { ...STATUS_LABELS, confirmada: STATUS_LABELS.confirmado };
+
+/** Motivos da avaliação do médico (valores do back: output_ia/schema.py), na ordem em que aparecem no modal. */
+export const NOTA_DESCRICAO_NAO_USOU_IA = "nao_usei_ia";
+export const NOTA_DESCRICAO_LABELS = {
+  faltou_analisar_campos: "Faltou analisar corretamente os campos",
+  analise_incorreta_medicamento_exame: "Análise incorreta de medicamento ou exame",
+  recomendacao_sem_base_clinica: "Recomendação sem base clínica ou lógica",
+  analisou_bem_campos: "Analisou bem os campos",
+  recomendacao_coerente: "Recomendação coerente",
+  analise_coerente_medicamento_exame: "Análise coerente sobre os medicamentos ou exames",
+  [NOTA_DESCRICAO_NAO_USOU_IA]: "Não usei a IA",
+};
+
+/** 0,5 a 5 em passos de 0,5, como o back valida. */
+export const NOTA_MIN = 0.5;
+export const NOTA_MAX = 5;
+export const notaValida = (n) => Number.isFinite(n) && n >= NOTA_MIN && n <= NOTA_MAX && n * 2 === Math.round(n * 2);
+
+/** 4.5 -> "4,5"; null -> "—". */
+export const notaTexto = (n) => (n == null ? "—" : String(n).replace(".", ","));
+
+/** Corpo do PUT: só o que foi preenchido; "não usei a IA" não leva nota. Devolve null se não há o que enviar. */
+export function montarAvaliacao(nota, descricao) {
+  const corpo = {};
+  if (descricao) corpo.avaliacao_nota_descricao = descricao;
+  if (nota != null && descricao !== NOTA_DESCRICAO_NAO_USOU_IA) corpo.avaliacao_nota = nota;
+  return Object.keys(corpo).length ? corpo : null;
+}
