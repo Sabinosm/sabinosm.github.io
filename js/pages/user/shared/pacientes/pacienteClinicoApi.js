@@ -44,9 +44,8 @@
 
 import { URL_BASE_API } from "../../../../sharedConfig/urlConfig.js";
 import { ApiError } from "./pacientesApi.js";
-
-const BASE_LEITURA = `${URL_BASE_API}/pacientes`;       // bp (leitura)
-const BASE_ESCRITA = `${URL_BASE_API}/atendimentos`;    // bp_escrita (mesma url_prefix de bp_atendimento)
+  // bp (leitura)
+const BASE = `${URL_BASE_API}/atendimentos`;    // bp_escrita (mesma url_prefix de bp_atendimento)
 
 function headersPadrao() {
   return { 'Content-Type': 'application/json' };
@@ -89,7 +88,7 @@ const _enc = encodeURIComponent;
 
 // ============================================================
 // ALERGIAS
-//   leitura:  GET  /pacientes/<uuid>/alergias
+//   leitura:  GET  /atendimento/<uuid>/alergias
 //   escrita:  POST .../alergias                      (cria alergia + 1ª reação)
 //             PUT  .../alergias<uuid_alergia>         (só codigo_substancia/flag_confirmado)
 //             POST .../alergias/<uuid_alergia>/reacoes (nova reação)
@@ -103,18 +102,18 @@ export const TIPOS_MANIFESTACAO_ALERGIA = Object.freeze([
 export const GRAVIDADES_ALERGIA = Object.freeze(['leve', 'moderada', 'grave']);
 
 export function listarAlergias(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/alergias`, { method: 'GET', naoEncontradoOk: true });
+  return requisitar(`${BASE}/${_enc(uuidPaciente)}/alergias`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function adicionarAlergia(uuidAtendimento, uuidPaciente, payload) {
-  return requisitar(`${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/alergias`, {
+  return requisitar(`${BASE}${escrita(uuidAtendimento, uuidPaciente)}/alergias`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
 
 export function atualizarAlergia(uuidAtendimento, uuidPaciente, uuidAlergia, payload) {
-  return requisitar(`${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/alergias${_enc(uuidAlergia)}`, {
+  return requisitar(`${BASE}${escrita(uuidAtendimento, uuidPaciente)}/alergias${_enc(uuidAlergia)}`, {
     method: 'PUT',
     body: JSON.stringify(payload),
   });
@@ -122,7 +121,7 @@ export function atualizarAlergia(uuidAtendimento, uuidPaciente, uuidAlergia, pay
 
 export function adicionarReacao(uuidAtendimento, uuidPaciente, uuidAlergia, payload) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/alergias/${_enc(uuidAlergia)}/reacoes`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/alergias/${_enc(uuidAlergia)}/reacoes`,
     { method: 'POST', body: JSON.stringify(payload) },
   );
 }
@@ -130,14 +129,14 @@ export function adicionarReacao(uuidAtendimento, uuidPaciente, uuidAlergia, payl
 export function removerAlergia(uuidAtendimento, uuidPaciente, uuidAlergia, motivo) {
   // @acao_sensivel("remover_alergia"): chamar pedirConfirmacao('remover_alergia') ANTES.
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/alergias${_enc(uuidAlergia)}`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/alergias${_enc(uuidAlergia)}`,
     { method: 'DELETE', body: JSON.stringify(motivo) },
   );
 }
 
 export function restaurarAlergia(uuidAtendimento, uuidPaciente, uuidAlergia) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/alergias/${_enc(uuidAlergia)}/restaurar`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/alergias/${_enc(uuidAlergia)}/restaurar`,
     { method: 'POST' },
   );
 }
@@ -145,15 +144,15 @@ export function restaurarAlergia(uuidAtendimento, uuidPaciente, uuidAlergia) {
 /** Mesmo contrato de remoção da alergia (AlergiaRemoverSchema é reutilizado). */
 export function removerReacao(uuidAtendimento, uuidPaciente, uuidReacao, motivo) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/alergias/reacoes${_enc(uuidReacao)}`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/alergias/reacoes${_enc(uuidReacao)}`,
     { method: 'DELETE', body: JSON.stringify(motivo) },
   );
 }
 
 // ============================================================
 // DOENÇAS CRÔNICAS
-//   leitura:  GET /pacientes/<uuid>/doencas-cronicas
-//             GET /pacientes/<uuid>/doencas-cronicas/historico
+//   leitura:  GET /atendimentos/<uuid>/doencas-cronicas
+//             GET /atendimentos/<uuid>/doencas-cronicas/historico
 //   escrita:  POST   .../doencas-cronicas            (nova doença, nasce vigente)
 //             PUT    .../doencas-cronicas<uuid>     (SÓ observacoes!)
 //             POST   .../doencas-cronicas/<uuid>/revisar  (muda status/CID/desde; fecha a linha vigente e cria outra)
@@ -165,15 +164,15 @@ export function removerReacao(uuidAtendimento, uuidPaciente, uuidReacao, motivo)
 export const STATUS_DOENCA_CRONICA = Object.freeze(['ativa', 'em-remissao']);
 
 export function listarDoencasCronicas(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/doencas-cronicas`, { method: 'GET', naoEncontradoOk: true });
+  return requisitar(`${BASE}/${_enc(uuidPaciente)}/doencas-cronicas`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function listarHistoricoDoencasCronicas(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/doencas-cronicas/historico`, { method: 'GET', naoEncontradoOk: true });
+  return requisitar(`${BASE}/${_enc(uuidPaciente)}/doencas-cronicas/historico`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function adicionarDoencaCronica(uuidAtendimento, uuidPaciente, payload) {
-  return requisitar(`${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas`, {
+  return requisitar(`${BASE}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -182,7 +181,7 @@ export function adicionarDoencaCronica(uuidAtendimento, uuidPaciente, payload) {
 /** Só corrige `observacoes`. Status/CID/desde vão por revisarDoencaCronica. */
 export function atualizarDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca, payload) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}`,
     { method: 'PUT', body: JSON.stringify(payload) },
   );
 }
@@ -190,7 +189,7 @@ export function atualizarDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca
 /** Revisão clínica: fecha a linha vigente e cria a nova (devolve 201 com a NOVA). */
 export function revisarDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca, payload) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}/revisar`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}/revisar`,
     { method: 'POST', body: JSON.stringify(payload) },
   );
 }
@@ -198,22 +197,22 @@ export function revisarDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca, 
 export function removerDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca, motivo) {
   // @acao_sensivel("remover_doenca_cronica"): pedirConfirmacao('remover_doenca_cronica') ANTES.
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}`,
     { method: 'DELETE', body: JSON.stringify(motivo) },
   );
 }
 
 export function restaurarDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}/restaurar`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/doencas-cronicas/${_enc(uuidDoenca)}/restaurar`,
     { method: 'POST' },
   );
 }
 
 // ============================================================
 // MEDICAMENTOS EM USO
-//   leitura:  GET /pacientes/<uuid>/medicamentos-em-uso[?ativos=true]
-//             GET /pacientes/<uuid>/medicamentos-em-uso/interacoes
+//   leitura:  GET /atendimentos/<uuid>/medicamentos-em-uso[?ativos=true]
+//             GET /atendimentos/<uuid>/medicamentos-em-uso/interacoes
 //   escrita:  POST   .../medicamentos-em-uso             (registra ativo; devolve alertas_interacao)
 //             POST   .../medicamentos-em-uso/<uuid>/substituir  (troca dose/freq/descrição: fecha o antigo, cria o novo)
 //             POST   .../medicamentos-em-uso/<uuid>/encerrar    (status interrompido|concluido)
@@ -224,15 +223,15 @@ export function restaurarDoencaCronica(uuidAtendimento, uuidPaciente, uuidDoenca
 // ============================================================
 export function listarMedicamentosEmUso(uuidPaciente, { apenasAtivos = false } = {}) {
   const qs = apenasAtivos ? '?ativos=true' : '';
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/medicamentos-em-uso${qs}`, { method: 'GET', naoEncontradoOk: true });
+  return requisitar(`${BASE}/${_enc(uuidPaciente)}/medicamentos-em-uso${qs}`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function verificarInteracoesDoPaciente(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/medicamentos-em-uso/interacoes`, { method: 'GET', naoEncontradoOk: true });
+  return requisitar(`${BASE}/${_enc(uuidPaciente)}/medicamentos-em-uso/interacoes`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function registrarMedicamentoEmUso(uuidAtendimento, uuidPaciente, payload) {
-  return requisitar(`${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso`, {
+  return requisitar(`${BASE}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -241,14 +240,14 @@ export function registrarMedicamentoEmUso(uuidAtendimento, uuidPaciente, payload
 
 export function substituirMedicamentoEmUso(uuidAtendimento, uuidPaciente, uuidMedicamento, payload) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}/substituir`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}/substituir`,
     { method: 'POST', body: JSON.stringify(payload) },
   );
 }
 
 export function encerrarMedicamentoEmUso(uuidAtendimento, uuidPaciente, uuidMedicamento, payload) {
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}/encerrar`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}/encerrar`,
     { method: 'POST', body: JSON.stringify(payload) },
   );
 }
@@ -256,7 +255,7 @@ export function encerrarMedicamentoEmUso(uuidAtendimento, uuidPaciente, uuidMedi
 export function removerMedicamentoEmUso(uuidAtendimento, uuidPaciente, uuidMedicamento, motivo) {
   // @acao_sensivel("remover_medicamento_em_uso"): pedirConfirmacao('remover_medicamento_em_uso') ANTES.
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}`,
     { method: 'DELETE', body: JSON.stringify(motivo) },
   );
 }
@@ -264,15 +263,15 @@ export function removerMedicamentoEmUso(uuidAtendimento, uuidPaciente, uuidMedic
 export function restaurarMedicamentoEmUso(uuidAtendimento, uuidPaciente, uuidMedicamento) {
   // @acao_sensivel("restaurar_medicamento_em_uso"): pedirConfirmacao('restaurar_medicamento_em_uso') ANTES.
   return requisitar(
-    `${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}/restaurar`,
+    `${BASE}${escrita(uuidAtendimento, uuidPaciente)}/medicamentos-em-uso/${_enc(uuidMedicamento)}/restaurar`,
     { method: 'POST' },
   );
 }
 
 // ============================================================
 // TIPO SANGUÍNEO (histórico de observações — append-only)
-//   leitura:  GET /pacientes/<uuid>/tipo-sanguineo            (vigente; data=null se nunca registrado)
-//             GET /pacientes/<uuid>/tipo-sanguineo/historico
+//   leitura:  GET /atendimentos/<uuid>/tipo-sanguineo            (vigente; data=null se nunca registrado)
+//             GET /atendimentos/<uuid>/tipo-sanguineo/historico
 //   escrita:  POST .../tipo-sanguineo   { tipo_sanguineo }    (cria observação nova; NUNCA sobrescreve)
 // ============================================================
 export const TIPOS_SANGUINEOS = Object.freeze([
@@ -280,7 +279,7 @@ export const TIPOS_SANGUINEOS = Object.freeze([
 ]);
 
 export function buscarTipoSanguineoVigente(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/tipo-sanguineo`, { method: 'GET', naoEncontradoOk: true });
+  return requisitar(`${BASE}/${_enc(uuidPaciente)}/tipo-sanguineo`, { method: 'GET', naoEncontradoOk: true });
   // data pode ser null (nunca registrado). COM O 404 TOLERADO, todas as
   // funções de LEITURA deste arquivo devolvem data: null quando o paciente
   // ainda não tem aquele bloco — o caller deve renderizar estado vazio,
@@ -288,11 +287,11 @@ export function buscarTipoSanguineoVigente(uuidPaciente) {
 }
 
 export function listarHistoricoTipoSanguineo(uuidPaciente) {
-  return requisitar(`${BASE_LEITURA}/${_enc(uuidPaciente)}/tipo-sanguineo/historico`, { method: 'GET', naoEncontradoOk: true });
+  return requisitar(`${BASE}/${_enc(uuidPaciente)}/tipo-sanguineo/historico`, { method: 'GET', naoEncontradoOk: true });
 }
 
 export function registrarTipoSanguineo(uuidAtendimento, uuidPaciente, tipoSanguineo) {
-  return requisitar(`${BASE_ESCRITA}${escrita(uuidAtendimento, uuidPaciente)}/tipo-sanguineo`, {
+  return requisitar(`${BASE}${escrita(uuidAtendimento, uuidPaciente)}/tipo-sanguineo`, {
     method: 'POST',
     body: JSON.stringify({ tipo_sanguineo: tipoSanguineo }),
   });
