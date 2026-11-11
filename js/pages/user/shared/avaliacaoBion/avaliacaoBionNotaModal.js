@@ -5,10 +5,10 @@
 // pode simplesmente fechar (X, Esc ou "Agora não") e nada é enviado. Só fecha por ação dele: clicar fora
 // não fecha. Erros e acertos do envio saem por exibirMensagem. Sem estado fora do modal aberto.
 
-import { el } from "../atendimento/atendimentoHelpers.js";
+import { el } from "./atendimentoHelpers.js";
 import { mensagemDeErro } from "../prescricao/prescricaoHelpers.js";
 import { exibirMensagem } from "../../../../shared/feedback.js";
-import { enviarAvaliacaoNota } from "../../../../../front_avaliacao_nota_v2/avaliacaoBionApi.js";
+import { enviarAvaliacaoNota } from "./avaliacaoBionApi.js";
 import {
   NOTA_DESCRICAO_LABELS, NOTA_DESCRICAO_NAO_USOU_IA, NOTA_MAX, NOTA_MIN, montarAvaliacao, notaTexto,
 } from "../../../../../front_avaliacao_nota_v2/avaliacaoBionHelpers.js";
