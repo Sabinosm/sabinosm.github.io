@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/v1/api/:path*",
-      "destination": "http://localhost:5000/v1/api/:path*"
+      "destination": "https://bion.onrender.com/v1/api/:path*"
     }
   ]
 }
